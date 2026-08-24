@@ -1,4 +1,4 @@
-import JobModal from "@/components/JobModal";
+import JobModal from "@/components/jobs/JobModal";
 import { getJobBySlug } from "@/lib/job-query";
 import { notFound } from "next/navigation";
 

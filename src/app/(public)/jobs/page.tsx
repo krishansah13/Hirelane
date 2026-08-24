@@ -3,7 +3,7 @@ import { jobQuerySchema } from "@/lib/validation";
 import { JobSearchProps } from "@/types/JobTypes";
 import HeroSection from "@/components/HeroSection";
 import Filters from "@/components/Filters";
-import JobResults from "@/components/JobResults";
+import JobResults from "@/components/jobs/JobResults";
 import { JobCardSkeleton, Skeleton } from "@/components/ui/Skeleton";
 
 function JobsFallback() {

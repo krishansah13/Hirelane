@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import JobCard from "../Jobs/JobCard";
+import JobCard from "../jobs/JobCard";
 import { Job } from "@/types/JobTypes";
 
 export default function LandingFeatured({

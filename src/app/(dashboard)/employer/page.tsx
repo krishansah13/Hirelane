@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireEmployer } from "@/lib/session";
 import { getCompanyJobs } from "@/lib/employer-query";
-import JobStatusBadge from "@/components/JobStatusBadge";
+import JobStatusBadge from "@/components/jobs/JobStatusBadge";
 import { formatJobType, formatInr } from "@/lib/utils/format";
 
 function formatDate(value?: string | Date | null) {

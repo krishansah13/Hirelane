@@ -1,4 +1,4 @@
-import JobWriteForm from "@/components/JobWriteForm";
+import JobWriteForm from "@/components/jobs/JobWriteForm";
 import { getCompanyJobById } from "@/lib/employer-query";
 import { requireEmployer } from "@/lib/session";
 import Link from "next/link";

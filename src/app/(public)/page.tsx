@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import LandingHero from "@/components/Landing Pages/LandingHero";
-import LandingCompanies from "@/components/Landing Pages/LandingCompanies";
-import LandingCategories from "@/components/Landing Pages/LandingCategories";
-import LandingFeatured from "@/components/Landing Pages/LandingFeatured";
-import LandingHowItWorks from "@/components/Landing Pages/LandingHowItWorks";
-import LandingEmployerCta from "@/components/Landing Pages/LandingEmployerCta";
+import LandingHero from "@/components/landing-pages/LandingHero";
+import LandingCompanies from "@/components/landing-pages/LandingCompanies";
+import LandingCategories from "@/components/landing-pages/LandingCategories";
+import LandingFeatured from "@/components/landing-pages/LandingFeatured";
+import LandingHowItWorks from "@/components/landing-pages/LandingHowItWorks";
+import LandingEmployerCta from "@/components/landing-pages/LandingEmployerCta";
 import { getLandingContent } from "@/lib/job-query";
 import { Job } from "@/types/JobTypes";
 
