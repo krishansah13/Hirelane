@@ -49,7 +49,7 @@ export default function LandingCategories() {
                         BROWSE BY TYPE
                     </p>
                     <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-950">
-                        Start where you want to work.
+                        Choose how you want to work.
                     </h2>
                     <p className="mt-3 text-sm leading-6 text-gray-500">
                         Jump into a category and we will take you straight to
