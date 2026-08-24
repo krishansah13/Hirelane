@@ -27,7 +27,7 @@ export default function JobSection({
             </p>
           </div>
 
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-3 sm:gap-5">
             {result.jobs.map((job: Job) => (
               <JobCard key={job._id.toString()} job={job} />
             ))}

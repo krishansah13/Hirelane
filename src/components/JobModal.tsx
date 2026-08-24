@@ -4,6 +4,7 @@ import { ArrowUpRight, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import ApplyForm from "./ApplyForm";
+import CompanyLogo from "./CompanyLogo";
 
 type JobModalProps = {
     jobId: string;
@@ -16,9 +17,11 @@ type JobModalProps = {
     salaryMin?: number;
     salaryMax?: number;
     companyName?: string;
+    companySlug?: string;
+    companyLogo?: string;
 };
 export default function JobModal({
-    jobId, slug, title, description, location, type, isRemote, salaryMin, salaryMax, companyName
+    jobId, slug, title, description, location, type, isRemote, salaryMin, salaryMax, companyName, companySlug, companyLogo
 }: JobModalProps) {
     const router = useRouter();
 
@@ -48,9 +51,17 @@ export default function JobModal({
                     <X size={18} />
                 </button>
 
-                <p className="text-sm font-semibold text-gray-500">
-                    {companyName || "Company"}
-                </p>
+                <div className="flex items-center gap-3">
+                    <CompanyLogo
+                        name={companyName || "Company"}
+                        slug={companySlug}
+                        src={companyLogo}
+                        size="md"
+                    />
+                    <p className="text-sm font-semibold text-gray-500">
+                        {companyName || "Company"}
+                    </p>
+                </div>
 
 
                 <h2 id="job-modal-title" className="mt-2 pr-10 text-2xl font-bold tracking-tight text-gray-950">

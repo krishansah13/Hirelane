@@ -2,6 +2,12 @@ import { JobSearchProps } from "@/types/JobTypes";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
+// Labels collapse to bare chevrons on phones so the row fits without wrapping.
+const STEP_BASE =
+    "flex h-10 items-center gap-2 rounded-xl px-3 text-sm sm:px-4";
+const STEP_ACTIVE = `${STEP_BASE} bg-white hover:bg-gray-50`;
+const STEP_DISABLED = `${STEP_BASE} text-gray-300`;
+
 function buildUrl(params: JobSearchProps, page: number) {
     const searchParams = new URLSearchParams();
 
@@ -43,19 +49,19 @@ export default function Pagination({
         return null;
     }
     return (
-        <div className="mt-10 flex items-center justify-center gap-2">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
             {page > 1 ? (
                 <Link
                     href={buildUrl(params, page - 1)}
-                    className="flex h-10 items-center gap-2 rounded-xl 200 bg-white px-4 text-sm hover:bg-gray-50"
+                    className={STEP_ACTIVE}
                 >
                     <ChevronLeft size={16} />
-                    Previous
+                    <span className="hidden sm:inline">Previous</span>
                 </Link>
             ) : (
-                <span className="flex h-10 items-center gap-2 rounded-xl 100 px-4 text-sm text-gray-300">
+                <span className={STEP_DISABLED}>
                     <ChevronLeft size={16} />
-                    Previous
+                    <span className="hidden sm:inline">Previous</span>
                 </span>
             )}
 
@@ -102,14 +108,14 @@ export default function Pagination({
             {page < totalPages ? (
                 <Link
                     href={buildUrl(params, page + 1)}
-                    className="flex h-10 items-center gap-2 rounded-xl 200 bg-white px-4 text-sm hover:bg-gray-50"
+                    className={STEP_ACTIVE}
                 >
-                    Next
+                    <span className="hidden sm:inline">Next</span>
                     <ChevronRight size={16} />
                 </Link>
             ) : (
-                <span className="flex h-10 items-center gap-2 rounded-xl 100 px-4 text-sm text-gray-300">
-                    Next
+                <span className={STEP_DISABLED}>
+                    <span className="hidden sm:inline">Next</span>
                     <ChevronRight size={16} />
                 </span>
             )}

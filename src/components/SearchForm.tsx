@@ -1,6 +1,15 @@
 import { JobSearchProps } from "@/types/JobTypes";
 import { Search, MapPin, ArrowRight } from "lucide-react";
 
+const FIELD_CLASS =
+    "flex h-14 items-center px-4 sm:h-full sm:flex-1 sm:px-0";
+
+// text-[16px] keeps iOS Safari from zooming in on focus.
+const INPUT_CLASS =
+    "h-full w-full min-w-0 bg-transparent text-[16px] font-normal outline-none placeholder:text-[#a5a4ae]";
+
+const ICON_CLASS = "mr-3 shrink-0 text-[#484855] sm:mr-4";
+
 export default function SearchForm({
     params,
 }: {
@@ -10,44 +19,45 @@ export default function SearchForm({
         <form
             action="/jobs"
             method="GET"
-            className="flex w-full flex-col rounded-2xl bg-[#fbf9ff] p-3 shadow-[0_4px_12px_rgba(0,0,0,0.10)] sm:h-[70px] sm:flex-row sm:items-center sm:p-0 sm:px-3"
+            className="flex w-full flex-col gap-2.5 sm:h-[70px] sm:flex-row sm:items-center sm:gap-0 sm:rounded-2xl sm:bg-[#fbf9ff] sm:px-3 sm:shadow-[0_4px_12px_rgba(0,0,0,0.10)]"
         >
-            {/* Job search */}
-            <div className="flex h-12 flex-1 items-center sm:h-full">
-                <Search
-                    size={16}
-                    strokeWidth={2.2}
-                    className="ml-3 mr-3 shrink-0 text-[#484855] sm:ml-5 sm:mr-5"
-                />
+            {/*
+              On mobile both fields share one white card so the search reads as a
+              single control. `sm:contents` dissolves the card on larger screens
+              so the fields sit directly in the horizontal search bar.
+            */}
+            <div className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_4px_16px_rgba(76,61,130,0.10)] sm:contents">
+                <div className={FIELD_CLASS}>
+                    <Search
+                        size={18}
+                        strokeWidth={2.2}
+                        className={`${ICON_CLASS} sm:ml-2`}
+                    />
+                    <input
+                        name="q"
+                        type="search"
+                        defaultValue={params.q}
+                        placeholder="Job title or keyword"
+                        className={INPUT_CLASS}
+                    />
+                </div>
 
-                <input
-                    name="q"
-                    type="search"
-                    defaultValue={params.q}
-                    placeholder="Job title, keywords, or company"
-                    className="h-full w-full bg-transparent text-[16px] font-normal outline-none placeholder:text-[#a5a4ae]"
-                />
-            </div>
+                <div className="h-px w-full bg-[#eeeaf8] sm:h-[38px] sm:w-px sm:bg-[#c9c6d1]" />
 
-            {/* Divider */}
-            <div className="hidden h-[38px] w-px bg-[#c9c6d1] sm:block" />
-            <div className="mx-3 h-px bg-[#c9c6d1] sm:hidden" />
-
-            {/* Location */}
-            <div className="flex h-12 flex-1 items-center sm:h-full">
-                <MapPin
-                    size={16}
-                    strokeWidth={2.2}
-                    className="ml-3 mr-3 shrink-0 text-[#484855] sm:ml-8 sm:mr-5"
-                />
-
-                <input
-                    name="location"
-                    type="text"
-                    defaultValue={params.location}
-                    placeholder="City, state, or country"
-                    className="h-full w-full bg-transparent text-[16px] outline-none placeholder:text-[#a5a4ae]"
-                />
+                <div className={FIELD_CLASS}>
+                    <MapPin
+                        size={18}
+                        strokeWidth={2.2}
+                        className={`${ICON_CLASS} sm:ml-5`}
+                    />
+                    <input
+                        name="location"
+                        type="text"
+                        defaultValue={params.location}
+                        placeholder="City or location"
+                        className={INPUT_CLASS}
+                    />
+                </div>
             </div>
 
             {params.type && (
@@ -55,28 +65,19 @@ export default function SearchForm({
             )}
 
             {params.remote && (
-                <input
-                    type="hidden"
-                    name="remote"
-                    value={params.remote}
-                />
+                <input type="hidden" name="remote" value={params.remote} />
             )}
 
             {params.sort && (
-                <input
-                    type="hidden"
-                    name="sort"
-                    value={params.sort}
-                />
+                <input type="hidden" name="sort" value={params.sort} />
             )}
 
-            {/* Button */}
             <button
                 type="submit"
-                className="mt-2 flex h-12 w-full shrink-0 items-center justify-center gap-4 rounded-[14px] bg-[#1739ad] text-[16px] font-semibold text-white transition hover:bg-[#12329c] sm:mt-0 sm:w-32"
+                className="flex h-13 w-full shrink-0 items-center justify-center gap-2.5 rounded-2xl bg-[#1739ad] text-[16px] font-semibold text-white shadow-[0_4px_16px_rgba(23,57,173,0.25)] transition hover:bg-[#12329c] sm:h-12 sm:w-32 sm:rounded-xl sm:shadow-none"
             >
                 Search
-                <ArrowRight size={22} />
+                <ArrowRight size={20} />
             </button>
         </form>
     );

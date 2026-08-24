@@ -1,7 +1,7 @@
 import JobWriteForm from "@/components/JobWriteForm";
 import { getCompanyJobById } from "@/lib/employer-query";
 import { requireEmployer } from "@/lib/session";
-import { Link } from "lucide-react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 export default async function EditJobPage({ params }: { params: Promise<{ id: string }> }) {

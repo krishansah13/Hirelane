@@ -5,6 +5,7 @@ import { requireSeeker } from "@/lib/session";
 import { getMyApplicationById } from "@/lib/application-query";
 import ApplicationStageHistory from "@/components/ApplicationStageHistory";
 import StageBadge from "@/components/StageBadge";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { formatJobType } from "@/lib/utils/format";
 
 function formatDate(value?: string | Date) {
@@ -18,11 +19,18 @@ function formatDate(value?: string | Date) {
 
 function HistoryFallback() {
   return (
-    <div className="space-y-3">
-      <div className="h-4 w-40 animate-pulse rounded bg-gray-100" />
-      <div className="h-4 w-56 animate-pulse rounded bg-gray-100" />
-      <div className="h-4 w-48 animate-pulse rounded bg-gray-100" />
-    </div>
+    <ol className="space-y-5" aria-busy="true">
+      <span className="sr-only">Loading stage history</span>
+      {Array.from({ length: 3 }).map((_, i) => (
+        <li key={i} className="flex gap-3">
+          <Skeleton className="mt-1 h-3 w-3 shrink-0 rounded-full" variant="brand" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-3 w-28" variant="subtle" />
+          </div>
+        </li>
+      ))}
+    </ol>
   );
 }
 
