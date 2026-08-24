@@ -20,7 +20,9 @@ export default async function JobModalPage({params} : {params : Promise<{slug : 
             isRemote={job.isRemote}
             salaryMin = {job.salaryMin}
             salaryMax = {job.salaryMax}
-            companyName = {company?.name}
+            companyName={company?.name}
+            companySlug={company?.slug}
+            companyLogo={company?.logoURL}
         />
     )
 }
