@@ -109,12 +109,20 @@ export default function Navbar() {
                             </button>
                         </>
                     ) : (
-                        <Link
-                            href="/login"
-                            className="rounded-md border border-[#2E46BA] bg-[#2E46BA] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1739ad] sm:px-6"
-                        >
-                            Sign in
-                        </Link>
+                        <>
+                            <Link
+                                href="/signup"
+                                className="hidden rounded-md border border-[#2E46BA] px-4 py-2 text-sm font-medium text-[#2E46BA] transition hover:bg-[#2E46BA]/5 sm:inline-flex sm:px-5"
+                            >
+                                Sign up
+                            </Link>
+                            <Link
+                                href="/login"
+                                className="rounded-md border border-[#2E46BA] bg-[#2E46BA] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1739ad] sm:px-6"
+                            >
+                                Sign in
+                            </Link>
+                        </>
                     )}
 
                     <button
@@ -154,6 +162,16 @@ export default function Navbar() {
                                 className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:hidden"
                             >
                                 Dashboard
+                            </Link>
+                        )}
+
+                        {!isAuthenticated && (
+                            <Link
+                                href="/signup"
+                                onClick={() => setMenuOpen(false)}
+                                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:hidden"
+                            >
+                                Sign up
                             </Link>
                         )}
                     </div>

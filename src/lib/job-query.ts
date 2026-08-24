@@ -194,7 +194,11 @@ async function queryLandingContent() {
     (async () => {
       await connectToDatabase();
       return serialize(
-        await Company.find({}).select("name logoURL slug").limit(6).lean(),
+        await Company.find({})
+          .select("name logoURL slug")
+          .sort({ createdAt: -1 })
+          .limit(12)
+          .lean(),
       );
     })(),
     (async () => {
@@ -217,7 +221,7 @@ async function queryLandingContent() {
 export async function getLandingContent() {
   await expireOverduePublishedJobs();
 
-  return unstable_cache(queryLandingContent, ["landing-content"], {
+  return unstable_cache(queryLandingContent, ["landing-content", "newest-12"], {
     tags: ["jobs"],
     revalidate: JOB_CACHE_SECONDS,
   })();

@@ -102,5 +102,45 @@ export const updateStageSchema = z.object({
   stage: stageSchema,
 });
 
+const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .max(100, "Password must be 100 characters or fewer");
+
+export const signupSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(2, "Name must be at least 2 characters")
+      .max(80, "Name must be 80 characters or fewer"),
+    email: z.email("Enter a valid email").trim().toLowerCase(),
+    password: passwordSchema,
+    role: z.enum(["seeker", "employer"], { message: "Choose a role" }),
+    companyName: z.string().trim().optional(),
+    companyWebsite: z.string().trim().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.role !== "employer") return;
+
+    if (!data.companyName || data.companyName.length < 2) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["companyName"],
+        message: "Company name must be at least 2 characters",
+      });
+    }
+
+    const website = data.companyWebsite ?? "";
+    if (!website) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["companyWebsite"],
+        message: "Enter your company website",
+      });
+    }
+  });
+
 export type JobQueryInput = z.infer<typeof jobQuerySchema>;
 export type ApplicationStage = z.infer<typeof stageSchema>;
+export type SignupInput = z.infer<typeof signupSchema>;

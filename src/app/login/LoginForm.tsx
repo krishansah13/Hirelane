@@ -215,6 +215,15 @@ export default function LoginForm() {
                             Find jobs
                         </Link>
                     </p>
+                    <p className="mt-3 text-center text-sm text-gray-500">
+                        New here?{" "}
+                        <Link
+                            href="/signup"
+                            className="font-medium text-[#2E46BA] transition hover:text-[#12329c]"
+                        >
+                            Create an account
+                        </Link>
+                    </p>
                 </div>
             </div>
         </main>
