@@ -41,7 +41,7 @@ export default function LandingFeatured({
                     </Link>
                 </div>
 
-                <div className="mt-10 flex flex-col gap-4">
+                <div className="mt-10 flex flex-col gap-3 sm:gap-4">
                     {jobs.map((job) => (
                         <JobCard key={job._id.toString()} job={job} />
                     ))}
