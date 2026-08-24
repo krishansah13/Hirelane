@@ -1,4 +1,4 @@
-import CompanyLogo from "./CompanyLogo";
+import CompanyLogo from "../CompanyLogo";
 
 type LandingCompany = {
     name: string;

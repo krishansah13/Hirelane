@@ -3,8 +3,8 @@ import { formatInr, formatJobType } from "@/lib/utils/format";
 import { ArrowUpRight, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import ApplyForm from "./ApplyForm";
-import CompanyLogo from "./CompanyLogo";
+import ApplyForm from "../ApplyForm";
+import CompanyLogo from "../CompanyLogo";
 
 type JobModalProps = {
     jobId: string;

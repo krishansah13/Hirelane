@@ -1,5 +1,5 @@
 import { Job } from "@/types/JobTypes";
-import EmptyState from "./EmptyState";
+import EmptyState from "@/components/EmptyState";
 import JobCard from "./JobCard";
 import { getJobs } from "@/lib/job-query";
 

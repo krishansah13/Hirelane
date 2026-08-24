@@ -2,7 +2,7 @@ import { getJobs, toJobQuery } from "@/lib/job-query";
 import { jobQuerySchema } from "@/lib/validation";
 import { JobSearchProps } from "@/types/JobTypes";
 import JobSection from "./JobSection";
-import Pagination from "./Pagination";
+import Pagination from "../Pagination";
 
 const JOBS_PER_PAGE = 10;
 

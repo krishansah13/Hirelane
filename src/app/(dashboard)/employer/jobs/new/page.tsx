@@ -1,4 +1,4 @@
-import JobWriteForm from "@/components/JobWriteForm";
+import JobWriteForm from "@/components/Jobs/JobWriteForm";
 import { requireEmployer } from "@/lib/session";
 
 export default async function NewJobPage() {

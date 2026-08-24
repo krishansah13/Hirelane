@@ -1,7 +1,7 @@
 import { Job } from "@/types/JobTypes";
 import { Briefcase, MapPin, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import CompanyLogo from "./CompanyLogo";
+import CompanyLogo from "../CompanyLogo";
 
 function formatDate(date?: string | Date) {
     if (!date) return "";

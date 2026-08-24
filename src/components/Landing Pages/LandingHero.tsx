@@ -1,5 +1,5 @@
 import Link from "next/link";
-import SearchForm from "./SearchForm";
+import SearchForm from "../SearchForm";
 
 type LandingStats = {
     openRoles: number;
