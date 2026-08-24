@@ -4,6 +4,7 @@ import { getJobBySlug, getPublishedJobSlugs } from "@/lib/job-query";
 import { ArrowUpRight } from "lucide-react";
 import { formatInr } from "@/lib/utils/format";
 import ApplyForm from "@/components/ApplyForm";
+import CompanyLogo from "@/components/CompanyLogo";
 
 export const revalidate = 3600; // 1 hour
 
@@ -59,9 +60,12 @@ export default async function JobDetail({
                             <div className="">
                                 {/* Brand */}
                                 <div className="mb-6 flex items-center gap-3">
-                                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#2e46ba] text-sm font-extrabold text-white">
-                                        {company?.name?.charAt(0).toUpperCase() ?? "H"}
-                                    </div>
+                                    <CompanyLogo
+                                        name={company?.name || "Hirelane"}
+                                        slug={company?.slug}
+                                        src={company?.logoURL}
+                                        size="lg"
+                                    />
                                     <div>
                                         <p className="text-sm font-semibold text-gray-900">
                                             {company?.name || "Company"}
