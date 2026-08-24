@@ -2,83 +2,163 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
+
+type NavLink = { href: string; label: string };
+
+const BROWSE_LINKS: NavLink[] = [
+    { href: "/jobs", label: "Find Jobs" },
+    { href: "/#companies", label: "Companies" },
+];
+
+/**
+ * Seekers get no third link: their only destination is the dashboard, which
+ * the account cluster on the right already owns.
+ */
+function getNavLinks(role?: "seeker" | "employer"): NavLink[] {
+    if (role === "seeker") {
+        return BROWSE_LINKS;
+    }
+
+    if (role === "employer") {
+        return [
+            ...BROWSE_LINKS,
+            { href: "/employer/jobs/new", label: "Post a Job" },
+        ];
+    }
+
+    return [...BROWSE_LINKS, { href: "/login", label: "Post a Job" }];
+}
 
 export default function Navbar() {
     const { data: session, status } = useSession();
+    const pathname = usePathname();
+    const [menuOpen, setMenuOpen] = useState(false);
+
     const isAuthenticated = status === "authenticated" && !!session?.user;
-    const dashboardHref =
-        session?.user.role === "employer" ? "/employer" : "/dashboard";
+    const role = isAuthenticated ? session.user.role : undefined;
+    const dashboardHref = role === "employer" ? "/employer" : "/dashboard";
+    const links = getNavLinks(role);
+
+    function isActive(href: string) {
+        if (href.startsWith("/#")) return false;
+        const path = href.split("?")[0];
+        return path === "/jobs" ? pathname === "/jobs" : pathname.startsWith(path);
+    }
+
+    function linkClass(href: string) {
+        return `text-sm font-medium transition ${
+            isActive(href)
+                ? "text-[#2E46BA]"
+                : "text-gray-950 hover:text-[#2E46BA]"
+        }`;
+    }
 
     return (
-        <nav className="flex items-center justify-between bg-white/80 px-8 py-4 shadow-2xl">
-            <Link href="/" className="flex items-center gap-3">
-                <Image
-                    src="/images/hirelane_brand_mark.png"
-                    alt="HireLane"
-                    width={30}
-                    height={30}
-                />
-                <h1 className="text-xl font-semibold tracking-tight text-[#2E46BA]">
-                    Hirelane
-                </h1>
-            </Link>
-
-            <div className="hidden items-center gap-6 sm:flex">
-                <Link
-                    href="/jobs"
-                    className="text-sm font-medium text-gray-950 transition hover:text-[#2E46BA]"
-                >
-                    Find Jobs
-                </Link>
-                <Link
-                    href="/jobs"
-                    className="text-sm font-medium text-gray-950 transition hover:text-[#2E46BA]"
-                >
-                    Companies
-                </Link>
-                <Link
-                    href={isAuthenticated && session.user.role === "employer" ? "/employer" : "/login"}
-                    className="text-sm font-medium text-gray-950 transition hover:text-[#2E46BA]"
-                >
-                    Post a Job
-                </Link>
-            </div>
-
-            <div className="flex items-center gap-3">
-                {status === "loading" ? (
-                    <div className="h-10 w-24 animate-pulse rounded-md bg-gray-100" />
-                ) : isAuthenticated ? (
-                    <>
-                        <Link
-                            href={dashboardHref}
-                            className="hidden max-w-[140px] truncate text-sm font-medium text-gray-700 sm:block"
-                        >
-                            {session.user.name}
-                        </Link>
-                        <Link
-                            href={dashboardHref}
-                            className="rounded-md border border-[#2E46BA] px-5 py-2 text-sm font-medium text-[#2E46BA] transition hover:bg-[#2E46BA]/5"
-                        >
-                            Dashboard
-                        </Link>
-                        <button
-                            type="button"
-                            onClick={() => signOut({ callbackUrl: "/" })}
-                            className="rounded-md bg-[#2E46BA] px-6 py-2 text-sm font-medium text-white"
-                        >
-                            Sign out
-                        </button>
-                    </>
-                ) : (
-                    <Link
-                        href="/login"
-                        className="rounded-md border border-[#2E46BA] bg-[#2E46BA] px-6 py-2 text-sm font-medium text-white"
-                    >
-                        Sign in
+        <nav className="sticky top-0 z-40 border-b border-[#eeeaf8] bg-white/80 backdrop-blur">
+            <div className="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-8">
+                <div className="flex justify-start">
+                    <Link href="/" className="flex items-center gap-3">
+                        <Image
+                            src="/images/hirelane_brand_mark.png"
+                            alt="HireLane"
+                            width={30}
+                            height={30}
+                        />
+                        <h1 className="text-xl font-semibold tracking-tight text-[#2E46BA]">
+                            Hirelane
+                        </h1>
                     </Link>
-                )}
+                </div>
+
+                <div className="hidden items-center justify-center gap-8 md:flex">
+                    {links.map((link) => (
+                        <Link
+                            key={link.label}
+                            href={link.href}
+                            className={linkClass(link.href)}
+                        >
+                            {link.label}
+                        </Link>
+                    ))}
+                </div>
+
+                <div className="col-start-3 flex items-center justify-end gap-3">
+                    {status === "loading" ? (
+                        <div className="h-10 w-24 animate-pulse rounded-md bg-gray-100" />
+                    ) : isAuthenticated ? (
+                        <>
+                            <span className="hidden max-w-[140px] truncate text-sm font-medium text-gray-700 lg:block">
+                                {session.user.name}
+                            </span>
+                            <Link
+                                href={dashboardHref}
+                                className="hidden rounded-md border border-[#2E46BA] px-5 py-2 text-sm font-medium text-[#2E46BA] transition hover:bg-[#2E46BA]/5 sm:inline-flex"
+                            >
+                                Dashboard
+                            </Link>
+                            <button
+                                type="button"
+                                onClick={() => signOut({ callbackUrl: "/" })}
+                                className="rounded-md bg-[#2E46BA] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1739ad] sm:px-6"
+                            >
+                                Sign out
+                            </button>
+                        </>
+                    ) : (
+                        <Link
+                            href="/login"
+                            className="rounded-md border border-[#2E46BA] bg-[#2E46BA] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1739ad] sm:px-6"
+                        >
+                            Sign in
+                        </Link>
+                    )}
+
+                    <button
+                        type="button"
+                        onClick={() => setMenuOpen((open) => !open)}
+                        aria-label={menuOpen ? "Close menu" : "Open menu"}
+                        aria-expanded={menuOpen}
+                        className="rounded-md p-2 text-gray-700 transition hover:bg-gray-100 md:hidden"
+                    >
+                        {menuOpen ? <X size={20} /> : <Menu size={20} />}
+                    </button>
+                </div>
             </div>
+
+            {menuOpen && (
+                <div className="border-t border-[#eeeaf8] bg-white px-4 py-3 md:hidden">
+                    <div className="mx-auto flex max-w-7xl flex-col gap-1">
+                        {links.map((link) => (
+                            <Link
+                                key={link.label}
+                                href={link.href}
+                                onClick={() => setMenuOpen(false)}
+                                className={`rounded-lg px-3 py-2 ${
+                                    isActive(link.href)
+                                        ? "bg-[#eef0ff] text-[#2E46BA]"
+                                        : "text-gray-700 hover:bg-gray-50"
+                                } text-sm font-medium`}
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
+
+                        {isAuthenticated && (
+                            <Link
+                                href={dashboardHref}
+                                onClick={() => setMenuOpen(false)}
+                                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:hidden"
+                            >
+                                Dashboard
+                            </Link>
+                        )}
+                    </div>
+                </div>
+            )}
         </nav>
     );
 }
