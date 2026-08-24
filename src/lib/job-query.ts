@@ -4,6 +4,8 @@ import Company from "./models/Company";
 import { connectToDatabase } from "./utils/db";
 import { serialize } from "./utils/serialize";
 import { JobQueryInput } from "./validation";
+import { isLiveJob, publicJobFilter } from "./job-status";
+import { revalidateJobBoard } from "./cache";
 
 export type JobQuery = {
   q?: string;
@@ -28,15 +30,26 @@ export function toJobQuery(input: JobQueryInput , limit = 10): JobQuery {
 }
 
 const COMPANY_SELECT = "name logoURL slug website about";
+const JOB_CACHE_SECONDS = 60;
+
+async function expireOverduePublishedJobs() {
+  await connectToDatabase();
+  const result = await Job.updateMany(
+    { status: "published", expiresAt: { $lte: new Date() } },
+    { $set: { status: "expired" } },
+  );
+
+  if ((result.modifiedCount ?? 0) > 0) {
+    revalidateJobBoard();
+  }
+}
 
 async function queryJobs(query: JobQuery) {
   await connectToDatabase();
 
   const { q, location, type, remote, sort = "newest", page, limit } = query;
 
-  const filter: Record<string, unknown> = {
-    status: "published",
-  };
+  const filter: Record<string, unknown> = publicJobFilter();
 
   if (q) {
     const matchingCompanies = await Company.find({
@@ -97,6 +110,8 @@ async function queryJobs(query: JobQuery) {
 }
 
 export async function getJobs(query: JobQuery) {
+  await expireOverduePublishedJobs();
+
   const cacheKey = JSON.stringify({
     q: query.q ?? "",
     location: query.location ?? "",
@@ -109,6 +124,7 @@ export async function getJobs(query: JobQuery) {
 
   return unstable_cache(async () => queryJobs(query), ["getJobs", cacheKey], {
     tags: ["jobs"],
+    revalidate: JOB_CACHE_SECONDS,
   })();
 }
 
@@ -117,7 +133,7 @@ async function queryJobBySlug(slug: string) {
 
   const job = await Job.findOne({
     slug,
-    status: "published",
+    ...publicJobFilter(),
   })
     .populate("companyId", COMPANY_SELECT)
     .lean();
@@ -126,9 +142,18 @@ async function queryJobBySlug(slug: string) {
 }
 
 export async function getJobBySlug(slug: string) {
-  return unstable_cache(async () => queryJobBySlug(slug), ["job-slug", slug], {
-    tags: ["jobs", `job:${slug}`],
-  })();
+  await expireOverduePublishedJobs();
+
+  const job = await unstable_cache(
+    async () => queryJobBySlug(slug),
+    ["job-slug", slug],
+    {
+      tags: ["jobs", `job:${slug}`],
+      revalidate: JOB_CACHE_SECONDS,
+    },
+  )();
+
+  return isLiveJob(job) ? job : null;
 }
 
 async function queryJobById(id: string) {
@@ -136,7 +161,7 @@ async function queryJobById(id: string) {
 
   const job = await Job.findOne({
     _id: id,
-    status: "published",
+    ...publicJobFilter(),
   })
     .populate("companyId", COMPANY_SELECT)
     .lean();
@@ -145,9 +170,18 @@ async function queryJobById(id: string) {
 }
 
 export async function getJobById(id: string) {
-  return unstable_cache(async () => queryJobById(id), ["job-id", id], {
-    tags: ["jobs"],
-  })();
+  await expireOverduePublishedJobs();
+
+  const job = await unstable_cache(
+    async () => queryJobById(id),
+    ["job-id", id],
+    {
+      tags: ["jobs"],
+      revalidate: JOB_CACHE_SECONDS,
+    },
+  )();
+
+  return isLiveJob(job) ? job : null;
 }
 
 async function queryLandingContent() {
@@ -165,7 +199,7 @@ async function queryLandingContent() {
     })(),
     (async () => {
       await connectToDatabase();
-      return Job.countDocuments({ status: "published", isRemote: true });
+      return Job.countDocuments({ ...publicJobFilter(), isRemote: true });
     })(),
   ]);
 
@@ -181,19 +215,26 @@ async function queryLandingContent() {
 }
 
 export async function getLandingContent() {
+  await expireOverduePublishedJobs();
+
   return unstable_cache(queryLandingContent, ["landing-content"], {
     tags: ["jobs"],
+    revalidate: JOB_CACHE_SECONDS,
   })();
 }
 
 export async function getPublishedJobSlugs() {
+  await expireOverduePublishedJobs();
+
   return unstable_cache(
     async () => {
       await connectToDatabase();
-      const jobs = await Job.find({ status: "published" }).select("slug updatedAt").lean();
+      const jobs = await Job.find(publicJobFilter())
+        .select("slug updatedAt")
+        .lean();
       return serialize(jobs);
     },
     ["published-job-slugs"],
-    { tags: ["jobs"] },
+    { tags: ["jobs"], revalidate: JOB_CACHE_SECONDS },
   )();
 }

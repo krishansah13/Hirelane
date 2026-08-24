@@ -3,6 +3,7 @@ import { requireEmployer } from "@/lib/session";
 import { getCompanyJobs } from "@/lib/employer-query";
 import JobStatusBadge from "@/components/jobs/JobStatusBadge";
 import { formatJobType, formatInr } from "@/lib/utils/format";
+import { effectiveJobStatus } from "@/lib/job-status";
 
 function formatDate(value?: string | Date | null) {
   if (!value) return "—";
@@ -77,7 +78,7 @@ export default async function EmployerPage() {
                     Updated {formatDate(job.updatedAt)}
                   </p>
                 </div>
-                <JobStatusBadge status={job.status ?? "draft"} />
+                <JobStatusBadge status={effectiveJobStatus(job)} />
               </div>
 
               <div className="mt-4 flex flex-wrap gap-3">
@@ -93,7 +94,7 @@ export default async function EmployerPage() {
                 >
                   Applicants
                 </Link>
-                {job.status === "published" && job.slug ? (
+                {effectiveJobStatus(job) === "published" && job.slug ? (
                   <Link
                     href={`/jobs/${job.slug}`}
                     className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50"

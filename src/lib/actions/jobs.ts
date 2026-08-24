@@ -70,6 +70,14 @@ export async function createJob(_prev:JobActionState, formData: FormData): Promi
     const data = parsed.data;
     const shouldPublish = data.publish === "true";
     const now = new Date();
+    const expiresAt = new Date(data.expiresAt);
+
+    if (shouldPublish && expiresAt.getTime() <= now.getTime()) {
+        return {
+            ok: false,
+            error: "Expiry date must be in the future to publish",
+        };
+    }
 
     try {
         await connectToDatabase();
@@ -85,7 +93,7 @@ export async function createJob(_prev:JobActionState, formData: FormData): Promi
             isRemote : data.isRemote === "true",
             salaryMin : data.salaryMin,
             salaryMax : data.salaryMax,
-            expiresAt : new Date(data.expiresAt),
+            expiresAt,
             status: shouldPublish?"published":"draft",
             publishedAt : shouldPublish ? now : null,
         });
@@ -146,7 +154,15 @@ export async function updateJob(_prev:JobActionState, formData: FormData): Promi
                 error : "Job Not Found"
             }
         }
-        const nextStatus = shouldPublish || exisiting.status === "published" ? "published" : exisiting.status === "expired" ? "expired"  : "draft";
+        const expiresAt = new Date(data.expiresAt);
+        const pastExpiry = expiresAt.getTime() <= now.getTime();
+        const nextStatus = pastExpiry && (shouldPublish || exisiting.status === "published" || exisiting.status === "expired")
+            ? "expired"
+            : shouldPublish || exisiting.status === "published"
+                ? "published"
+                : exisiting.status === "expired"
+                    ? "expired"
+                    : "draft";
 
         exisiting.title = data.title;
         exisiting.description = data.description;
@@ -155,7 +171,7 @@ export async function updateJob(_prev:JobActionState, formData: FormData): Promi
         exisiting.isRemote = data.isRemote === "true";
         exisiting.salaryMin = data.salaryMin;
         exisiting.salaryMax = data.salaryMax;
-        exisiting.expiresAt = new Date(data.expiresAt);
+        exisiting.expiresAt = expiresAt;
         exisiting.status = nextStatus;
         if(nextStatus === "published" && !exisiting.publishedAt) {
             exisiting.publishedAt = now;
@@ -208,7 +224,7 @@ export async function publishJob(_prev:JobActionState, formData : FormData): Pro
                 error : "Job not found"
             };
         }
-        if(job.status === "expired") {
+        if(job.status === "expired" || (job.expiresAt && new Date(job.expiresAt).getTime() <= Date.now())) {
             return {
                 ok : false,
                 error : "Expired jobs cannot be published"

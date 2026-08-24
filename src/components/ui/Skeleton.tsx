@@ -66,6 +66,10 @@ export function JobCardSkeleton() {
 
 export function FilterSidebarSkeleton() {
     return (
+        <>
+        <div className="lg:hidden">
+            <Skeleton className="h-12 w-full rounded-2xl" />
+        </div>
         <aside className="hidden h-fit space-y-7 rounded-2xl p-5 lg:block">
             <div className="flex items-center justify-between">
                 <Skeleton className="h-5 w-20" />
@@ -97,6 +101,7 @@ export function FilterSidebarSkeleton() {
             <Skeleton className="h-10 w-full rounded-lg" />
             <Skeleton className="h-11 w-full rounded-xl" />
         </aside>
+        </>
     );
 }
 

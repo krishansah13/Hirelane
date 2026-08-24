@@ -7,7 +7,7 @@ export default function EmptyState() {
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
                 <Briefcase
                     size={22}
-                    className="text-gray-900"
+                    className="text-[#2e46ba]"
                 />
             </div>
 
@@ -22,7 +22,7 @@ export default function EmptyState() {
 
             <Link
                 href="/jobs"
-                className="mt-5 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-700"
+                className="mt-5 rounded-xl bg-[#2e46ba] px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 hover:scale-105 transition-all"
             >
                 Clear filters
             </Link>

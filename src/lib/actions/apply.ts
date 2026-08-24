@@ -5,6 +5,7 @@ import { applySchema } from "../validation";
 import { connectToDatabase } from "../utils/db";
 import Job from "../models/Job";
 import Application from "../models/Application";
+import { publicJobFilter } from "../job-status";
 
 export type ApplyState = {
   ok: boolean;
@@ -46,7 +47,7 @@ export async function applyToJob(
     await connectToDatabase();
     const job = await Job.findOne({
       _id: jobId,
-      status: "published",
+      ...publicJobFilter(),
     }).select("_id");
 
     if (!job) {

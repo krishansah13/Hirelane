@@ -52,7 +52,7 @@ export default function SearchForm({
                     />
                     <input
                         name="location"
-                        type="text"
+                        type="search"
                         defaultValue={params.location}
                         placeholder="City or location"
                         className={INPUT_CLASS}

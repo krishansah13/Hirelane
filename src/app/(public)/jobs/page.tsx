@@ -53,9 +53,7 @@ export default async function JobSearch({
 
       <section className="min-h-125 bg-white px-4 py-6 sm:p-7">
         <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
-          <div className="hidden lg:block">
-            <Filters params={currentParams} />
-          </div>
+          <Filters params={currentParams} />
 
           {/* min-w-0 lets the results column shrink below its content's
               intrinsic width instead of widening the page on small screens. */}
