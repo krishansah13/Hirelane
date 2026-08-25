@@ -1,10 +1,9 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getJobBySlug, getPublishedJobSlugs } from "@/lib/job-query";
-import { ArrowUpRight } from "lucide-react";
-import { formatInr } from "@/lib/utils/format";
 import ApplyForm from "@/components/ApplyForm";
 import CompanyLogo from "@/components/CompanyLogo";
+import { getJobBySlug, getPublishedJobSlugs } from "@/lib/job-query";
+import { formatInr } from "@/lib/utils/format";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 export const revalidate = 3600; // 1 hour
 
