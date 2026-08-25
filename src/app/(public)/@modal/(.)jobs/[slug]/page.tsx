@@ -1,4 +1,5 @@
 import JobModal from "@/components/jobs/JobModal";
+import { applyToJob } from "@/lib/actions/apply";
 import { getJobBySlug } from "@/lib/job-query";
 import { notFound } from "next/navigation";
 
@@ -23,6 +24,7 @@ export default async function JobModalPage({params} : {params : Promise<{slug : 
             companyName={company?.name}
             companySlug={company?.slug}
             companyLogo={company?.logoURL}
+            applyAction={applyToJob}
         />
     )
 }

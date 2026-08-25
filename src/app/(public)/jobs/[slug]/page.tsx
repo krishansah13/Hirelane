@@ -1,5 +1,6 @@
 import ApplyForm from "@/components/ApplyForm";
 import CompanyLogo from "@/components/CompanyLogo";
+import { applyToJob } from "@/lib/actions/apply";
 import { getJobBySlug, getPublishedJobSlugs } from "@/lib/job-query";
 import { formatInr } from "@/lib/utils/format";
 import type { Metadata } from "next";
@@ -108,7 +109,7 @@ export default async function JobDetail({
 
                             {/* Apply button - desktop */}
                             <div className="hidden w-full max-w-sm sm:block">
-                                <ApplyForm jobId={jobId} slug={slug} compact />
+                                <ApplyForm jobId={jobId} slug={slug} compact applyAction={applyToJob} />
                             </div>
                         </div>
                     </div>
@@ -203,7 +204,7 @@ export default async function JobDetail({
 
                 {/* Mobile CTA */}
                 <div className="sticky bottom-0 bg-white/95 p-4 backdrop-blur sm:hidden">
-                    <ApplyForm jobId={jobId} slug={slug} compact />
+                    <ApplyForm jobId={jobId} slug={slug} compact applyAction={applyToJob} />
                 </div>
             </div>
         </main>

@@ -1,50 +1,33 @@
 "use client";
 
-import { useActionState, useEffect, useState, startTransition } from "react";
-import { useFormStatus } from "react-dom";
+import { useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { applyToJob, type ApplyState } from "@/lib/actions/apply";
+import type { ApplyToJob } from "@/lib/actions/apply";
+import { useToast } from "@/components/ui/Toast";
 
 type ApplyFormProps = {
   jobId: string;
   slug: string;
   compact?: boolean;
+  onSuccess?: () => void;
+  applyAction: ApplyToJob;
 };
-
-const initialState: ApplyState = { ok: false };
-
-function SubmitButton({ label }: { label: string }) {
-  const { pending } = useFormStatus();
-
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="rounded-xl bg-[#2e46ba] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-gray-900/10 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
-    >
-      {pending ? "Submitting..." : label}
-    </button>
-  );
-}
 
 export default function ApplyForm({
   jobId,
   slug,
   compact = false,
+  onSuccess,
+  applyAction,
 }: ApplyFormProps) {
   const { data: session, status } = useSession();
-  const [state, formAction] = useActionState(applyToJob, initialState);
+  const toast = useToast();
 
   const [coverNote, setCoverNote] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [clientError, setClientError] = useState("");
-  const [uploading, setUploading] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [succeeded, setSucceeded] = useState(false);
-
-  useEffect(() => {
-    if (state.ok) setSucceeded(true);
-  }, [state.ok]);
 
   const callbackUrl = `/jobs/${slug}`;
   const loginHref = `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`;
@@ -89,14 +72,13 @@ export default function ApplyForm({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setClientError("");
 
     if (!file) {
-      setClientError("Please choose a PDF resume");
+      toast.error("Please choose a PDF resume");
       return;
     }
 
-    setUploading(true);
+    setBusy(true);
 
     try {
       const uploadData = new FormData();
@@ -118,28 +100,30 @@ export default function ApplyForm({
       }
 
       if (!uploadRes.ok || !uploadJson.url) {
-        setClientError(uploadJson.error ?? "Resume upload failed");
+        toast.error(uploadJson.error ?? "Resume upload failed");
         return;
       }
 
-      const actionData = new FormData();
-      actionData.set("jobId", jobId);
-      actionData.set("resumeURL", uploadJson.url);
-      if (coverNote.trim()) {
-        actionData.set("coverNote", coverNote.trim());
+      const result = await applyAction({
+        jobId,
+        resumeURL: uploadJson.url,
+        coverNote: coverNote.trim() || undefined,
+      });
+
+      if (!result.ok) {
+        toast.error(result.error ?? "Could not submit application");
+        return;
       }
 
-      startTransition(() => {
-        formAction(actionData);
-      });
+      toast.success("Application submitted. Track it from your dashboard.");
+      setSucceeded(true);
+      onSuccess?.();
     } catch {
-      setClientError("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     } finally {
-      setUploading(false);
+      setBusy(false);
     }
   }
-
-  const error = clientError || state.error;
 
   return (
     <form
@@ -167,7 +151,6 @@ export default function ApplyForm({
           accept="application/pdf,.pdf"
           onChange={(event) => {
             setFile(event.target.files?.[0] ?? null);
-            setClientError("");
           }}
           className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[#e9e9ff] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[#4338a8]"
         />
@@ -191,16 +174,13 @@ export default function ApplyForm({
         />
       </div>
 
-      {error && (
-        <p
-          role="alert"
-          className="rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"
-        >
-          {error}
-        </p>
-      )}
-
-      <SubmitButton label={uploading ? "Uploading..." : "Apply for this job"} />
+      <button
+        type="submit"
+        disabled={busy}
+        className="rounded-xl bg-[#2e46ba] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-gray-900/10 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+      >
+        {busy ? "Submitting..." : "Apply for this job"}
+      </button>
     </form>
   );
 }

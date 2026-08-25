@@ -2,9 +2,10 @@
 import { formatInr, formatJobType } from "@/lib/utils/format";
 import { ArrowUpRight, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import ApplyForm from "../ApplyForm";
 import CompanyLogo from "../CompanyLogo";
+import type { ApplyToJob } from "@/lib/actions/apply";
 
 type JobModalProps = {
     jobId: string;
@@ -19,15 +20,21 @@ type JobModalProps = {
     companyName?: string;
     companySlug?: string;
     companyLogo?: string;
+    applyAction: ApplyToJob;
 };
 export default function JobModal({
-    jobId, slug, title, description, location, type, isRemote, salaryMin, salaryMax, companyName, companySlug, companyLogo
+    jobId, slug, title, description, location, type, isRemote, salaryMin, salaryMax, companyName, companySlug, companyLogo, applyAction
 }: JobModalProps) {
     const router = useRouter();
 
-    function close() {
-        router.back();
-    }
+    const close = useCallback(() => {
+        if (window.history.length > 1) {
+            window.history.back();
+            return;
+        }
+        router.push("/jobs");
+    }, [router]);
+
     useEffect(() => {
         function onKeyDown(event: KeyboardEvent) {
             if (event.key === "Escape") close();
@@ -38,7 +45,7 @@ export default function JobModal({
             document.body.style.overflow = "";
             window.removeEventListener("keydown", onKeyDown);
         };
-    }, [])
+    }, [close])
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={close} role="presentation">
             <div role="dialog" aria-modal="true" aria-labelledby="job-modal-title" className="relative max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl sm:p-8" onClick={(event) => event.stopPropagation()}>
@@ -102,7 +109,7 @@ export default function JobModal({
                     </p>
                 </div>
                 <div className="mt-8 border-t border-gray-100 pt-6">
-                    <ApplyForm jobId={jobId} slug={slug} compact />
+                    <ApplyForm jobId={jobId} slug={slug} compact onSuccess={close} applyAction={applyAction} />
 
                     <a
                         href={`/jobs/${slug}`}

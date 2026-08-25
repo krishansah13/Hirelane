@@ -12,10 +12,19 @@ export type ApplyState = {
   error?: string;
 };
 
-export async function applyToJob(
-  _prev: ApplyState,
-  formData: FormData,
-): Promise<ApplyState> {
+export type ApplyToJob = (
+  input: {
+    jobId: string;
+    resumeURL: string;
+    coverNote?: string;
+  },
+) => Promise<ApplyState>;
+
+export async function applyToJob(input: {
+  jobId: string;
+  resumeURL: string;
+  coverNote?: string;
+}): Promise<ApplyState> {
   const session = await auth();
   if (!session?.user) {
     return {
@@ -31,9 +40,9 @@ export async function applyToJob(
   }
 
   const parsed = applySchema.safeParse({
-    jobId: formData.get("jobId"),
-    resumeURL: formData.get("resumeURL"),
-    coverNote: formData.get("coverNote") || undefined,
+    jobId: input.jobId,
+    resumeURL: input.resumeURL,
+    coverNote: input.coverNote || undefined,
   });
 
   if (!parsed.success) {
