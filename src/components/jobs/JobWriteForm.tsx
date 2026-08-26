@@ -2,6 +2,7 @@
 
 import { createJob, JobActionState, updateJob } from "@/lib/actions/jobs";
 import { JOB_FIELD_STEP, jobStepSchemas } from "@/lib/validation";
+import { parseSkillList } from "@/lib/utils/skills";
 import { useRouter } from "next/navigation";
 import { useActionState, useCallback, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -12,6 +13,8 @@ type JobWriteFormProps = {
     initial?: {
         title: string;
         description: string;
+        skills?: string;
+        requirements?: string;
         location: string;
         type: string;
         isRemote: boolean;
@@ -95,6 +98,8 @@ export default function JobWriteForm({
 
     const [title, setTitle] = useState(initial?.title || "");
     const [description, setDescription] = useState(initial?.description || "");
+    const [skills, setSkills] = useState(initial?.skills || "");
+    const [requirements, setRequirements] = useState(initial?.requirements || "");
     const [location, setLocation] = useState(initial?.location ?? "");
     const [type, setType] = useState(initial?.type ?? "full-time");
     const [isRemote, setIsRemote] = useState(initial?.isRemote ? "true" : "false");
@@ -145,6 +150,8 @@ useEffect(() => {
     const values: Record<string, string> = {
         title,
         description,
+        skills,
+        requirements,
         location,
         type,
         isRemote,
@@ -153,6 +160,7 @@ useEffect(() => {
         joiningDate,
         expiresAt,
     };
+    const skillPreview = parseSkillList(skills);
 
     const validateStep = useCallback(
         (index: number) => {
@@ -170,7 +178,7 @@ useEffect(() => {
             return stepErrors;
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [title, description, location, type, isRemote, salaryMin, salaryMax, joiningDate, expiresAt],
+        [title, description, skills, requirements, location, type, isRemote, salaryMin, salaryMax, joiningDate, expiresAt],
     );
 
     function goToStep(next: number) {
@@ -267,7 +275,10 @@ useEffect(() => {
                             <input
                                 name="title"
                                 value={title}
-                                onChange={(e) => setTitle(e.target.value)}
+                                onChange={(e) => {
+                                    setTitle(e.target.value);
+                                    clearFieldError("title");
+                                }}
                                 required
                                 aria-invalid={Boolean(errors.title)}
                                 className={inputClass(Boolean(errors.title))}
@@ -279,7 +290,10 @@ useEffect(() => {
                             <textarea
                                 name="description"
                                 value={description}
-                                onChange={(e) => setDescription(e.target.value)}
+                                onChange={(e) => {
+                                    setDescription(e.target.value);
+                                    clearFieldError("description");
+                                }}
                                 rows={8}
                                 required
                                 minLength={20}
@@ -291,12 +305,66 @@ useEffect(() => {
                             </span>
                             <FieldError message={errors.description} />
                         </label>
+                        <label className="block text-sm font-medium text-gray-700">
+                            Skills
+                            <input
+                                name="skills"
+                                value={skills}
+                                onChange={(e) => {
+                                    setSkills(e.target.value);
+                                    clearFieldError("skills");
+                                }}
+                                required
+                                placeholder="React, TypeScript, Communication"
+                                aria-invalid={Boolean(errors.skills)}
+                                className={inputClass(Boolean(errors.skills))}
+                            />
+                            <span className="mt-1 block text-xs font-normal text-gray-400">
+                                Separate with commas. At least 1 skill, up to 15.
+                            </span>
+                            {skillPreview.length > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                    {skillPreview.map((skill) => (
+                                        <span
+                                            key={skill}
+                                            className="rounded-full bg-[#eef0ff] px-2.5 py-1 text-xs font-medium text-[#2e46ba]"
+                                        >
+                                            {skill}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                            <FieldError message={errors.skills} />
+                        </label>
+                        <label className="block text-sm font-medium text-gray-700">
+                            Requirements
+                            <textarea
+                                name="requirements"
+                                value={requirements}
+                                onChange={(e) => {
+                                    setRequirements(e.target.value);
+                                    clearFieldError("requirements");
+                                }}
+                                rows={6}
+                                required
+                                minLength={20}
+                                placeholder="Must-haves such as years of experience, education, and certifications."
+                                aria-invalid={Boolean(errors.requirements)}
+                                className={inputClass(Boolean(errors.requirements))}
+                            />
+                            <span className="mt-1 block text-xs font-normal text-gray-400">
+                                {requirements.trim().length} / 20 characters minimum
+                            </span>
+                            <FieldError message={errors.requirements} />
+                        </label>
                     </div>
                 )}
                 {step === 1 && (
                     <div className="space-y-4">
                         <input type="hidden" name="title" value={title} />
                         <input type="hidden" name="description" value={description} />
+                        <input type="hidden" name="skills" value={skills} />
+                        <input type="hidden" name="requirements" value={requirements} />
                         <label className="block text-sm font-medium text-gray-700">
                             Location
                             <input
@@ -345,6 +413,8 @@ useEffect(() => {
                     <div className="space-y-4">
                         <input type="hidden" name="title" value={title} />
                         <input type="hidden" name="description" value={description} />
+                        <input type="hidden" name="skills" value={skills} />
+                        <input type="hidden" name="requirements" value={requirements} />
                         <input type="hidden" name="location" value={location} />
                         <input type="hidden" name="type" value={type} />
                         <input type="hidden" name="isRemote" value={isRemote} />
@@ -416,6 +486,8 @@ useEffect(() => {
                     <div className="space-y-3 text-sm text-gray-700">
                         <input type="hidden" name="title" value={title} />
                         <input type="hidden" name="description" value={description} />
+                        <input type="hidden" name="skills" value={skills} />
+                        <input type="hidden" name="requirements" value={requirements} />
                         <input type="hidden" name="location" value={location} />
                         <input type="hidden" name="type" value={type} />
                         <input type="hidden" name="isRemote" value={isRemote} />
@@ -430,6 +502,28 @@ useEffect(() => {
                             <span className="ml-2 text-xs text-gray-400">
                                 ({description.trim().length} / 20 min)
                             </span>
+                        </p>
+
+                        <div>
+                            <p><strong>Skills:</strong></p>
+                            {skillPreview.length > 0 ? (
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                    {skillPreview.map((skill) => (
+                                        <span
+                                            key={skill}
+                                            className="rounded-full bg-[#eef0ff] px-2.5 py-1 text-xs font-medium text-[#2e46ba]"
+                                        >
+                                            {skill}
+                                        </span>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="mt-1">—</p>
+                            )}
+                        </div>
+
+                        <p className="whitespace-pre-line">
+                            <strong>Requirements:</strong> {requirements || "—"}
                         </p>
 
                         <p>

@@ -64,6 +64,8 @@ async function queryJobs(query: JobQuery) {
     filter.$or = [
       { title: { $regex: q, $options: "i" } },
       { description: { $regex: q, $options: "i" } },
+      { skills: { $regex: q, $options: "i" } },
+      { requirements: { $regex: q, $options: "i" } },
       { location: { $regex: q, $options: "i" } },
       { companyId: { $in: companyIds } },
     ];

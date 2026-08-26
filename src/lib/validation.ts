@@ -1,4 +1,10 @@
 import { z } from "zod";
+import {
+  MAX_SKILL_LENGTH,
+  MAX_SKILLS,
+  MIN_SKILL_LENGTH,
+  parseSkillList,
+} from "./utils/skills";
 
 export const jobQuerySchema = z.object({
   q: z.string().optional(),
@@ -47,6 +53,54 @@ const jobWriteFields = z.object({
     .trim()
     .min(20, "Description must be at least 20 characters")
     .max(8000, "Description must be 8000 characters or fewer"),
+
+  skills: z
+    .string()
+    .trim()
+    .min(1, "Add at least one skill")
+    .superRefine((value, ctx) => {
+      const skills = parseSkillList(value);
+
+      if (skills.length === 0) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Add at least one skill",
+        });
+        return;
+      }
+
+      if (skills.length > MAX_SKILLS) {
+        ctx.addIssue({
+          code: "custom",
+          message: `Add at most ${MAX_SKILLS} skills`,
+        });
+        return;
+      }
+
+      for (const skill of skills) {
+        if (skill.length < MIN_SKILL_LENGTH) {
+          ctx.addIssue({
+            code: "custom",
+            message: `Each skill must be at least ${MIN_SKILL_LENGTH} characters`,
+          });
+          return;
+        }
+
+        if (skill.length > MAX_SKILL_LENGTH) {
+          ctx.addIssue({
+            code: "custom",
+            message: `Each skill must be ${MAX_SKILL_LENGTH} characters or fewer`,
+          });
+          return;
+        }
+      }
+    }),
+
+  requirements: z
+    .string()
+    .trim()
+    .min(20, "Requirements must be at least 20 characters")
+    .max(4000, "Requirements must be 4000 characters or fewer"),
 
   location: z
     .string()
@@ -113,6 +167,8 @@ export const jobStepSchemas = [
   jobWriteFields.pick({
     title: true,
     description: true,
+    skills: true,
+    requirements: true,
   }),
 
   jobWriteFields.pick({
@@ -137,6 +193,8 @@ export const jobStepSchemas = [
 export const JOB_FIELD_STEP: Record<string, number> = {
   title: 0,
   description: 0,
+  skills: 0,
+  requirements: 0,
 
   location: 1,
   type: 1,
