@@ -27,7 +27,10 @@ const employerLinks = [
   { href: "/employer/jobs/new", label: "Post a job", icon: PlusCircle },
 ];
 
-export default function DashboardSidebar({ role, name }: DashboardSidebarProps) {
+export default function DashboardSidebar({
+  role,
+  name,
+}: DashboardSidebarProps) {
   const pathname = usePathname();
   const links = role === "employer" ? employerLinks : seekerLinks;
 
@@ -66,7 +69,9 @@ export default function DashboardSidebar({ role, name }: DashboardSidebarProps) 
         <p className="text-xs font-medium tracking-wide text-gray-400">
           {role === "employer" ? "EMPLOYER" : "SEEKER"}
         </p>
-        <p className="mt-1 truncate text-sm font-semibold text-gray-950">{name}</p>
+        <p className="mt-1 truncate text-sm font-semibold text-gray-950">
+          {name}
+        </p>
       </div>
 
       <nav className="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:overflow-visible lg:pb-6">
