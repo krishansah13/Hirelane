@@ -127,6 +127,15 @@ export default function JobCard({ job }: { job: Job }) {
                                 Remote
                             </span>
                         )}
+
+                        {job.skills?.slice(0, 3).map((skill) => (
+                            <span
+                                key={skill}
+                                className="rounded-md bg-[#eef0ff] px-2 py-1 text-[10px] font-medium text-[#4f46b5]"
+                            >
+                                {skill}
+                            </span>
+                        ))}
                     </div>
                 </div>
 
