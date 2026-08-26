@@ -79,12 +79,28 @@ export default async function JobApplicantsPage({
                                             key={String(application._id)}
                                             className="rounded-xl border border-gray-100 p-3"
                                         >
-                                            <p className="text-sm font-semibold text-gray-950">
-                                                {seeker?.name ?? "Applicant"}
-                                            </p>
-                                            <p className="truncate text-xs text-gray-500">
-                                                {seeker?.email ?? "—"}
-                                            </p>
+                                            <div className="flex items-start gap-2">
+                                                {seeker?.image ? (
+                                                    <img
+                                                        src={seeker.image}
+                                                        alt=""
+                                                        className="mt-0.5 h-8 w-8 shrink-0 rounded-full object-cover"
+                                                    />
+                                                ) : null}
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-semibold text-gray-950">
+                                                        {seeker?.name ?? "Applicant"}
+                                                    </p>
+                                                    <p className="truncate text-xs text-gray-500">
+                                                        {seeker?.email ?? "—"}
+                                                    </p>
+                                                    {seeker?.mobile ? (
+                                                        <p className="truncate text-xs text-gray-500">
+                                                            {seeker.mobile}
+                                                        </p>
+                                                    ) : null}
+                                                </div>
+                                            </div>
                                             <p className="mt-1 text-xs text-gray-400">
                                                 Applied {formatDate(application.appliedAt)}
                                             </p>

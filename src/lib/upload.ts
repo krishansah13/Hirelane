@@ -47,3 +47,42 @@ export async function uploadResumePdf(
 
   return result.secure_url;
 }
+
+export async function uploadProfileImage(
+  buffer: Buffer,
+  filename: string,
+): Promise<string> {
+  const ext = filename.split(".").pop()?.toLowerCase() ?? "jpg";
+  const format = ["jpg", "jpeg", "png", "webp"].includes(ext)
+    ? ext === "jpeg"
+      ? "jpg"
+      : ext
+    : "jpg";
+
+  const result = await new Promise<{ secure_url: string }>(
+    (resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: "hirelane/avatars",
+          resource_type: "image",
+          format,
+          public_id: `avatar-${Date.now()}`,
+          transformation: [
+            { width: 400, height: 400, crop: "fill", gravity: "auto" },
+          ],
+        },
+        (error, uploaded) => {
+          if (error || !uploaded?.secure_url) {
+            reject(error ?? new Error("Cloudinary upload failed"));
+            return;
+          }
+          resolve({ secure_url: uploaded.secure_url });
+        },
+      );
+
+      stream.end(buffer);
+    },
+  );
+
+  return result.secure_url;
+}

@@ -17,7 +17,11 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-[#f7f5ff] lg:flex-row">
-      <DashboardSidebar role={session.user.role} name={session.user.name ?? "Account"} />
+      <DashboardSidebar
+        role={session.user.role}
+        name={session.user.name ?? "Account"}
+        image={session.user.image}
+      />
       <main className="min-w-0 flex-1 px-4 py-6 sm:px-8">{children}</main>
     </div>
   );

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Briefcase,
+  CircleUserRound,
   FileText,
   LayoutDashboard,
   PlusCircle,
@@ -16,18 +17,21 @@ import { getApplicationNavTitle } from "@/lib/actions/application-nav";
 type DashboardSidebarProps = {
   role: "seeker" | "employer";
   name: string;
+  image?: string | null;
 };
 
 const seekerLinks = [
   { href: "/dashboard", label: "Applications", icon: LayoutDashboard },
+  { href: "/account", label: "Account", icon: CircleUserRound },
 ];
 
 const employerLinks = [
   { href: "/employer", label: "Posted roles", icon: Briefcase },
   { href: "/employer/jobs/new", label: "Post a job", icon: PlusCircle },
+  { href: "/account", label: "Account", icon: CircleUserRound },
 ];
 
-export default function DashboardSidebar({ role, name }: DashboardSidebarProps) {
+export default function DashboardSidebar({ role, name, image }: DashboardSidebarProps) {
   const pathname = usePathname();
   const links = role === "employer" ? employerLinks : seekerLinks;
 
@@ -62,11 +66,20 @@ export default function DashboardSidebar({ role, name }: DashboardSidebarProps) 
 
   return (
     <aside className="flex w-full flex-col border-b border-gray-200 bg-white lg:w-60 lg:border-b-0 lg:border-r">
-      <div className="px-5 py-5">
-        <p className="text-xs font-medium tracking-wide text-gray-400">
-          {role === "employer" ? "EMPLOYER" : "SEEKER"}
-        </p>
-        <p className="mt-1 truncate text-sm font-semibold text-gray-950">{name}</p>
+      <div className="flex items-center gap-3 px-5 py-5">
+        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#eef0ff] text-xs font-semibold text-[#2e46ba]">
+          {image ? (
+            <img src={image} alt="" className="h-full w-full object-cover" />
+          ) : (
+            name.trim().charAt(0).toUpperCase() || "U"
+          )}
+        </span>
+        <div className="min-w-0">
+          <p className="text-xs font-medium tracking-wide text-gray-400">
+            {role === "employer" ? "EMPLOYER" : "SEEKER"}
+          </p>
+          <p className="mt-1 truncate text-sm font-semibold text-gray-950">{name}</p>
+        </div>
       </div>
 
       <nav className="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:overflow-visible lg:pb-6">

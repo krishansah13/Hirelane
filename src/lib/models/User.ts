@@ -25,7 +25,23 @@ const userSchema = new Schema({
     default: null,
     ref: "Company",
   },
+  image: {
+    type: String,
+    default: "",
+  },
+  mobile: {
+    type: String,
+    default: "",
+  },
 });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
+
+if (!User.schema.path("image")) {
+  User.schema.add({ image: { type: String, default: "" } });
+}
+if (!User.schema.path("mobile")) {
+  User.schema.add({ mobile: { type: String, default: "" } });
+}
+
 export default User;

@@ -271,6 +271,33 @@ export const signupSchema = z
     }
   });
 
+export function normalizeMobile(value: string) {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2);
+  if (digits.length === 11 && digits.startsWith("0")) return digits.slice(1);
+  return digits;
+}
+
+export const accountSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(80, "Name must be 80 characters or fewer"),
+
+  mobile: z
+    .string()
+    .trim()
+    .transform(normalizeMobile)
+    .refine((value) => value === "" || /^[6-9]\d{9}$/.test(value), {
+      message: "Enter a valid 10-digit mobile number",
+    }),
+
+  image: z
+    .union([z.string().url("Invalid profile photo"), z.literal("")])
+    .optional(),
+});
+
 export type JobQueryInput = z.infer<typeof jobQuerySchema>;
 
 export type ApplicationStage = z.infer<typeof stageSchema>;
