@@ -19,19 +19,30 @@ const BROWSE_LINKS: NavLink[] = [
  * the account cluster on the right already owns.
  */
 function getNavLinks(role?: "seeker" | "employer"): NavLink[] {
+    const dashboardHref =
+      role === "employer" ? "/employer" : "/dashboard";
+  
     if (role === "seeker") {
-        return BROWSE_LINKS;
+      return [
+          { href: dashboardHref, label: "Dashboard" },
+          ...BROWSE_LINKS,
+      ];
     }
-
+  
     if (role === "employer") {
-        return [
-            ...BROWSE_LINKS,
-            { href: "/employer/jobs/new", label: "Post a Job" },
-        ];
+      return [
+          { href: dashboardHref, label: "Dashboard" },
+          { href: "/employer/jobs/new", label: "Post a Job" },
+          ...BROWSE_LINKS,
+      ];
     }
-
-    return [...BROWSE_LINKS, { href: "/login", label: "Post a Job" }];
-}
+  
+    return [
+        { href: "/login", label: "Dashboard" },
+        { href: "/login", label: "Post a Job" },
+        ...BROWSE_LINKS,
+    ];
+  }
 
 export default function Navbar() {
     const { data: session, status } = useSession();
@@ -94,12 +105,6 @@ export default function Navbar() {
                             <span className="hidden max-w-[140px] truncate text-sm font-medium text-gray-700 lg:block">
                                 {session.user.name}
                             </span>
-                            <Link
-                                href={dashboardHref}
-                                className="hidden rounded-md border border-[#2E46BA] px-5 py-2 text-sm font-medium text-[#2E46BA] transition hover:bg-[#2E46BA]/5 sm:inline-flex"
-                            >
-                                Dashboard
-                            </Link>
                             <button
                                 type="button"
                                 onClick={() => signOut({ callbackUrl: "/" })}
