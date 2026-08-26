@@ -17,6 +17,7 @@ type JobWriteFormProps = {
         isRemote: boolean;
         salaryMin: number;
         salaryMax: number;
+        joiningDate?: string | null;
         expiresAt: string;
         status?: string;
     }
@@ -31,6 +32,11 @@ const initialState: JobActionState = {
 
 type FieldErrors = Record<string, string>;
 
+type ServerFieldError = {
+    field: string;
+    step: number;
+    message: string;
+};
 function SubmitButton({
     label,
     name,
@@ -94,12 +100,47 @@ export default function JobWriteForm({
     const [isRemote, setIsRemote] = useState(initial?.isRemote ? "true" : "false");
     const [salaryMin, setSalaryMin] = useState(String(initial?.salaryMin ?? ""));
     const [salaryMax, setSalaryMax] = useState(String(initial?.salaryMax ?? ""));
-    const [expiresAt, setExpiresAt] = useState(toDateInput(initial?.expiresAt));
+    const [joiningDate, setJoiningDate] = useState(toDateInput(initial?.joiningDate ?? undefined),);
+    const [expiresAt, setExpiresAt] = useState(toDateInput(initial?.expiresAt),);
     const [clientErrors, setClientErrors] = useState<FieldErrors>({});
+    const [serverError, setServerError] = useState<ServerFieldError | null>(null);
+    const [generalError, setGeneralError] = useState<string | null>(null);
+
+    function clearFieldError(field: string) {
+        setClientErrors((current) => {
+            const next = { ...current };
+            delete next[field];
+            return next;
+        });
+    
+        if (serverError?.field === field) {
+            setServerError(null);
+        }
+    
+        setGeneralError(null);
+    }
 
     useEffect(() => {
-        if (state.ok) router.push("/employer");
-    }, [state.ok, router]);
+    if (state.ok) {
+        router.push("/employer");
+    }
+}, [state.ok, router]);
+
+useEffect(() => {
+    if (!state.error) return;
+
+    const parsedError = parseServerFieldError(state.error);
+
+    if (parsedError) {
+        setServerError(parsedError);
+        setGeneralError(null);
+        setStep(parsedError.step);
+        return;
+    }
+
+    setServerError(null);
+    setGeneralError(state.error);
+}, [state]);
 
     const values: Record<string, string> = {
         title,
@@ -109,6 +150,7 @@ export default function JobWriteForm({
         isRemote,
         salaryMin,
         salaryMax,
+        joiningDate,
         expiresAt,
     };
 
@@ -128,14 +170,14 @@ export default function JobWriteForm({
             return stepErrors;
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [title, description, location, type, isRemote, salaryMin, salaryMax, expiresAt],
+        [title, description, location, type, isRemote, salaryMin, salaryMax, joiningDate, expiresAt],
     );
 
     function goToStep(next: number) {
         setClientErrors({});
+        setGeneralError(null);
         setStep(next);
     }
-
     function handleContinue() {
         const stepErrors = validateStep(step);
         if (Object.keys(stepErrors).length > 0) {
@@ -161,10 +203,14 @@ export default function JobWriteForm({
     }
 
     // Server errors arrive as "description: Description must be ...".
-    const serverError = parseServerFieldError(state.error);
-    const errors: FieldErrors = serverError
-        ? { ...clientErrors, [serverError.field]: serverError.message }
-        : clientErrors;
+    const errors: FieldErrors = {
+        ...clientErrors,
+        ...(serverError
+            ? {
+                [serverError.field]: serverError.message,
+            }
+            : {}),
+    };
 
     const stepHasErrors = Object.keys(errors).some(
         (field) => JOB_FIELD_STEP[field] === step,
@@ -190,25 +236,24 @@ export default function JobWriteForm({
                     );
                 })}
             </ol>
-            {(serverError || state.error || stepHasErrors) && (
-                <div className="flex flex-wrap items-center gap-3 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                    <span>
-                        {serverError
-                            ? `Step ${serverError.step + 1}. ${STEPS[serverError.step]} — ${serverError.message}`
-                            : state.error ||
-                            `Fix the highlighted field${Object.keys(errors).length > 1 ? "s" : ""} in step ${step + 1}. ${STEPS[step]}`}
-                    </span>
-                    {serverError && serverError.step !== step && (
-                        <button
-                            type="button"
-                            onClick={() => setStep(serverError.step)}
-                            className="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-rose-700"
-                        >
-                            Go to step {serverError.step + 1}
-                        </button>
-                    )}
-                </div>
-            )}
+            {serverError && serverError.step === step && (
+    <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        {serverError.message}
+    </div>
+)}
+
+{!serverError && generalError && (
+    <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        {generalError}
+    </div>
+)}
+
+{!serverError && !generalError && stepHasErrors && (
+    <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        Fix the highlighted field
+        {Object.keys(clientErrors).length > 1 ? "s" : ""}.
+    </div>
+)}
             <form
                 action={formAction}
                 onSubmit={handleReviewSubmit}
@@ -303,8 +348,10 @@ export default function JobWriteForm({
                         <input type="hidden" name="location" value={location} />
                         <input type="hidden" name="type" value={type} />
                         <input type="hidden" name="isRemote" value={isRemote} />
+
                         <label className="block text-sm font-medium text-gray-700">
                             Min salary (INR)
+
                             <input
                                 name="salaryMin"
                                 type="number"
@@ -314,10 +361,13 @@ export default function JobWriteForm({
                                 aria-invalid={Boolean(errors.salaryMin)}
                                 className={inputClass(Boolean(errors.salaryMin))}
                             />
+
                             <FieldError message={errors.salaryMin} />
                         </label>
+
                         <label className="block text-sm font-medium text-gray-700">
                             Max salary (INR)
+
                             <input
                                 name="salaryMax"
                                 type="number"
@@ -327,10 +377,27 @@ export default function JobWriteForm({
                                 aria-invalid={Boolean(errors.salaryMax)}
                                 className={inputClass(Boolean(errors.salaryMax))}
                             />
+
                             <FieldError message={errors.salaryMax} />
                         </label>
+
+                        <label className="block text-sm font-medium text-gray-700">
+                            Joining date (optional)
+
+                            <input
+                                name="joiningDate"
+                                type="date"
+                                value={joiningDate}
+                                onChange={(e) => setJoiningDate(e.target.value)}
+                                className={inputClass(Boolean(errors.joiningDate))}
+                            />
+
+                            <FieldError message={errors.joiningDate} />
+                        </label>
+
                         <label className="block text-sm font-medium text-gray-700">
                             Expires on
+
                             <input
                                 name="expiresAt"
                                 type="date"
@@ -340,6 +407,7 @@ export default function JobWriteForm({
                                 aria-invalid={Boolean(errors.expiresAt)}
                                 className={inputClass(Boolean(errors.expiresAt))}
                             />
+
                             <FieldError message={errors.expiresAt} />
                         </label>
                     </div>
@@ -353,17 +421,31 @@ export default function JobWriteForm({
                         <input type="hidden" name="isRemote" value={isRemote} />
                         <input type="hidden" name="salaryMin" value={salaryMin} />
                         <input type="hidden" name="salaryMax" value={salaryMax} />
+                        <input type="hidden" name="joiningDate" value={joiningDate} />
                         <input type="hidden" name="expiresAt" value={expiresAt} />
                         <p><strong>Title:</strong> {title}</p>
+
                         <p className="whitespace-pre-line">
                             <strong>Description:</strong> {description || "—"}
                             <span className="ml-2 text-xs text-gray-400">
                                 ({description.trim().length} / 20 min)
                             </span>
                         </p>
-                        <p><strong>Location:</strong> {location} · {isRemote === "true" ? "Remote" : "On-site"}</p>
+
+                        <p>
+                            <strong>Location:</strong> {location} ·{" "}
+                            {isRemote === "true" ? "Remote" : "On-site"}
+                        </p>
+
                         <p><strong>Type:</strong> {type}</p>
+
                         <p><strong>Salary:</strong> {salaryMin} – {salaryMax}</p>
+
+                        <p>
+                            <strong>Joining date:</strong>{" "}
+                            {joiningDate || "Not specified"}
+                        </p>
+
                         <p><strong>Expires:</strong> {expiresAt}</p>
                     </div>
                 )}
