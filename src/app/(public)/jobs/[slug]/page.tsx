@@ -200,7 +200,7 @@ export default async function JobDetail({
                 </div>
                 <div className="rounded-xl bg-gray-50 p-4">
                   <dt className="text-lg font-bold uppercase tracking-wide text-gray-700">
-                    Joining Date
+                    Joining date
                   </dt>
                   <dd className="mt-1 text-sm font-semibold text-gray-900">
                     {job.joiningDate ? formatDate(job.joiningDate) : "Not Specified"}
