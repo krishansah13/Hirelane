@@ -423,7 +423,7 @@ Responsibilities:
 - Participate in code reviews
 - Help improve engineering practices
 
-Requirements:
+Skills Required:
 - Strong problem-solving skills
 - Good communication skills
 - Experience working with modern development tools
@@ -483,7 +483,12 @@ Requirements:
         ];
       }
 
-      const path: ApplicationStage[] = ["applied", "screening", "interview", "offer"];
+      const path: ApplicationStage[] = [
+        "applied",
+        "screening",
+        "interview",
+        "offer",
+      ];
       const end = path.indexOf(stage);
       const steps = path.slice(0, end + 1);
       const span = Math.max(stageChangedAt.getTime() - appliedAt.getTime(), 1);
