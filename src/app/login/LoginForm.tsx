@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { getHomePath } from "@/lib/roles";
 
 const demoAccounts = [
   {
@@ -17,6 +18,11 @@ const demoAccounts = [
     label: "Employer",
     email: "rahul@technova.com",
     password: "Employer@123",
+  },
+  {
+    label: "Admin",
+    email: "admin@example.com",
+    password: "Admin@123",
   },
 ] as const;
 
@@ -67,7 +73,7 @@ export default function LoginForm() {
       const session = await getSession();
       const destination =
         getSafeCallbackUrl(searchParams.get("callbackUrl")) ??
-        (session?.user.role === "employer" ? "/employer" : "/dashboard");
+        getHomePath(session?.user.role);
 
       router.push(destination);
       router.refresh();
@@ -192,7 +198,7 @@ export default function LoginForm() {
             <p className="mb-3 text-center text-xs font-medium text-gray-400">
               Try a demo account
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {demoAccounts.map((account) => (
                 <button
                   key={account.email}

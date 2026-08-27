@@ -5,7 +5,10 @@ import Link from "next/link";
 export default async function LandingEmployerCta() {
     const session = await auth();
 
-    if (session?.user?.role !== "seeker") {
+    if (session?.user?.role === "seeker" || session?.user?.role === "admin") {
+        return;
+    }
+
     return (
         <section className=" pb-16">
             <div className="mx-auto max-w-6xl px-6 sm:px-8">
@@ -47,6 +50,4 @@ export default async function LandingEmployerCta() {
             </div>
         </section>
     );
-    }
-    return;
 }

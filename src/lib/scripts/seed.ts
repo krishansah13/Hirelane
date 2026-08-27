@@ -326,6 +326,26 @@ async function seed(): Promise<void> {
     console.log(`Created ${seekers.length} seekers.`);
 
     /* ------------------------------ */
+    /* Admin                           */
+    /* ------------------------------ */
+
+    console.log("Creating admin...");
+
+    const adminPassword = await bcrypt.hash("Admin@123", 10);
+
+    const [admin] = await User.insertMany([
+      {
+        name: "Hirelane Admin",
+        email: "admin@example.com",
+        passwordHash: adminPassword,
+        role: "admin" as const,
+        companyId: null,
+      },
+    ]);
+
+    console.log(`Created admin: ${admin.email}`);
+
+    /* ------------------------------ */
     /* Jobs                            */
     /* ------------------------------ */
 
@@ -554,6 +574,7 @@ Skills Required:
     console.log(`Companies: ${companies.length}`);
     console.log(`Employers: ${employers.length}`);
     console.log(`Seekers: ${seekers.length}`);
+    console.log("Admins: 1");
     console.log(`Jobs: ${jobs.length}`);
     console.log(`Applications: ${applications.length}`);
 
@@ -566,6 +587,10 @@ Skills Required:
     console.log("\nSeeker:");
     console.log("Email: seeker1@example.com");
     console.log("Password: Seeker@123");
+
+    console.log("\nAdmin:");
+    console.log("Email: admin@example.com");
+    console.log("Password: Admin@123");
 
     console.log("\n==============================");
 

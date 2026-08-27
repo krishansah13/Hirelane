@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { auth } from "@/auth";
+import { getHomePath } from "@/lib/roles";
 import SignupForm from "./SignupForm";
 
 export const metadata: Metadata = {
@@ -22,7 +23,7 @@ export default async function SignupPage() {
     const session = await auth();
 
     if (session?.user) {
-        redirect(session.user.role === "employer" ? "/employer" : "/dashboard");
+        redirect(getHomePath(session.user.role));
     }
 
     return (

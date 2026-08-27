@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
+import { getHomePath, type UserRole } from "@/lib/roles";
 
 type NavLink = { href: string; label: string };
 
@@ -18,9 +19,8 @@ const BROWSE_LINKS: NavLink[] = [
  * Seekers get no third link: their only destination is the dashboard, which
  * the account cluster on the right already owns.
  */
-function getNavLinks(role?: "seeker" | "employer"): NavLink[] {
-    const dashboardHref =
-      role === "employer" ? "/employer" : "/dashboard";
+function getNavLinks(role?: UserRole): NavLink[] {
+    const dashboardHref = getHomePath(role);
   
     if (role === "seeker") {
       return [
@@ -33,6 +33,13 @@ function getNavLinks(role?: "seeker" | "employer"): NavLink[] {
       return [
           { href: dashboardHref, label: "Dashboard" },
           { href: "/employer/jobs/new", label: "Post a Job" },
+          ...BROWSE_LINKS,
+      ];
+    }
+
+    if (role === "admin") {
+      return [
+          { href: dashboardHref, label: "Dashboard" },
           ...BROWSE_LINKS,
       ];
     }
@@ -51,7 +58,7 @@ export default function Navbar() {
 
     const isAuthenticated = status === "authenticated" && !!session?.user;
     const role = isAuthenticated ? session.user.role : undefined;
-    const dashboardHref = role === "employer" ? "/employer" : "/dashboard";
+    const dashboardHref = getHomePath(role);
     const links = getNavLinks(role);
 
     function isActive(href: string) {

@@ -12,9 +12,10 @@ import {
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { getApplicationNavTitle } from "@/lib/actions/application-nav";
+import { getRoleLabel, type UserRole } from "@/lib/roles";
 
 type DashboardSidebarProps = {
-  role: "seeker" | "employer";
+  role: UserRole;
   name: string;
 };
 
@@ -27,12 +28,22 @@ const employerLinks = [
   { href: "/employer/jobs/new", label: "Post a job", icon: PlusCircle },
 ];
 
+const adminLinks = [
+  { href: "/admin", label: "Overview", icon: LayoutDashboard },
+];
+
+function getLinks(role: UserRole) {
+  if (role === "admin") return adminLinks;
+  if (role === "employer") return employerLinks;
+  return seekerLinks;
+}
+
 export default function DashboardSidebar({
   role,
   name,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
-  const links = role === "employer" ? employerLinks : seekerLinks;
+  const links = getLinks(role);
 
   const applicationMatch = pathname.match(
     /^\/dashboard\/applications\/([^/]+)/,
@@ -67,7 +78,7 @@ export default function DashboardSidebar({
     <aside className="flex w-full flex-col border-b border-gray-200 bg-white lg:w-60 lg:border-b-0 lg:border-r">
       <div className="px-5 py-5">
         <p className="text-xs font-medium tracking-wide text-gray-400">
-          {role === "employer" ? "EMPLOYER" : "SEEKER"}
+          {getRoleLabel(role)}
         </p>
         <p className="mt-1 truncate text-sm font-semibold text-gray-950">
           {name}
@@ -77,8 +88,8 @@ export default function DashboardSidebar({
       <nav className="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:overflow-visible lg:pb-6">
         {links.map((link) => {
           const active =
-            link.href === "/dashboard"
-              ? pathname === "/dashboard"
+            link.href === "/dashboard" || link.href === "/admin"
+              ? pathname === link.href
               : pathname === link.href || pathname.startsWith(`${link.href}/`);
           const Icon = link.icon;
 

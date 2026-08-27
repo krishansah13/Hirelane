@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { getHomePath } from "@/lib/roles";
 import LoginForm from "./LoginForm";
 
 function LoginFallback() {
@@ -15,7 +16,7 @@ export default async function LoginPage() {
     const session = await auth();
 
     if (session?.user) {
-        redirect(session.user.role === "employer" ? "/employer" : "/dashboard");
+        redirect(getHomePath(session.user.role));
     }
 
     return (

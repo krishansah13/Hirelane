@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getHomePath } from "@/lib/roles";
 
-export default async function EmployerLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -13,7 +13,7 @@ export default async function EmployerLayout({
     redirect("/login");
   }
 
-  if (session.user.role !== "employer") {
+  if (session.user.role !== "admin") {
     redirect(getHomePath(session.user.role));
   }
 
