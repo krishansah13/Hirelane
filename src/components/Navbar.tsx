@@ -70,7 +70,7 @@ export default function Navbar() {
 
     return (
         <nav className="sticky top-0 z-40 border-b border-[#eeeaf8] bg-white/80 backdrop-blur">
-            <div className="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-8">
+            <div className="mx-auto flex justify-between h-16 items-center gap-4 px-4 sm:px-8">
                 <div className="flex justify-start">
                     <Link href="/" className="flex items-center gap-3">
                         <Image
@@ -102,7 +102,7 @@ export default function Navbar() {
                         <div className="h-10 w-24 animate-pulse rounded-md bg-gray-100" />
                     ) : isAuthenticated ? (
                         <>
-                            <span className="hidden max-w-[140px] truncate text-sm font-medium text-gray-700 lg:block">
+                            <span className="hidden max-w-35 truncate text-sm font-medium text-gray-700 lg:block">
                                 {session.user.name}
                             </span>
                             <button

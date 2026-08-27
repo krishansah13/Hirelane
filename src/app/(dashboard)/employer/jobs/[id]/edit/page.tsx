@@ -43,6 +43,11 @@ export default async function EditJobPage({ params }: { params: Promise<{ id: st
                     isRemote: Boolean(job.isRemote),
                     salaryMin: job.salaryMin ?? 0,
                     salaryMax: job.salaryMax ?? 0,
+                    joiningDate: job.joiningDate
+                        ? job.joiningDate instanceof Date
+                            ? job.joiningDate.toISOString()
+                            : String(job.joiningDate)
+                        : null,
                     expiresAt:
                         job.expiresAt instanceof Date
                             ? job.expiresAt.toISOString()
