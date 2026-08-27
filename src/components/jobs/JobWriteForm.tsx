@@ -2,6 +2,7 @@
 
 import { createJob, JobActionState, updateJob } from "@/lib/actions/jobs";
 import { JOB_FIELD_STEP, jobStepSchemas } from "@/lib/validation";
+import { parseSkillList } from "@/lib/utils/skills";
 import { useRouter } from "next/navigation";
 import React, { useActionState, useCallback, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -30,6 +31,11 @@ const initialState: JobActionState = {
 
 type FieldErrors = Record<string, string>;
 
+type ServerFieldError = {
+    field: string;
+    step: number;
+    message: string;
+};
 function SubmitButton({
   label,
   name,

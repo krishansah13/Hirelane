@@ -38,11 +38,21 @@ export default async function EditJobPage({ params }: { params: Promise<{ id: st
                 initial={{
                     title: job.title ?? "",
                     description: job.description ?? "",
+                    skills: Array.isArray(job.skills)
+                        ? job.skills.join(", ")
+                        : "",
+                    requirements: job.requirements ?? "",
                     location: job.location ?? "",
                     type: job.type ?? "full-time",
                     isRemote: Boolean(job.isRemote),
                     salaryMin: job.salaryMin ?? 0,
                     salaryMax: job.salaryMax ?? 0,
+                    joiningDate:
+                        job.joiningDate instanceof Date
+                            ? job.joiningDate.toISOString()
+                            : job.joiningDate
+                                ? String(job.joiningDate)
+                                : null,
                     expiresAt:
                         job.expiresAt instanceof Date
                             ? job.expiresAt.toISOString()
