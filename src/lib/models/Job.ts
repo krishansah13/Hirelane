@@ -7,57 +7,75 @@ const jobSchema = new mongoose.Schema(
       ref: "Company",
       required: true,
     },
+
     postedById: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+
     title: {
       type: String,
       required: true,
     },
+
     slug: {
       type: String,
       unique: true,
       trim: true,
       required: true,
     },
+
     description: {
       type: String,
       default: "",
     },
+
     location: {
       type: String,
       required: true,
     },
+
     type: {
       type: String,
       enum: ["part-time", "contract", "full-time", "internship"],
       required: true,
     },
+
     isRemote: {
       type: Boolean,
       default: null,
     },
+
     salaryMin: {
       type: Number,
       required: true,
     },
+
     salaryMax: {
       type: Number,
       required: true,
     },
+
     status: {
       type: String,
       enum: ["draft", "published", "expired"],
     },
+
     publishedAt: {
       type: Date,
       default: null,
     },
+
+    // Optional expected joining date
+    joiningDate: {
+      type: Date,
+      default: null,
+    },
+
     expiresAt: {
       type: Date,
-      required: true
+      required: true,
     },
   },
   {
@@ -65,6 +83,7 @@ const jobSchema = new mongoose.Schema(
   },
 );
 
-const Job = mongoose.models.Job || mongoose.model("Job", jobSchema);
+const Job =
+  mongoose.models.Job || mongoose.model("Job", jobSchema);
 
 export default Job;

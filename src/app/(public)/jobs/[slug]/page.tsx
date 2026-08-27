@@ -6,6 +6,15 @@ import { formatInr } from "@/lib/utils/format";
 import ApplyForm from "@/components/ApplyForm";
 import CompanyLogo from "@/components/CompanyLogo";
 
+function formatDate(value?: string | Date | null) {
+  if (!value) return "—";
+  return new Date(value).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 export const revalidate = 3600; // 1 hour
 
 export async function generateStaticParams() {
@@ -187,6 +196,14 @@ export default async function JobDetail({
                   <dd className="mt-1 text-sm font-semibold text-gray-900">
                     {formatInr(job.salaryMax)}
                     <span className="ml-1 text-xs text-gray-500">per year</span>
+                  </dd>
+                </div>
+                <div className="rounded-xl bg-gray-50 p-4">
+                  <dt className="text-lg font-bold uppercase tracking-wide text-gray-700">
+                    Joining Date
+                  </dt>
+                  <dd className="mt-1 text-sm font-semibold text-gray-900">
+                    {job.joiningDate ? formatDate(job.joiningDate) : "Not Specified"}
                   </dd>
                 </div>
               </dl>
