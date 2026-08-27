@@ -185,64 +185,64 @@ export default async function JobDetail({
               <h2 className="text-xl font-bold text-gray-950">Job details</h2>
 
               <dl className="mt-6 grid gap-4">
-                <div className="rounded-xl bg-gray-50 p-4">
-                  <dt className="text-lg font-bold uppercase tracking-wide text-gray-700">
+                <div className="rounded-xl bg-gray-100 p-4">
+                  <dt className="text-lg font-bold  tracking-wide text-gray-700">
                     Location
                   </dt>
-                  <dd className="mt-1 text-sm font-semibold text-gray-900">
+                  <dd className="mt-1 text-sm text-gray-900">
                     {job.location}
                   </dd>
                 </div>
 
-                <div className="rounded-xl bg-gray-50 p-4">
-                  <dt className="text-lg font-bold uppercase tracking-wide text-gray-700">
+                <div className="rounded-xl bg-gray-100 p-4">
+                  <dt className="text-lg font-bold  tracking-wide text-gray-700">
                     Employment Type
                   </dt>
-                  <dd className="mt-1 text-sm font-semibold text-gray-900">
+                  <dd className="mt-1 text-sm text-gray-900">
                     {jobType}
                   </dd>
                 </div>
 
-                <div className="rounded-xl bg-gray-50 p-4">
-                  <dt className="text-lg font-bold uppercase tracking-wide text-gray-700">
+                <div className="rounded-xl bg-gray-100 p-4">
+                  <dt className="text-lg font-bold  tracking-wide text-gray-700">
                     Work Arrangement
                   </dt>
-                  <dd className="mt-1 text-sm font-semibold text-gray-900">
+                  <dd className="mt-1 text-sm text-gray-900">
                     {job.isRemote ? "Remote" : "On-site"}
                   </dd>
                 </div>
 
-                <div className="rounded-xl bg-gray-50 p-4">
-                  <dt className="text-lg font-bold uppercase tracking-wide text-gray-700">
+                <div className="rounded-xl bg-gray-100 p-4">
+                  <dt className="text-lg font-bold  tracking-wide text-gray-700">
                     Company
                   </dt>
-                  <dd className="mt-1 text-sm font-semibold text-gray-900">
+                  <dd className="mt-1 text-sm text-gray-900">
                     {company?.name || "—"}
                   </dd>
                 </div>
-                <div className="rounded-xl bg-gray-50 p-4">
-                  <dt className="text-lg font-bold uppercase tracking-wide text-gray-700">
+                <div className="rounded-xl bg-gray-100 p-4">
+                  <dt className="text-lg font-bold  tracking-wide text-gray-700">
                     Minimum Salary
                   </dt>
-                  <dd className="mt-1 text-sm font-semibold text-gray-900">
+                  <dd className="mt-1 text-sm  text-gray-900">
                     {formatInr(job.salaryMin)}
-                    <span className="ml-1 text-xs text-gray-500">per year</span>
+                    <span className="ml-1 text-xs italic text-gray-500">per year</span>
                   </dd>
                 </div>
-                <div className="rounded-xl bg-gray-50 p-4">
-                  <dt className="text-lg font-bold uppercase tracking-wide text-gray-700">
+                <div className="rounded-xl bg-gray-100 p-4">
+                  <dt className="text-lg font-bold  tracking-wide text-gray-700">
                     Maximum Salary
                   </dt>
-                  <dd className="mt-1 text-sm font-semibold text-gray-900">
+                  <dd className="mt-1 text-sm text-gray-900">
                     {formatInr(job.salaryMax)}
-                    <span className="ml-1 text-xs text-gray-500">per year</span>
+                    <span className="ml-1 text-xs italic text-gray-500">per year</span>
                   </dd>
                 </div>
                 <div className="rounded-xl bg-gray-50 p-4">
                   <dt className="text-lg font-bold uppercase tracking-wide text-gray-700">
                     Joining date
                   </dt>
-                  <dd className="mt-1 text-sm font-semibold text-gray-900">
+                  <dd className="mt-1 text-sm text-gray-900">
                     {job.joiningDate ? formatDate(job.joiningDate) : "Not Specified"}
                   </dd>
                 </div>

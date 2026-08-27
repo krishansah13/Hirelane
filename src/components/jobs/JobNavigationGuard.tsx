@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 type JobNavigationGuardProps = {
   hasChanges: boolean;
-  onSaveDraft: () => Promise<void>;
+  onSaveDraft: (href: string) => Promise<boolean>;
 };
 
 export default function JobNavigationGuard({
@@ -65,8 +65,11 @@ export default function JobNavigationGuard({
     setIsSaving(true);
 
     try {
-      await onSaveDraft();
-      window.location.href = pendingHref;
+      const saved = await onSaveDraft(pendingHref);
+      if (!saved) {
+        setShowPrompt(false);
+        setPendingHref(null);
+      }
     } finally {
       setIsSaving(false);
     }
@@ -74,8 +77,12 @@ export default function JobNavigationGuard({
 
   function discardAndNavigate() {
     if (!pendingHref) return;
-
     window.location.href = pendingHref;
+  }
+
+  function stayOnPage() {
+    setShowPrompt(false);
+    setPendingHref(null);
   }
 
   if (!showPrompt) {
@@ -83,7 +90,7 @@ export default function JobNavigationGuard({
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 p-4">
       <div
         role="dialog"
         aria-modal="true"
@@ -95,14 +102,23 @@ export default function JobNavigationGuard({
           You have unsaved changes. Save them as a draft before leaving?
         </p>
 
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-6 flex flex-wrap justify-end gap-3">
+          <button
+            type="button"
+            onClick={stayOnPage}
+            disabled={isSaving}
+            className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            Keep editing
+          </button>
+
           <button
             type="button"
             onClick={discardAndNavigate}
             disabled={isSaving}
             className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
-            Cancel
+            Leave without saving
           </button>
 
           <button

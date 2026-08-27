@@ -4,7 +4,7 @@ import { createJob, JobActionState, updateJob } from "@/lib/actions/jobs";
 import { JOB_FIELD_STEP, jobStepSchemas } from "@/lib/validation";
 import { parseSkillList } from "@/lib/utils/skills";
 import { useRouter } from "next/navigation";
-import React, { useActionState, useCallback, useEffect, useState } from "react";
+import { useActionState, useCallback, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import JobNavigationGuard from "./JobNavigationGuard";
 
@@ -19,10 +19,12 @@ type JobWriteFormProps = {
     isRemote: boolean;
     salaryMin: number;
     salaryMax: number;
+    joiningDate?: string | null;
     expiresAt: string;
     status?: string;
   };
 };
+
 const STEPS = ["Role", "Location", "Compensation", "Review"];
 
 const initialState: JobActionState = {
@@ -32,10 +34,11 @@ const initialState: JobActionState = {
 type FieldErrors = Record<string, string>;
 
 type ServerFieldError = {
-    field: string;
-    step: number;
-    message: string;
+  field: string;
+  step: number;
+  message: string;
 };
+
 function SubmitButton({
   label,
   name,
@@ -86,7 +89,7 @@ function inputClass(hasError?: boolean) {
   }`;
 }
 
-function toDateInput(value?: string) {
+function toDateInput(value?: string | null) {
   if (!value) return "";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "";
@@ -111,22 +114,53 @@ export default function JobWriteForm({
   const [description, setDescription] = useState(initial?.description || "");
   const [location, setLocation] = useState(initial?.location ?? "");
   const [type, setType] = useState(initial?.type ?? "full-time");
-  const [isRemote, setIsRemote] = useState(
-    initial?.isRemote ? "true" : "false",
-  );
+  const [isRemote, setIsRemote] = useState(initial?.isRemote ? "true" : "false");
   const [salaryMin, setSalaryMin] = useState(String(initial?.salaryMin ?? ""));
   const [salaryMax, setSalaryMax] = useState(String(initial?.salaryMax ?? ""));
+  const [joiningDate, setJoiningDate] = useState(
+    toDateInput(initial?.joiningDate),
+  );
   const [expiresAt, setExpiresAt] = useState(toDateInput(initial?.expiresAt));
   const [clientErrors, setClientErrors] = useState<FieldErrors>({});
+  const [serverError, setServerError] = useState<ServerFieldError | null>(null);
+  const [generalError, setGeneralError] = useState<string | null>(null);
 
-  const [showLeavePrompt, setShowLeavePrompt] = useState(false);
-  const [pendingNavigation, setPendingNavigation] = useState<string | null>(
-    null,
-  );
+  
+  
+  
+  
+
+  function clearFieldError(field: string) {
+    setClientErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+
+    if (serverError?.field === field) {
+      setServerError(null);
+    }
+
+    setGeneralError(null);
+  }
+
+  function updateField(
+    field: string,
+    setter: (value: string) => void,
+  ) {
+    return (
+      event: React.ChangeEvent<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >,
+    ) => {
+      setter(event.target.value);
+      clearFieldError(field);
+    };
+  }
 
   useEffect(() => {
-    if (!state.ok) return;
-
+  if (state.ok) {
     const pending = sessionStorage.getItem("hirelane-pending-navigation");
 
     if (pending) {
@@ -136,7 +170,27 @@ export default function JobWriteForm({
     }
 
     router.push("/employer");
-  }, [state.ok, router]);
+    return;
+  }
+
+  if (!state.error) return;
+
+  
+
+
+  const parsedError = parseServerFieldError(state.error);
+
+  if (parsedError) {
+    setServerError(parsedError);
+    setGeneralError(null);
+    setStep(parsedError.step);
+    return;
+  }
+
+  setServerError(null);
+  setGeneralError(state.error);
+}, [state, router]);
+
 
   const values: Record<string, string> = {
     title,
@@ -146,11 +200,11 @@ export default function JobWriteForm({
     isRemote,
     salaryMin,
     salaryMax,
+    joiningDate,
     expiresAt,
   };
 
   const hasChanges =
-    mode === "create" ||
     normalizeJobValue(title) !== normalizeJobValue(initial?.title ?? "") ||
     normalizeJobValue(description) !==
       normalizeJobValue(initial?.description ?? "") ||
@@ -164,8 +218,11 @@ export default function JobWriteForm({
       normalizeJobValue(initial?.salaryMin ?? "") ||
     normalizeJobValue(salaryMax) !==
       normalizeJobValue(initial?.salaryMax ?? "") ||
+    normalizeJobValue(joiningDate) !==
+      normalizeJobValue(toDateInput(initial?.joiningDate)) ||
     normalizeJobValue(expiresAt) !==
       normalizeJobValue(toDateInput(initial?.expiresAt));
+
 
   const saveDraftForNavigation = () => {
     const form = document.querySelector(
@@ -174,13 +231,13 @@ export default function JobWriteForm({
 
     if (!form) return Promise.resolve();
 
-    const publishInput = form.querySelector(
-      'input[name="publish"]',
-    ) as HTMLInputElement | null;
+    // const publishInput = form.querySelector(
+    //   'input[name="publish"]',
+    // ) as HTMLInputElement | null;
 
-    if (publishInput) {
-      publishInput.value = "false";
-    }
+    // if (publishInput) {
+    //   publishInput.value = "false";
+    // }
 
     return new Promise<void>((resolve) => {
       sessionStorage.setItem("hirelane-navigation-after-save", "true");
@@ -205,29 +262,29 @@ export default function JobWriteForm({
   //     setShowLeavePrompt(true);
   //   }
 
-  function saveDraftAndNavigate() {
-    if (!pendingNavigation) return;
+  // function saveDraftAndNavigate() {
+  //   if (!pendingNavigation) return;
 
-    const formData = new FormData();
+  //   const formData = new FormData();
 
-    if (jobId) {
-      formData.append("jobId", jobId);
-    }
+  //   if (jobId) {
+  //     formData.append("jobId", jobId);
+  //   }
 
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("location", location);
-    formData.append("type", type);
-    formData.append("isRemote", isRemote);
-    formData.append("salaryMin", salaryMin);
-    formData.append("salaryMax", salaryMax);
-    formData.append("expiresAt", expiresAt);
-    formData.append("publish", "false");
+  //   formData.append("title", title);
+  //   formData.append("description", description);
+  //   formData.append("location", location);
+  //   formData.append("type", type);
+  //   formData.append("isRemote", isRemote);
+  //   formData.append("salaryMin", salaryMin);
+  //   formData.append("salaryMax", salaryMax);
+  //   formData.append("expiresAt", expiresAt);
+  //   formData.append("publish", "false");
 
-    formAction(formData);
+  //   formAction(formData);
 
-    sessionStorage.setItem("hirelane-pending-navigation", pendingNavigation);
-  }
+  //   sessionStorage.setItem("hirelane-pending-navigation", pendingNavigation);
+  // }
 
   const validateStep = useCallback(
     (index: number) => {
@@ -253,12 +310,14 @@ export default function JobWriteForm({
       isRemote,
       salaryMin,
       salaryMax,
+      joiningDate,
       expiresAt,
     ],
   );
 
   function goToStep(next: number) {
     setClientErrors({});
+    setGeneralError(null);
     setStep(next);
   }
 
@@ -271,8 +330,6 @@ export default function JobWriteForm({
     goToStep(step + 1);
   }
 
-  // Review submit: re-check every step so a skipped field sends the employer
-  // back to the step that owns it instead of failing on the server.
   function handleReviewSubmit(event: React.FormEvent<HTMLFormElement>) {
     for (let i = 0; i < jobStepSchemas.length; i += 1) {
       const stepErrors = validateStep(i);
@@ -286,54 +343,86 @@ export default function JobWriteForm({
     setClientErrors({});
   }
 
-  // Server errors arrive as "description: Description must be ...".
-  const serverError = parseServerFieldError(state.error);
-  const errors: FieldErrors = serverError
-    ? { ...clientErrors, [serverError.field]: serverError.message }
-    : clientErrors;
+  // function firstInvalidStep() {
+  //   for (let i = 0; i < jobStepSchemas.length; i += 1) {
+  //     const stepErrors = validateStep(i);
+  //     if (Object.keys(stepErrors).length > 0) {
+  //       setClientErrors(stepErrors);
+  //       setStep(i);
+  //       return i;
+  //     }
+  //   }
+  //   return -1;
+  // }
+
+  // function buildFormData(publish: "true" | "false") {
+  //   const formData = new FormData();
+  //   if (jobId) formData.append("jobId", jobId);
+  //   formData.append("title", title);
+  //   formData.append("description", description);
+  //   formData.append("location", location);
+  //   formData.append("type", type);
+  //   formData.append("isRemote", isRemote);
+  //   formData.append("salaryMin", salaryMin);
+  //   formData.append("salaryMax", salaryMax);
+  //   formData.append("joiningDate", joiningDate);
+  //   formData.append("expiresAt", expiresAt);
+  //   formData.append("publish", publish);
+  //   return formData;
+  // }
+
+  
+
+  const errors: FieldErrors = {
+    ...clientErrors,
+    ...(serverError ? { [serverError.field]: serverError.message } : {}),
+  };
 
   const stepHasErrors = Object.keys(errors).some(
     (field) => JOB_FIELD_STEP[field] === step,
   );
 
-  const leavePrompt = showLeavePrompt ? (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div
-        role="dialog"
-        aria-modal="true"
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
-      >
-        <h2 className="text-lg font-bold text-gray-950">Unsaved changes</h2>
 
-        <p className="mt-2 text-sm leading-6 text-gray-600">
-          You have unsaved changes. Save them as a draft before leaving?
-        </p>
+//   const leavePrompt = showLeavePrompt ? (
+//     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+//       <div
+//         role="dialog"
+//         aria-modal="true"
+//         className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+//       >
+//         <h2 className="text-lg font-bold text-gray-950">Unsaved changes</h2>
 
-        <div className="mt-6 flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              setShowLeavePrompt(false);
-              if (pendingNavigation) {
-                router.push(pendingNavigation);
-              }
-            }}
-            className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-          >
-            Cancel
-          </button>
+//         <p className="mt-2 text-sm leading-6 text-gray-600">
+//           You have unsaved changes. Save them as a draft before leaving?
+//         </p>
 
-          <button
-            type="button"
-            onClick={saveDraftAndNavigate}
-            className="rounded-xl bg-[#2e46ba] px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
-          >
-            Save draft
-          </button>
-        </div>
-      </div>
-    </div>
-  ) : null;
+//         <div className="mt-6 flex justify-end gap-3">
+//           <button
+//             type="button"
+//             onClick={() => {
+//               setShowLeavePrompt(false);
+//               if (pendingNavigation) {
+//                 router.push(pendingNavigation);
+//               }
+//             }}
+//             className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+//           >
+//             Cancel
+//           </button>
+
+//           <button
+//             type="button"
+//             onClick={saveDraftAndNavigate}
+//             className="rounded-xl bg-[#2e46ba] px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+//           >
+//             Save draft
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   ) : null;
+
+
 
   return (
     <>
@@ -342,38 +431,34 @@ export default function JobWriteForm({
         onSaveDraft={saveDraftForNavigation}
       />
 
-      {leavePrompt}
-
       <div className="space-y-6">
         <ol className="flex gap-2 text-xs font-medium text-gray-500">
           {STEPS.map((label, i) => {
             const invalid = i === step && stepHasErrors;
             return (
-              <React.Fragment key={label}>
-                <li
-                  className={`rounded-full px-3 py-1 ${
-                    invalid
-                      ? "bg-rose-50 text-rose-700"
-                      : i === step
-                        ? "bg-[#eef0ff] text-[#2e46ba]"
-                        : "bg-gray-100"
-                  }`}
-                >
-                  {i + 1}. {label}
-                </li>
-              </React.Fragment>
+              <li
+                key={label}
+                className={`rounded-full px-3 py-1 ${
+                  invalid
+                    ? "bg-rose-50 text-rose-700"
+                    : i === step
+                      ? "bg-[#eef0ff] text-[#2e46ba]"
+                      : "bg-gray-100"
+                }`}
+              >
+                {i + 1}. {label}
+              </li>
             );
           })}
         </ol>
-        {(serverError || state.error || stepHasErrors) && (
+
+        {serverError && (
           <div className="flex flex-wrap items-center gap-3 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
             <span>
-              {serverError
-                ? `Step ${serverError.step + 1}. ${STEPS[serverError.step]} — ${serverError.message}`
-                : state.error ||
-                  `Fix the highlighted field${Object.keys(errors).length > 1 ? "s" : ""} in step ${step + 1}. ${STEPS[step]}`}
+              Step {serverError.step + 1}. {STEPS[serverError.step]} —{" "}
+              {serverError.message}
             </span>
-            {serverError && serverError.step !== step && (
+            {serverError.step !== step && (
               <button
                 type="button"
                 onClick={() => setStep(serverError.step)}
@@ -384,13 +469,28 @@ export default function JobWriteForm({
             )}
           </div>
         )}
+
+        {!serverError && generalError && (
+          <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            {generalError}
+          </div>
+        )}
+
+        {!serverError && !generalError && stepHasErrors && (
+          <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            Fix the highlighted field
+            {Object.keys(clientErrors).length > 1 ? "s" : ""}.
+          </div>
+        )}
+
         <form
-          data-job-write-form="true"
           action={formAction}
           onSubmit={handleReviewSubmit}
+          data-job-write-form="true"
           className="space-y-5 rounded-2xl bg-white p-6 shadow-sm"
         >
           {jobId ? <input type="hidden" name="jobId" value={jobId} /> : null}
+
           {step === 0 && (
             <div className="space-y-4">
               <label className="block text-sm font-medium text-gray-700">
@@ -398,7 +498,7 @@ export default function JobWriteForm({
                 <input
                   name="title"
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  onChange={updateField("title", setTitle)}
                   required
                   aria-invalid={Boolean(errors.title)}
                   className={inputClass(Boolean(errors.title))}
@@ -410,7 +510,7 @@ export default function JobWriteForm({
                 <textarea
                   name="description"
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={updateField("description", setDescription)}
                   rows={8}
                   required
                   minLength={20}
@@ -424,6 +524,7 @@ export default function JobWriteForm({
               </label>
             </div>
           )}
+
           {step === 1 && (
             <div className="space-y-4">
               <input type="hidden" name="title" value={title} />
@@ -433,7 +534,7 @@ export default function JobWriteForm({
                 <input
                   name="location"
                   value={location}
-                  onChange={(e) => setLocation(e.target.value)}
+                  onChange={updateField("location", setLocation)}
                   required
                   aria-invalid={Boolean(errors.location)}
                   className={inputClass(Boolean(errors.location))}
@@ -445,7 +546,7 @@ export default function JobWriteForm({
                 <select
                   name="type"
                   value={type}
-                  onChange={(e) => setType(e.target.value)}
+                  onChange={updateField("type", setType)}
                   aria-invalid={Boolean(errors.type)}
                   className={inputClass(Boolean(errors.type))}
                 >
@@ -461,7 +562,7 @@ export default function JobWriteForm({
                 <select
                   name="isRemote"
                   value={isRemote}
-                  onChange={(e) => setIsRemote(e.target.value)}
+                  onChange={updateField("isRemote", setIsRemote)}
                   aria-invalid={Boolean(errors.isRemote)}
                   className={inputClass(Boolean(errors.isRemote))}
                 >
@@ -472,6 +573,7 @@ export default function JobWriteForm({
               </label>
             </div>
           )}
+
           {step === 2 && (
             <div className="space-y-4">
               <input type="hidden" name="title" value={title} />
@@ -479,39 +581,54 @@ export default function JobWriteForm({
               <input type="hidden" name="location" value={location} />
               <input type="hidden" name="type" value={type} />
               <input type="hidden" name="isRemote" value={isRemote} />
+
               <label className="block text-sm font-medium text-gray-700">
                 Min salary (INR)
                 <input
                   name="salaryMin"
                   type="number"
                   value={salaryMin}
-                  onChange={(e) => setSalaryMin(e.target.value)}
+                  onChange={updateField("salaryMin", setSalaryMin)}
                   required
                   aria-invalid={Boolean(errors.salaryMin)}
                   className={inputClass(Boolean(errors.salaryMin))}
                 />
                 <FieldError message={errors.salaryMin} />
               </label>
+
               <label className="block text-sm font-medium text-gray-700">
                 Max salary (INR)
                 <input
                   name="salaryMax"
                   type="number"
                   value={salaryMax}
-                  onChange={(e) => setSalaryMax(e.target.value)}
+                  onChange={updateField("salaryMax", setSalaryMax)}
                   required
                   aria-invalid={Boolean(errors.salaryMax)}
                   className={inputClass(Boolean(errors.salaryMax))}
                 />
                 <FieldError message={errors.salaryMax} />
               </label>
+
+              <label className="block text-sm font-medium text-gray-700">
+                Joining date (optional)
+                <input
+                  name="joiningDate"
+                  type="date"
+                  value={joiningDate}
+                  onChange={updateField("joiningDate", setJoiningDate)}
+                  className={inputClass(Boolean(errors.joiningDate))}
+                />
+                <FieldError message={errors.joiningDate} />
+              </label>
+
               <label className="block text-sm font-medium text-gray-700">
                 Expires on
                 <input
                   name="expiresAt"
                   type="date"
                   value={expiresAt}
-                  onChange={(e) => setExpiresAt(e.target.value)}
+                  onChange={updateField("expiresAt", setExpiresAt)}
                   required
                   aria-invalid={Boolean(errors.expiresAt)}
                   className={inputClass(Boolean(errors.expiresAt))}
@@ -520,6 +637,7 @@ export default function JobWriteForm({
               </label>
             </div>
           )}
+
           {step === 3 && (
             <div className="space-y-3 text-sm text-gray-700">
               <input type="hidden" name="title" value={title} />
@@ -529,6 +647,7 @@ export default function JobWriteForm({
               <input type="hidden" name="isRemote" value={isRemote} />
               <input type="hidden" name="salaryMin" value={salaryMin} />
               <input type="hidden" name="salaryMax" value={salaryMax} />
+              <input type="hidden" name="joiningDate" value={joiningDate} />
               <input type="hidden" name="expiresAt" value={expiresAt} />
               <p>
                 <strong>Title:</strong> {title}
@@ -550,10 +669,14 @@ export default function JobWriteForm({
                 <strong>Salary:</strong> {salaryMin} – {salaryMax}
               </p>
               <p>
+                <strong>Joining date:</strong> {joiningDate || "Not specified"}
+              </p>
+              <p>
                 <strong>Expires:</strong> {expiresAt}
               </p>
             </div>
           )}
+
           <div className="flex flex-wrap gap-3">
             {step > 0 && (
               <button
@@ -573,22 +696,19 @@ export default function JobWriteForm({
                 Continue
               </button>
             )}
-
             {step === 3 && (
               <>
                 {mode === "edit" && !hasChanges && (
-                  <p className="mt- text-sm font-medium text-red-500">
+                  <p className="w-full text-sm font-medium text-red-500">
                     No changes have been made.
                   </p>
                 )}
-
                 <SubmitButton
                   name="publish"
                   value="false"
                   disabled={mode === "edit" && !hasChanges}
                   label={mode === "create" ? "Save draft" : "Save changes"}
                 />
-
                 <SubmitButton
                   name="publish"
                   value="true"
