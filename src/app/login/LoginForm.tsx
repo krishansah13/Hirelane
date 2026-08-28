@@ -19,11 +19,6 @@ const demoAccounts = [
     email: "rahul@technova.com",
     password: "Employer@123",
   },
-  {
-    label: "Admin",
-    email: "admin@example.com",
-    password: "Admin@123",
-  },
 ] as const;
 
 function getSafeCallbackUrl(value: string | null) {
@@ -207,7 +202,7 @@ export default function LoginForm() {
             <p className="mb-3 text-center text-xs font-medium text-gray-400">
               Try a demo account
             </p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {demoAccounts.map((account) => (
                 <button
                   key={account.email}
