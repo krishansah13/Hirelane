@@ -227,6 +227,47 @@ function createSlug(title: string, companySlug: string, index: number) {
     .replace(/^-|-$/g, "")}-${index}`;
 }
 
+const skillsByTitle: Record<string, string[]> = {
+  "Frontend Developer": ["React", "TypeScript", "CSS", "HTML", "JavaScript"],
+  "Backend Developer": ["Node.js", "REST APIs", "MongoDB", "SQL"],
+  "Full Stack Developer": ["React", "Node.js", "TypeScript", "MongoDB"],
+  "React Developer": ["React", "JavaScript", "Redux", "CSS"],
+  "Next.js Developer": ["Next.js", "React", "TypeScript", "Tailwind CSS"],
+  "Node.js Developer": ["Node.js", "Express", "MongoDB", "REST APIs"],
+  "Software Engineer": ["JavaScript", "Git", "Problem solving", "Testing"],
+  "Senior Software Engineer": [
+    "System design",
+    "TypeScript",
+    "Mentoring",
+    "Cloud",
+  ],
+  "Product Designer": ["Figma", "User research", "Prototyping", "UI design"],
+  "UI/UX Designer": ["Figma", "Wireframing", "Usability testing", "Design systems"],
+  "DevOps Engineer": ["CI/CD", "Docker", "Kubernetes", "AWS"],
+  "Cloud Engineer": ["AWS", "Terraform", "Linux", "Networking"],
+  "Data Analyst": ["SQL", "Excel", "Tableau", "Python"],
+  "Data Engineer": ["Python", "SQL", "ETL", "Spark"],
+  "Product Manager": ["Roadmapping", "Stakeholder management", "Analytics"],
+  "QA Engineer": ["Manual testing", "Automation", "Cypress", "Test planning"],
+  "Mobile Developer": ["React Native", "TypeScript", "iOS", "Android"],
+  "Machine Learning Engineer": ["Python", "PyTorch", "MLOps", "SQL"],
+  "Technical Writer": ["Technical writing", "Markdown", "API docs", "Editing"],
+  "Engineering Intern": ["JavaScript", "Git", "HTML", "CSS"],
+};
+
+function skillsForTitle(title: string): string[] {
+  return skillsByTitle[title] ?? ["Communication", "Problem solving", "Git"];
+}
+
+function requirementsForTitle(title: string): string {
+  return [
+    `2+ years of relevant experience as a ${title}, or equivalent project work.`,
+    "Bachelor's degree in a related field, or comparable practical experience.",
+    "Clear written and verbal communication, and comfort collaborating in a team.",
+    "Ability to take ownership of work and ship high-quality results on schedule.",
+  ].join("\n");
+}
+
 /* ---------------------------------- */
 /* Seed                               */
 /* ---------------------------------- */
@@ -445,13 +486,11 @@ Responsibilities:
 - Write clean and maintainable code
 - Participate in code reviews
 - Help improve engineering practices
-
-Skills Required:
-- Strong problem-solving skills
-- Good communication skills
-- Experience working with modern development tools
-- Ability to work effectively in a team.
         `.trim(),
+
+        skills: skillsForTitle(title),
+
+        requirements: requirementsForTitle(title),
 
         location,
 

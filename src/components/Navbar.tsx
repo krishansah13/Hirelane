@@ -123,9 +123,25 @@ export default function Navbar() {
                         <div className="h-10 w-24 animate-pulse rounded-md bg-gray-100" />
                     ) : isAuthenticated ? (
                         <>
-                            <span className="hidden max-w-35 truncate text-sm font-medium text-gray-700 lg:block">
-                                {session.user.name}
-                            </span>
+                            <Link
+                                href="/account"
+                                className="flex items-center gap-2 text-sm font-medium text-gray-700 transition hover:text-[#2E46BA]"
+                            >
+                                <span className="inline-flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[#eef0ff] text-xs font-semibold text-[#2E46BA]">
+                                    {session.user.image ? (
+                                        <img
+                                            src={session.user.image}
+                                            alt=""
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        (session.user.name?.charAt(0) ?? "U").toUpperCase()
+                                    )}
+                                </span>
+                                <span className="hidden max-w-[140px] truncate lg:inline">
+                                    {session.user.name}
+                                </span>
+                            </Link>
                             <button
                                 type="button"
                                 onClick={() => signOut({ callbackUrl: "/" })}
@@ -189,6 +205,14 @@ export default function Navbar() {
                         )}
 
                         {isAuthenticated && (
+                            <>
+                            <Link
+                                href="/account"
+                                onClick={() => setMenuOpen(false)}
+                                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                                Account
+                            </Link>
                             <Link
                                 href={dashboardHref}
                                 onClick={() => setMenuOpen(false)}
@@ -196,6 +220,7 @@ export default function Navbar() {
                             >
                                 Dashboard
                             </Link>
+                            </>
                         )}
 
                         {!isSessionLoading && !isAuthenticated && (

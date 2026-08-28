@@ -10,6 +10,7 @@ import { isUserActive } from "../session";
 import Job from "../models/Job";
 
 import { slugifyJobTitle } from "../utils/slug";
+import { parseSkillList } from "../utils/skills";
 
 import { revalidateJobBoard } from "../cache";
 
@@ -35,6 +36,8 @@ function formfields(formData: FormData) {
     return {
         title: formData.get("title"),
         description: formData.get("description"),
+        skills: formData.get("skills") ?? "",
+        requirements: formData.get("requirements") ?? "",
         location: formData.get("location"),
         type: formData.get("type"),
         isRemote: formData.get("isRemote"),
@@ -138,6 +141,10 @@ if (joiningDate && joiningDate.getTime() <= now.getTime()) {
             slug: slugifyJobTitle(data.title),
 
             description: data.description,
+
+            skills: parseSkillList(data.skills),
+
+            requirements: data.requirements,
 
             location: data.location,
 
@@ -255,6 +262,10 @@ export async function updateJob(
         existing.title = data.title;
 
         existing.description = data.description;
+
+        existing.skills = parseSkillList(data.skills);
+
+        existing.requirements = data.requirements;
 
         existing.location = data.location;
 

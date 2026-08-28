@@ -7,12 +7,20 @@ export const authConfig = {
   },
 
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.companyId = user.companyId ?? null;
+        token.picture = user.image ?? token.picture;
+        token.name = user.name;
       }
+
+      if (trigger === "update" && session) {
+        if (typeof session.name === "string") token.name = session.name;
+        if ("image" in session) token.picture = session.image ?? undefined;
+      }
+
       return token;
     },
 
@@ -21,6 +29,8 @@ export const authConfig = {
         session.user.id = token.id as string;
         session.user.role = token.role as UserRole;
         session.user.companyId = (token.companyId as string | null) ?? null;
+        session.user.name = token.name;
+        session.user.image = (token.picture as string | undefined) ?? null;
       }
       return session;
     },
@@ -32,8 +42,9 @@ export const authConfig = {
       const isDashboard = pathname.startsWith("/dashboard");
       const isEmployer = pathname.startsWith("/employer");
       const isAdmin = pathname.startsWith("/admin");
+      const isAccount = pathname.startsWith("/account");
 
-      if ((isDashboard || isEmployer || isAdmin) && !isLoggedIn) {
+      if ((isDashboard || isEmployer || isAdmin || isAccount) && !isLoggedIn) {
         return false;
       }
 

@@ -31,6 +31,16 @@ const jobSchema = new mongoose.Schema(
       default: "",
     },
 
+    skills: {
+      type: [String],
+      default: [],
+    },
+
+    requirements: {
+      type: String,
+      default: "",
+    },
+
     location: {
       type: String,
       required: true,
@@ -85,5 +95,23 @@ const jobSchema = new mongoose.Schema(
 
 const Job =
   mongoose.models.Job || mongoose.model("Job", jobSchema);
+
+if (!Job.schema.path("skills")) {
+  Job.schema.add({
+    skills: {
+      type: [String],
+      default: [],
+    },
+  });
+}
+
+if (!Job.schema.path("requirements")) {
+  Job.schema.add({
+    requirements: {
+      type: String,
+      default: "",
+    },
+  });
+}
 
 export default Job;

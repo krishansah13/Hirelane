@@ -1,4 +1,10 @@
 import { z } from "zod";
+import {
+  MAX_SKILL_LENGTH,
+  MAX_SKILLS,
+  MIN_SKILL_LENGTH,
+  parseSkillList,
+} from "./utils/skills";
 
 export const jobQuerySchema = z.object({
   q: z.string().optional(),
@@ -47,6 +53,54 @@ const jobWriteFields = z.object({
     .trim()
     .min(20, "Description must be at least 20 characters")
     .max(8000, "Description must be 8000 characters or fewer"),
+
+  skills: z
+    .string()
+    .trim()
+    .min(1, "Add at least one skill")
+    .superRefine((value, ctx) => {
+      const skills = parseSkillList(value);
+
+      if (skills.length === 0) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Add at least one skill",
+        });
+        return;
+      }
+
+      if (skills.length > MAX_SKILLS) {
+        ctx.addIssue({
+          code: "custom",
+          message: `Add at most ${MAX_SKILLS} skills`,
+        });
+        return;
+      }
+
+      for (const skill of skills) {
+        if (skill.length < MIN_SKILL_LENGTH) {
+          ctx.addIssue({
+            code: "custom",
+            message: `Each skill must be at least ${MIN_SKILL_LENGTH} characters`,
+          });
+          return;
+        }
+
+        if (skill.length > MAX_SKILL_LENGTH) {
+          ctx.addIssue({
+            code: "custom",
+            message: `Each skill must be ${MAX_SKILL_LENGTH} characters or fewer`,
+          });
+          return;
+        }
+      }
+    }),
+
+  requirements: z
+    .string()
+    .trim()
+    .min(20, "Requirements must be at least 20 characters")
+    .max(4000, "Requirements must be 4000 characters or fewer"),
 
   location: z
     .string()
@@ -113,6 +167,8 @@ export const jobStepSchemas = [
   jobWriteFields.pick({
     title: true,
     description: true,
+    skills: true,
+    requirements: true,
   }),
 
   jobWriteFields.pick({
@@ -137,6 +193,8 @@ export const jobStepSchemas = [
 export const JOB_FIELD_STEP: Record<string, number> = {
   title: 0,
   description: 0,
+  skills: 0,
+  requirements: 0,
 
   location: 1,
   type: 1,
@@ -271,6 +329,33 @@ export const updateAdminCompanySchema = z.object({
     .string()
     .trim()
     .max(2000, "About must be 2000 characters or fewer")
+    .optional(),
+});
+
+export function normalizeMobile(value: string) {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2);
+  if (digits.length === 11 && digits.startsWith("0")) return digits.slice(1);
+  return digits;
+}
+
+export const accountSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(80, "Name must be 80 characters or fewer"),
+
+  mobile: z
+    .string()
+    .trim()
+    .transform(normalizeMobile)
+    .refine((value) => value === "" || /^[6-9]\d{9}$/.test(value), {
+      message: "Enter a valid 10-digit mobile number",
+    }),
+
+  image: z
+    .union([z.string().url("Invalid profile photo"), z.literal("")])
     .optional(),
 });
 
