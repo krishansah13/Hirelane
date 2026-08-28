@@ -16,6 +16,8 @@ type JobModalProps = {
   isRemote?: boolean;
   salaryMin?: number;
   salaryMax?: number;
+  skills?: string[];
+  requirements?: string;
   companyName?: string;
   companySlug?: string;
   companyLogo?: string;
@@ -30,6 +32,8 @@ export default function JobModal({
   isRemote,
   salaryMin,
   salaryMax,
+  skills,
+  requirements,
   companyName,
   companySlug,
   companyLogo,
@@ -99,6 +103,14 @@ export default function JobModal({
           <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
             {isRemote ? "Remote" : "On-site"}
           </span>
+          {(skills ?? []).slice(0, 4).map((skill) => (
+            <span
+              key={skill}
+              className="rounded-full bg-[#eef0ff] px-3 py-1 text-[#2e46ba]"
+            >
+              {skill}
+            </span>
+          ))}
         </div>
         <dl className="mt-6 grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl bg-gray-50 p-3">
@@ -124,6 +136,29 @@ export default function JobModal({
             {description}
           </p>
         </div>
+        {requirements ? (
+          <div className="mt-6">
+            <h3 className="text-lg font-bold text-gray-950">Requirements</h3>
+            <p className="mt-2 whitespace-pre-line text-sm leading-6 text-gray-600">
+              {requirements}
+            </p>
+          </div>
+        ) : null}
+        {(skills ?? []).length > 0 ? (
+          <div className="mt-6">
+            <h3 className="text-lg font-bold text-gray-950">Skills</h3>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {skills?.map((skill) => (
+                <span
+                  key={skill}
+                  className="rounded-full bg-[#eef0ff] px-3 py-1.5 text-xs font-medium text-[#2e46ba]"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
         <div className="mt-8 border-t border-gray-100 pt-6">
           <ApplyForm jobId={jobId} slug={slug} compact />
 

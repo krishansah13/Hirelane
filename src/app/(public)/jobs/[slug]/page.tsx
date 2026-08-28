@@ -63,6 +63,11 @@ export default async function JobDetail({
     job.companyId && typeof job.companyId === "object" ? job.companyId : null;
 
   const jobType = job.type.charAt(0).toUpperCase() + job.type.slice(1);
+  const skills = Array.isArray(job.skills)
+    ? job.skills.filter(Boolean)
+    : [];
+  const requirements =
+    typeof job.requirements === "string" ? job.requirements.trim() : "";
 
   return (
     <main className="min-h-screen bg-white">
@@ -116,6 +121,14 @@ export default async function JobDetail({
                     <span className="h-2 w-2 rounded-full bg-emerald-500" />
                     {job.isRemote ? "Remote" : "On-site"}
                   </span>
+                  {skills.slice(0, 3).map((skill) => (
+                    <span
+                      key={skill}
+                      className="inline-flex items-center rounded-full bg-[#eef0ff] px-4 py-2 text-sm font-medium text-[#2e46ba]"
+                    >
+                      {skill}
+                    </span>
+                  ))}
                 </div>
               </div>
 
@@ -130,6 +143,7 @@ export default async function JobDetail({
         {/* Content */}
         <section className="mx-auto grid gap-8 px-6 py-10 sm:px-10 lg:grid-cols-[1fr_320px] lg:py-14">
           {/* Left: About */}
+          <div className="flex flex-col gap-8">
           <article className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
             <h2 className="text-xl font-bold text-gray-950">Job Description</h2>
 
@@ -137,6 +151,32 @@ export default async function JobDetail({
               {job.description}
             </div>
           </article>
+
+          {requirements ? (
+            <article className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+              <h2 className="text-xl font-bold text-gray-950">Requirements</h2>
+              <div className="mt-5 whitespace-pre-line text-[15px] leading-7 text-gray-600">
+                {requirements}
+              </div>
+            </article>
+          ) : null}
+
+          {skills.length > 0 ? (
+            <article className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+              <h2 className="text-xl font-bold text-gray-950">Skills</h2>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="rounded-full bg-[#eef0ff] px-3 py-1.5 text-sm font-medium text-[#2e46ba]"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </article>
+          ) : null}
+          </div>
 
           {/* Right column */}
           <div className="flex flex-col gap-8">
@@ -198,9 +238,9 @@ export default async function JobDetail({
                     <span className="ml-1 text-xs italic text-gray-500">per year</span>
                   </dd>
                 </div>
-                <div className="rounded-xl bg-gray-100 p-4">
-                  <dt className="text-lg font-bold  tracking-wide text-gray-700">
-                    Joining Date
+                <div className="rounded-xl bg-gray-50 p-4">
+                  <dt className="text-lg font-bold uppercase tracking-wide text-gray-700">
+                    Joining date
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {job.joiningDate ? formatDate(job.joiningDate) : "Not Specified"}

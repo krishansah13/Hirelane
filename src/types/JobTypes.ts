@@ -25,11 +25,14 @@ export type Job = {
   description: string;
   type?: string;
   isRemote?: boolean;
+  skills?: string[];
+  requirements?: string;
   salaryMin?: number;
   salaryMax?: number;
   status?: "draft" | "published" | "expired";
   publishedAt?: string | Date | null;
   expiresAt?: string | Date;
+  joiningDate?: string | Date | null;
   createdAt?: string | Date;
   companyId: JobCompany;
 };
