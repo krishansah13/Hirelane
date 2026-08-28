@@ -55,16 +55,21 @@ export default function JobCard({ job }: { job: Job }) {
 
                 <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
-                        <h2 className="truncate text-[15px] font-semibold tracking-[-0.01em] text-[#17151c] sm:text-base">
-                            {job.title}
-                        </h2>
+                        <div className="flex gap-2">
+                            <h2 className="truncate text-[15px] font-semibold tracking-[-0.01em] text-[#17151c] sm:text-base">
+                                {job.title}
 
+                            </h2>
+                            <div>
+                                {isNew(job.createdAt) && (
+                                    <span className="rounded-full bg-[#e9e9ff] px-2 py-0.5 text-[10px] font-medium text-[#4f46b5]">
+                                        New
+                                    </span>
+                                )}
+                            </div>
+                        </div>
                         <div className="flex shrink-0 items-center gap-2">
-                            {isNew(job.createdAt) && (
-                                <span className="rounded-full bg-[#e9e9ff] px-2 py-0.5 text-[10px] font-medium text-[#4f46b5]">
-                                    New
-                                </span>
-                            )}
+
                             {posted && (
                                 <span className="text-[11px] text-gray-400 sm:hidden">
                                     {posted}
