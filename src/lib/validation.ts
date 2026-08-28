@@ -254,9 +254,30 @@ export const adminJobQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
 });
 
+export const adminCompanyQuerySchema = z.object({
+  q: z.preprocess(emptyToUndefined, z.string().trim().max(80).optional()),
+  page: z.coerce.number().int().positive().default(1),
+});
+
+export const updateAdminCompanySchema = z.object({
+  companyId: objectIdSchema,
+  name: z
+    .string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(80, "Name must be 80 characters or fewer"),
+  website: z.string().trim().min(1, "Enter a company website"),
+  about: z
+    .string()
+    .trim()
+    .max(2000, "About must be 2000 characters or fewer")
+    .optional(),
+});
+
 export type JobQueryInput = z.infer<typeof jobQuerySchema>;
 export type AdminUserQueryInput = z.infer<typeof adminUserQuerySchema>;
 export type AdminJobQueryInput = z.infer<typeof adminJobQuerySchema>;
+export type AdminCompanyQueryInput = z.infer<typeof adminCompanyQuerySchema>;
 
 export type ApplicationStage = z.infer<typeof stageSchema>;
 

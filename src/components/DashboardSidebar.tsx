@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Briefcase,
+  Building2,
   FileText,
   LayoutDashboard,
   PlusCircle,
@@ -32,6 +33,7 @@ const adminLinks = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
+  { href: "/admin/companies", label: "Companies", icon: Building2 },
 ];
 
 function getLinks(role: UserRole) {

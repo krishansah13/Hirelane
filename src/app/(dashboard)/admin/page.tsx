@@ -1,14 +1,16 @@
 import Link from "next/link";
-import { ArrowRight, BarChart3, Briefcase, Users } from "lucide-react";
+import { ArrowRight, BarChart3, Briefcase, Building2, Users } from "lucide-react";
 import { requireAdmin } from "@/lib/session";
 import { getAdminUserStats } from "@/lib/admin-query";
 import { getAdminJobStats } from "@/lib/admin-job-query";
+import { getAdminCompanyStats } from "@/lib/admin-company-query";
 
 export default async function AdminPage() {
   const user = await requireAdmin();
-  const [userStats, jobStats] = await Promise.all([
+  const [userStats, jobStats, companyStats] = await Promise.all([
     getAdminUserStats(),
     getAdminJobStats(),
+    getAdminCompanyStats(),
   ]);
 
   return (
@@ -21,12 +23,12 @@ export default async function AdminPage() {
           Admin dashboard
         </h1>
         <p className="mt-3 max-w-xl text-sm leading-6 text-gray-500">
-          Welcome{user.name ? `, ${user.name}` : ""}. Manage accounts and jobs
-          from here. Analytics will land later.
+          Welcome{user.name ? `, ${user.name}` : ""}. Manage accounts, jobs,
+          and companies from here.
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <Link
           href="/admin/users"
           className="rounded-2xl bg-white p-5 shadow-sm transition hover:shadow-md sm:p-6"
@@ -71,23 +73,28 @@ export default async function AdminPage() {
           </p>
         </Link>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+        <Link
+          href="/admin/companies"
+          className="rounded-2xl bg-white p-5 shadow-sm transition hover:shadow-md sm:p-6"
+        >
           <div className="flex items-start justify-between gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eef0ff] text-[#2E46BA]">
-              <BarChart3 size={18} />
+              <Building2 size={18} />
             </div>
-            <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium tracking-wide text-gray-500">
-              Coming soon
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-[#2E46BA]">
+              Open
+              <ArrowRight size={14} />
             </span>
           </div>
           <h2 className="mt-4 text-base font-semibold text-gray-950">
-            Analytics
+            Company management
           </h2>
           <p className="mt-2 text-sm leading-6 text-gray-500">
-            Track applications, hiring activity, and platform health at a
-            glance.
+            {companyStats.total} companies · {companyStats.withJobs} with jobs.
+            Review profiles and clean up employer listings.
           </p>
-        </div>
+        </Link>
+
       </div>
     </div>
   );
