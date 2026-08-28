@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import DashboardSidebar from "@/components/DashboardSidebar";
+import { isUserActive } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,10 @@ export default async function DashboardLayout({
 
   if (!session?.user) {
     redirect("/login");
+  }
+
+  if (!(await isUserActive(session.user.id))) {
+    redirect("/account-suspended");
   }
 
   return (

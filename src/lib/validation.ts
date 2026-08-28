@@ -213,7 +213,32 @@ export const signupSchema = z
     }
   });
 
+function emptyToUndefined(value: unknown) {
+  if (value == null) return undefined;
+  if (typeof value === "string" && value.trim() === "") return undefined;
+  return value;
+}
+
+export const adminUserQuerySchema = z.object({
+  q: z.preprocess(emptyToUndefined, z.string().trim().max(80).optional()),
+  role: z.preprocess(
+    emptyToUndefined,
+    z.enum(["seeker", "employer", "admin"]).optional(),
+  ),
+  status: z.preprocess(
+    emptyToUndefined,
+    z.enum(["active", "suspended"]).optional(),
+  ),
+  page: z.coerce.number().int().positive().default(1),
+});
+
+export const setUserStatusSchema = z.object({
+  userId: objectIdSchema,
+  status: z.enum(["active", "suspended"]),
+});
+
 export type JobQueryInput = z.infer<typeof jobQuerySchema>;
+export type AdminUserQueryInput = z.infer<typeof adminUserQuerySchema>;
 
 export type ApplicationStage = z.infer<typeof stageSchema>;
 

@@ -44,7 +44,11 @@ export default function LoginForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(
+    searchParams.get("error") === "suspended"
+      ? "This account has been suspended. Contact support if you need access."
+      : "",
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -61,7 +65,12 @@ export default function LoginForm() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password.");
+        const code = `${result.code ?? ""} ${result.error}`.toLowerCase();
+        setError(
+          code.includes("account_suspended")
+            ? "This account has been suspended. Contact support if you need access."
+            : "Invalid email or password.",
+        );
         return;
       }
 

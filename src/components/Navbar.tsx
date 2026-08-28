@@ -40,7 +40,7 @@ function getNavLinks(role?: UserRole): NavLink[] {
     if (role === "admin") {
       return [
           { href: dashboardHref, label: "Dashboard" },
-          ...BROWSE_LINKS,
+          { href: "/admin/users", label: "Users" },
       ];
     }
   
@@ -56,15 +56,19 @@ export default function Navbar() {
     const pathname = usePathname();
     const [menuOpen, setMenuOpen] = useState(false);
 
+    const isSessionLoading = status === "loading";
     const isAuthenticated = status === "authenticated" && !!session?.user;
     const role = isAuthenticated ? session.user.role : undefined;
     const dashboardHref = getHomePath(role);
-    const links = getNavLinks(role);
+    const links = isSessionLoading ? [] : getNavLinks(role);
 
     function isActive(href: string) {
         if (href.startsWith("/#")) return false;
         const path = href.split("?")[0];
-        return path === "/jobs" ? pathname === "/jobs" : pathname.startsWith(path);
+        if (path === "/jobs" || path === "/admin") {
+            return pathname === path;
+        }
+        return pathname.startsWith(path);
     }
 
     function linkClass(href: string) {
@@ -93,15 +97,23 @@ export default function Navbar() {
                 </div>
 
                 <div className="hidden items-center justify-center gap-8 md:flex">
-                    {links.map((link) => (
-                        <Link
-                            key={link.label}
-                            href={link.href}
-                            className={linkClass(link.href)}
-                        >
-                            {link.label}
-                        </Link>
-                    ))}
+                    {isSessionLoading ? (
+                        <>
+                            <div className="h-4 w-20 animate-pulse rounded bg-gray-100" />
+                            <div className="h-4 w-16 animate-pulse rounded bg-gray-100" />
+                            <div className="h-4 w-24 animate-pulse rounded bg-gray-100" />
+                        </>
+                    ) : (
+                        links.map((link) => (
+                            <Link
+                                key={link.label}
+                                href={link.href}
+                                className={linkClass(link.href)}
+                            >
+                                {link.label}
+                            </Link>
+                        ))
+                    )}
                 </div>
 
                 <div className="col-start-3 flex items-center justify-end gap-3">
@@ -152,20 +164,27 @@ export default function Navbar() {
             {menuOpen && (
                 <div className="border-t border-[#eeeaf8] bg-white px-4 py-3 md:hidden">
                     <div className="mx-auto flex max-w-7xl flex-col gap-1">
-                        {links.map((link) => (
-                            <Link
-                                key={link.label}
-                                href={link.href}
-                                onClick={() => setMenuOpen(false)}
-                                className={`rounded-lg px-3 py-2 ${
-                                    isActive(link.href)
-                                        ? "bg-[#eef0ff] text-[#2E46BA]"
-                                        : "text-gray-700 hover:bg-gray-50"
-                                } text-sm font-medium`}
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
+                        {isSessionLoading ? (
+                            <>
+                                <div className="h-9 rounded-lg bg-gray-100" />
+                                <div className="h-9 rounded-lg bg-gray-100" />
+                            </>
+                        ) : (
+                            links.map((link) => (
+                                <Link
+                                    key={link.label}
+                                    href={link.href}
+                                    onClick={() => setMenuOpen(false)}
+                                    className={`rounded-lg px-3 py-2 ${
+                                        isActive(link.href)
+                                            ? "bg-[#eef0ff] text-[#2E46BA]"
+                                            : "text-gray-700 hover:bg-gray-50"
+                                    } text-sm font-medium`}
+                                >
+                                    {link.label}
+                                </Link>
+                            ))
+                        )}
 
                         {isAuthenticated && (
                             <Link
@@ -177,7 +196,7 @@ export default function Navbar() {
                             </Link>
                         )}
 
-                        {!isAuthenticated && (
+                        {!isSessionLoading && !isAuthenticated && (
                             <Link
                                 href="/signup"
                                 onClick={() => setMenuOpen(false)}

@@ -293,6 +293,7 @@ async function seed(): Promise<void> {
         email: employer.email,
         passwordHash: employerPassword,
         role: "employer" as const,
+        status: "active" as const,
 
         // ObjectId reference to Company
         companyId: company._id,
@@ -316,6 +317,7 @@ async function seed(): Promise<void> {
       email: `seeker${index + 1}@example.com`,
       passwordHash: seekerPassword,
       role: "seeker" as const,
+      status: index === 1 ? ("suspended" as const) : ("active" as const),
 
       // Seekers do not belong to a company
       companyId: null,
@@ -339,6 +341,7 @@ async function seed(): Promise<void> {
         email: "admin@example.com",
         passwordHash: adminPassword,
         role: "admin" as const,
+        status: "active" as const,
         companyId: null,
       },
     ]);

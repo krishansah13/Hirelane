@@ -3,6 +3,7 @@ import { Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 import Provider from "@/Providers";
 import Navbar from "@/components/Navbar";
+import { auth } from "@/auth";
 
 const hankenGrotesk = Hanken_Grotesk({
   subsets: ["latin"],
@@ -16,11 +17,13 @@ export const metadata: Metadata = {
     "Discover roles from companies hiring now, apply from one place, or post a job in minutes.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const session = await auth();
+
   return (
     <html lang="en" className={`${hankenGrotesk.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        <Provider>
+        <Provider session={session}>
           <Navbar />
           {children}
         </Provider>

@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { jobIdSchema, jobWriteSchema } from "../validation";
 
 import { connectToDatabase } from "../utils/db";
+import { isUserActive } from "../session";
 
 import Job from "../models/Job";
 
@@ -60,6 +61,12 @@ async function requireEmployerSession() {
     if (session.user.role !== "employer" || !session.user.companyId) {
         return {
             error: "Only employer can manage jobs" as const,
+        };
+    }
+
+    if (!(await isUserActive(session.user.id))) {
+        return {
+            error: "This account has been suspended" as const,
         };
     }
 

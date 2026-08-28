@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { uploadResumePdf } from "@/lib/upload";
+import { isUserActive } from "@/lib/session";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -19,6 +20,14 @@ export async function POST(request : Request) {
     if(session.user.role !== "seeker") {
         return NextResponse.json({
             error : "Forbidden"
+        }, {
+            status : 403
+        });
+    }
+
+    if(!(await isUserActive(session.user.id))) {
+        return NextResponse.json({
+            error : "This account has been suspended"
         }, {
             status : 403
         });
