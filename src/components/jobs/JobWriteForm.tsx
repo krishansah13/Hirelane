@@ -4,7 +4,7 @@ import { createJob, JobActionState, updateJob } from "@/lib/actions/jobs";
 import { JOB_FIELD_STEP, jobStepSchemas } from "@/lib/validation";
 import { parseSkillList } from "@/lib/utils/skills";
 import { useRouter } from "next/navigation";
-import { useActionState, useCallback, useEffect, useState } from "react";
+import { useActionState, useCallback, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import JobNavigationGuard from "./JobNavigationGuard";
 
@@ -14,6 +14,8 @@ type JobWriteFormProps = {
   initial?: {
     title: string;
     description: string;
+    skills?: string;
+    requirements?: string;
     location: string;
     type: string;
     isRemote: boolean;
@@ -112,6 +114,8 @@ export default function JobWriteForm({
 
   const [title, setTitle] = useState(initial?.title || "");
   const [description, setDescription] = useState(initial?.description || "");
+  const [skills, setSkills] = useState(initial?.skills || "");
+  const [requirements, setRequirements] = useState(initial?.requirements || "");
   const [location, setLocation] = useState(initial?.location ?? "");
   const [type, setType] = useState(initial?.type ?? "full-time");
   const [isRemote, setIsRemote] = useState(initial?.isRemote ? "true" : "false");
@@ -125,10 +129,10 @@ export default function JobWriteForm({
   const [serverError, setServerError] = useState<ServerFieldError | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
 
-  
-  
-  
-  
+  const navigationSaveRef = useRef<{
+    href: string;
+    resolve: (ok: boolean) => void;
+  } | null>(null);
 
   function clearFieldError(field: string) {
     setClientErrors((current) => {
@@ -160,41 +164,37 @@ export default function JobWriteForm({
   }
 
   useEffect(() => {
-  if (state.ok) {
-    const pending = sessionStorage.getItem("hirelane-pending-navigation");
-
-    if (pending) {
-      sessionStorage.removeItem("hirelane-pending-navigation");
-      router.push(pending);
+    if (state.ok) {
+      const pending = navigationSaveRef.current;
+      navigationSaveRef.current = null;
+      pending?.resolve(true);
+      router.push(pending?.href ?? "/employer");
       return;
     }
 
-    router.push("/employer");
-    return;
-  }
+    if (!state.error) return;
 
-  if (!state.error) return;
+    navigationSaveRef.current?.resolve(false);
+    navigationSaveRef.current = null;
 
-  
+    const parsedError = parseServerFieldError(state.error);
 
+    if (parsedError) {
+      setServerError(parsedError);
+      setGeneralError(null);
+      setStep(parsedError.step);
+      return;
+    }
 
-  const parsedError = parseServerFieldError(state.error);
-
-  if (parsedError) {
-    setServerError(parsedError);
-    setGeneralError(null);
-    setStep(parsedError.step);
-    return;
-  }
-
-  setServerError(null);
-  setGeneralError(state.error);
-}, [state, router]);
-
+    setServerError(null);
+    setGeneralError(state.error);
+  }, [state, router]);
 
   const values: Record<string, string> = {
     title,
     description,
+    skills,
+    requirements,
     location,
     type,
     isRemote,
@@ -204,10 +204,16 @@ export default function JobWriteForm({
     expiresAt,
   };
 
+  const skillPreview = parseSkillList(skills);
+
   const hasChanges =
     normalizeJobValue(title) !== normalizeJobValue(initial?.title ?? "") ||
     normalizeJobValue(description) !==
       normalizeJobValue(initial?.description ?? "") ||
+    normalizeJobValue(skills) !==
+      normalizeJobValue(initial?.skills ?? "") ||
+    normalizeJobValue(requirements) !==
+      normalizeJobValue(initial?.requirements ?? "") ||
     normalizeJobValue(location) !==
       normalizeJobValue(initial?.location ?? "") ||
     normalizeJobValue(type) !==
@@ -222,69 +228,6 @@ export default function JobWriteForm({
       normalizeJobValue(toDateInput(initial?.joiningDate)) ||
     normalizeJobValue(expiresAt) !==
       normalizeJobValue(toDateInput(initial?.expiresAt));
-
-
-  const saveDraftForNavigation = () => {
-    const form = document.querySelector(
-      'form[data-job-write-form="true"]',
-    ) as HTMLFormElement | null;
-
-    if (!form) return Promise.resolve();
-
-    // const publishInput = form.querySelector(
-    //   'input[name="publish"]',
-    // ) as HTMLInputElement | null;
-
-    // if (publishInput) {
-    //   publishInput.value = "false";
-    // }
-
-    return new Promise<void>((resolve) => {
-      sessionStorage.setItem("hirelane-navigation-after-save", "true");
-
-      sessionStorage.setItem(
-        "hirelane-pending-navigation",
-        window.location.href,
-      );
-
-      form.requestSubmit();
-      resolve();
-    });
-  };
-
-  //   function handleNavigationAttempt(href: string) {
-  //     if (!hasChanges) {
-  //       router.push(href);
-  //       return;
-  //     }
-
-  //     setPendingNavigation(href);
-  //     setShowLeavePrompt(true);
-  //   }
-
-  // function saveDraftAndNavigate() {
-  //   if (!pendingNavigation) return;
-
-  //   const formData = new FormData();
-
-  //   if (jobId) {
-  //     formData.append("jobId", jobId);
-  //   }
-
-  //   formData.append("title", title);
-  //   formData.append("description", description);
-  //   formData.append("location", location);
-  //   formData.append("type", type);
-  //   formData.append("isRemote", isRemote);
-  //   formData.append("salaryMin", salaryMin);
-  //   formData.append("salaryMax", salaryMax);
-  //   formData.append("expiresAt", expiresAt);
-  //   formData.append("publish", "false");
-
-  //   formAction(formData);
-
-  //   sessionStorage.setItem("hirelane-pending-navigation", pendingNavigation);
-  // }
 
   const validateStep = useCallback(
     (index: number) => {
@@ -305,6 +248,8 @@ export default function JobWriteForm({
     [
       title,
       description,
+      skills,
+      requirements,
       location,
       type,
       isRemote,
@@ -343,35 +288,46 @@ export default function JobWriteForm({
     setClientErrors({});
   }
 
-  // function firstInvalidStep() {
-  //   for (let i = 0; i < jobStepSchemas.length; i += 1) {
-  //     const stepErrors = validateStep(i);
-  //     if (Object.keys(stepErrors).length > 0) {
-  //       setClientErrors(stepErrors);
-  //       setStep(i);
-  //       return i;
-  //     }
-  //   }
-  //   return -1;
-  // }
+  function firstInvalidStep() {
+    for (let i = 0; i < jobStepSchemas.length; i += 1) {
+      const stepErrors = validateStep(i);
+      if (Object.keys(stepErrors).length > 0) {
+        setClientErrors(stepErrors);
+        setStep(i);
+        return i;
+      }
+    }
+    return -1;
+  }
 
-  // function buildFormData(publish: "true" | "false") {
-  //   const formData = new FormData();
-  //   if (jobId) formData.append("jobId", jobId);
-  //   formData.append("title", title);
-  //   formData.append("description", description);
-  //   formData.append("location", location);
-  //   formData.append("type", type);
-  //   formData.append("isRemote", isRemote);
-  //   formData.append("salaryMin", salaryMin);
-  //   formData.append("salaryMax", salaryMax);
-  //   formData.append("joiningDate", joiningDate);
-  //   formData.append("expiresAt", expiresAt);
-  //   formData.append("publish", publish);
-  //   return formData;
-  // }
+  function buildFormData(publish: "true" | "false") {
+    const formData = new FormData();
+    if (jobId) formData.append("jobId", jobId);
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("skills", skills);
+    formData.append("requirements", requirements);
+    formData.append("location", location);
+    formData.append("type", type);
+    formData.append("isRemote", isRemote);
+    formData.append("salaryMin", salaryMin);
+    formData.append("salaryMax", salaryMax);
+    formData.append("joiningDate", joiningDate);
+    formData.append("expiresAt", expiresAt);
+    formData.append("publish", publish);
+    return formData;
+  }
 
-  
+  function saveDraftForNavigation(href: string) {
+    if (firstInvalidStep() !== -1) {
+      return Promise.resolve(false);
+    }
+
+    return new Promise<boolean>((resolve) => {
+      navigationSaveRef.current = { href, resolve };
+      formAction(buildFormData("false"));
+    });
+  }
 
   const errors: FieldErrors = {
     ...clientErrors,
@@ -381,48 +337,6 @@ export default function JobWriteForm({
   const stepHasErrors = Object.keys(errors).some(
     (field) => JOB_FIELD_STEP[field] === step,
   );
-
-
-//   const leavePrompt = showLeavePrompt ? (
-//     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-//       <div
-//         role="dialog"
-//         aria-modal="true"
-//         className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
-//       >
-//         <h2 className="text-lg font-bold text-gray-950">Unsaved changes</h2>
-
-//         <p className="mt-2 text-sm leading-6 text-gray-600">
-//           You have unsaved changes. Save them as a draft before leaving?
-//         </p>
-
-//         <div className="mt-6 flex justify-end gap-3">
-//           <button
-//             type="button"
-//             onClick={() => {
-//               setShowLeavePrompt(false);
-//               if (pendingNavigation) {
-//                 router.push(pendingNavigation);
-//               }
-//             }}
-//             className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-//           >
-//             Cancel
-//           </button>
-
-//           <button
-//             type="button"
-//             onClick={saveDraftAndNavigate}
-//             className="rounded-xl bg-[#2e46ba] px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
-//           >
-//             Save draft
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   ) : null;
-
-
 
   return (
     <>
@@ -486,7 +400,6 @@ export default function JobWriteForm({
         <form
           action={formAction}
           onSubmit={handleReviewSubmit}
-          data-job-write-form="true"
           className="space-y-5 rounded-2xl bg-white p-6 shadow-sm"
         >
           {jobId ? <input type="hidden" name="jobId" value={jobId} /> : null}
@@ -522,6 +435,52 @@ export default function JobWriteForm({
                 </span>
                 <FieldError message={errors.description} />
               </label>
+              <label className="block text-sm font-medium text-gray-700">
+                Skills
+                <input
+                  name="skills"
+                  value={skills}
+                  onChange={updateField("skills", setSkills)}
+                  required
+                  placeholder="React, TypeScript, Communication"
+                  aria-invalid={Boolean(errors.skills)}
+                  className={inputClass(Boolean(errors.skills))}
+                />
+                <span className="mt-1 block text-xs font-normal text-gray-400">
+                  Separate with commas. At least 1 skill, up to 15.
+                </span>
+                {skillPreview.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {skillPreview.map((skill) => (
+                      <span
+                        key={skill}
+                        className="rounded-full bg-[#eef0ff] px-2.5 py-1 text-xs font-medium text-[#2e46ba]"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <FieldError message={errors.skills} />
+              </label>
+              <label className="block text-sm font-medium text-gray-700">
+                Requirements
+                <textarea
+                  name="requirements"
+                  value={requirements}
+                  onChange={updateField("requirements", setRequirements)}
+                  rows={6}
+                  required
+                  minLength={20}
+                  placeholder="Must-haves such as years of experience, education, and certifications."
+                  aria-invalid={Boolean(errors.requirements)}
+                  className={inputClass(Boolean(errors.requirements))}
+                />
+                <span className="mt-1 block text-xs font-normal text-gray-400">
+                  {requirements.trim().length} / 20 characters minimum
+                </span>
+                <FieldError message={errors.requirements} />
+              </label>
             </div>
           )}
 
@@ -529,6 +488,8 @@ export default function JobWriteForm({
             <div className="space-y-4">
               <input type="hidden" name="title" value={title} />
               <input type="hidden" name="description" value={description} />
+              <input type="hidden" name="skills" value={skills} />
+              <input type="hidden" name="requirements" value={requirements} />
               <label className="block text-sm font-medium text-gray-700">
                 Location
                 <input
@@ -578,6 +539,8 @@ export default function JobWriteForm({
             <div className="space-y-4">
               <input type="hidden" name="title" value={title} />
               <input type="hidden" name="description" value={description} />
+              <input type="hidden" name="skills" value={skills} />
+              <input type="hidden" name="requirements" value={requirements} />
               <input type="hidden" name="location" value={location} />
               <input type="hidden" name="type" value={type} />
               <input type="hidden" name="isRemote" value={isRemote} />
@@ -642,6 +605,8 @@ export default function JobWriteForm({
             <div className="space-y-3 text-sm text-gray-700">
               <input type="hidden" name="title" value={title} />
               <input type="hidden" name="description" value={description} />
+              <input type="hidden" name="skills" value={skills} />
+              <input type="hidden" name="requirements" value={requirements} />
               <input type="hidden" name="location" value={location} />
               <input type="hidden" name="type" value={type} />
               <input type="hidden" name="isRemote" value={isRemote} />
@@ -657,6 +622,28 @@ export default function JobWriteForm({
                 <span className="ml-2 text-xs text-gray-400">
                   ({description.trim().length} / 20 min)
                 </span>
+              </p>
+              <div>
+                <p>
+                  <strong>Skills:</strong>
+                </p>
+                {skillPreview.length > 0 ? (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {skillPreview.map((skill) => (
+                      <span
+                        key={skill}
+                        className="rounded-full bg-[#eef0ff] px-2.5 py-1 text-xs font-medium text-[#2e46ba]"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-1">—</p>
+                )}
+              </div>
+              <p className="whitespace-pre-line">
+                <strong>Requirements:</strong> {requirements || "—"}
               </p>
               <p>
                 <strong>Location:</strong> {location} ·{" "}
