@@ -414,6 +414,7 @@ export default function JobWriteForm({
                   required
                   aria-invalid={Boolean(errors.title)}
                   className={inputClass(Boolean(errors.title))}
+                  placeholder="e.g. Software Engineer"
                 />
                 <FieldError message={errors.title} />
               </label>
@@ -422,6 +423,7 @@ export default function JobWriteForm({
                 <textarea
                   name="description"
                   value={description}
+                  placeholder="e.g. We are looking for a Software Engineer with 3 years of experience in React and Node.js."
                   onChange={updateField("description", setDescription)}
                   rows={8}
                   required
