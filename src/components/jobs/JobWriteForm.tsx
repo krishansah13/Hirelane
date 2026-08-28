@@ -203,6 +203,7 @@ export default function JobWriteForm({
     joiningDate,
     expiresAt,
   };
+
   const skillPreview = parseSkillList(skills);
 
   const hasChanges =
