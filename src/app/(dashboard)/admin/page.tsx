@@ -2,10 +2,14 @@ import Link from "next/link";
 import { ArrowRight, BarChart3, Briefcase, Users } from "lucide-react";
 import { requireAdmin } from "@/lib/session";
 import { getAdminUserStats } from "@/lib/admin-query";
+import { getAdminJobStats } from "@/lib/admin-job-query";
 
 export default async function AdminPage() {
   const user = await requireAdmin();
-  const stats = await getAdminUserStats();
+  const [userStats, jobStats] = await Promise.all([
+    getAdminUserStats(),
+    getAdminJobStats(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -17,8 +21,8 @@ export default async function AdminPage() {
           Admin dashboard
         </h1>
         <p className="mt-3 max-w-xl text-sm leading-6 text-gray-500">
-          Welcome{user.name ? `, ${user.name}` : ""}. Manage accounts from
-          Users. Job moderation and analytics will land here later.
+          Welcome{user.name ? `, ${user.name}` : ""}. Manage accounts and jobs
+          from here. Analytics will land later.
         </p>
       </div>
 
@@ -40,28 +44,32 @@ export default async function AdminPage() {
             User management
           </h2>
           <p className="mt-2 text-sm leading-6 text-gray-500">
-            {stats.total} accounts · {stats.suspended} suspended. Search,
+            {userStats.total} accounts · {userStats.suspended} suspended. Search,
             filter, and suspend seekers or employers.
           </p>
         </Link>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+        <Link
+          href="/admin/jobs"
+          className="rounded-2xl bg-white p-5 shadow-sm transition hover:shadow-md sm:p-6"
+        >
           <div className="flex items-start justify-between gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eef0ff] text-[#2E46BA]">
               <Briefcase size={18} />
             </div>
-            <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium tracking-wide text-gray-500">
-              Coming soon
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-[#2E46BA]">
+              Open
+              <ArrowRight size={14} />
             </span>
           </div>
           <h2 className="mt-4 text-base font-semibold text-gray-950">
-            Job moderation
+            Job management
           </h2>
           <p className="mt-2 text-sm leading-6 text-gray-500">
-            Review posted roles, handle reports, and keep the public board
-            clean.
+            {jobStats.total} jobs · {jobStats.published} live. Review, close, or
+            remove listings from every employer.
           </p>
-        </div>
+        </Link>
 
         <div className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-start justify-between gap-3">

@@ -31,6 +31,7 @@ const employerLinks = [
 const adminLinks = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
 ];
 
 function getLinks(role: UserRole) {

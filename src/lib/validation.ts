@@ -237,8 +237,26 @@ export const setUserStatusSchema = z.object({
   status: z.enum(["active", "suspended"]),
 });
 
+export const adminJobQuerySchema = z.object({
+  q: z.preprocess(emptyToUndefined, z.string().trim().max(80).optional()),
+  status: z.preprocess(
+    emptyToUndefined,
+    z.enum(["draft", "published", "expired"]).optional(),
+  ),
+  type: z.preprocess(
+    emptyToUndefined,
+    z.enum(["part-time", "contract", "full-time", "internship"]).optional(),
+  ),
+  remote: z.preprocess(
+    emptyToUndefined,
+    z.enum(["true", "false", "any"]).optional(),
+  ),
+  page: z.coerce.number().int().positive().default(1),
+});
+
 export type JobQueryInput = z.infer<typeof jobQuerySchema>;
 export type AdminUserQueryInput = z.infer<typeof adminUserQuerySchema>;
+export type AdminJobQueryInput = z.infer<typeof adminJobQuerySchema>;
 
 export type ApplicationStage = z.infer<typeof stageSchema>;
 
