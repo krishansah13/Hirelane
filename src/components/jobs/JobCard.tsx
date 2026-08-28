@@ -45,7 +45,7 @@ export default function JobCard({ job }: { job: Job }) {
     const posted = formatDate(job.createdAt);
 
     return (
-        <Link href={`/jobs/${job.slug}`} className="group block">
+        <Link href={`/jobs/${job.slug}`} prefetch={false} className="group block">
             <article className="flex items-start gap-3 rounded-xl bg-white p-3.5 shadow-xs transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(76,61,130,0.10)] sm:min-h-[116px] sm:items-center sm:gap-5 sm:px-6 sm:py-5">
                 <CompanyLogo
                     name={job.companyId.name}
