@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { getHomePath } from "@/lib/roles";
 
 const demoAccounts = [
   {
@@ -38,7 +39,11 @@ export default function LoginForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(
+    searchParams.get("error") === "suspended"
+      ? "This account has been suspended. Contact support if you need access."
+      : "",
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -55,7 +60,12 @@ export default function LoginForm() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password.");
+        const code = `${result.code ?? ""} ${result.error}`.toLowerCase();
+        setError(
+          code.includes("account_suspended")
+            ? "This account has been suspended. Contact support if you need access."
+            : "Invalid email or password.",
+        );
         return;
       }
 
@@ -67,7 +77,7 @@ export default function LoginForm() {
       const session = await getSession();
       const destination =
         getSafeCallbackUrl(searchParams.get("callbackUrl")) ??
-        (session?.user.role === "employer" ? "/employer" : "/dashboard");
+        getHomePath(session?.user.role);
 
       router.push(destination);
       router.refresh();
@@ -192,7 +202,7 @@ export default function LoginForm() {
             <p className="mb-3 text-center text-xs font-medium text-gray-400">
               Try a demo account
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {demoAccounts.map((account) => (
                 <button
                   key={account.email}

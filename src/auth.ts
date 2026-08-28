@@ -46,10 +46,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        if (user.status === "suspended") {
+          throw new Error("ACCOUNT_SUSPENDED");
+        }
+
         return {
           id: user._id.toString(),
           name: user.name,
           email: user.email,
+          image: user.image || null,
           role: user.role,
           companyId: user.companyId ? user.companyId.toString() : null,
         };

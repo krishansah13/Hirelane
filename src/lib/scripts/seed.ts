@@ -334,6 +334,7 @@ async function seed(): Promise<void> {
         email: employer.email,
         passwordHash: employerPassword,
         role: "employer" as const,
+        status: "active" as const,
 
         // ObjectId reference to Company
         companyId: company._id,
@@ -357,6 +358,7 @@ async function seed(): Promise<void> {
       email: `seeker${index + 1}@example.com`,
       passwordHash: seekerPassword,
       role: "seeker" as const,
+      status: index === 1 ? ("suspended" as const) : ("active" as const),
 
       // Seekers do not belong to a company
       companyId: null,
@@ -365,6 +367,27 @@ async function seed(): Promise<void> {
     const seekers = await User.insertMany(seekerDocuments);
 
     console.log(`Created ${seekers.length} seekers.`);
+
+    /* ------------------------------ */
+    /* Admin                           */
+    /* ------------------------------ */
+
+    console.log("Creating admin...");
+
+    const adminPassword = await bcrypt.hash("Admin@123", 10);
+
+    const [admin] = await User.insertMany([
+      {
+        name: "Hirelane Admin",
+        email: "admin@example.com",
+        passwordHash: adminPassword,
+        role: "admin" as const,
+        status: "active" as const,
+        companyId: null,
+      },
+    ]);
+
+    console.log(`Created admin: ${admin.email}`);
 
     /* ------------------------------ */
     /* Jobs                            */
@@ -593,6 +616,7 @@ Responsibilities:
     console.log(`Companies: ${companies.length}`);
     console.log(`Employers: ${employers.length}`);
     console.log(`Seekers: ${seekers.length}`);
+    console.log("Admins: 1");
     console.log(`Jobs: ${jobs.length}`);
     console.log(`Applications: ${applications.length}`);
 
@@ -605,6 +629,10 @@ Responsibilities:
     console.log("\nSeeker:");
     console.log("Email: seeker1@example.com");
     console.log("Password: Seeker@123");
+
+    console.log("\nAdmin:");
+    console.log("Email: admin@example.com");
+    console.log("Password: Admin@123");
 
     console.log("\n==============================");
 

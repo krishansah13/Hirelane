@@ -32,7 +32,7 @@ export function toJobQuery(input: JobQueryInput , limit = 10): JobQuery {
 const COMPANY_SELECT = "name logoURL slug website about";
 const JOB_CACHE_SECONDS = 60;
 
-async function expireOverduePublishedJobs() {
+export async function expireOverduePublishedJobs() {
   await connectToDatabase();
   const result = await Job.updateMany(
     { status: "published", expiresAt: { $lte: new Date() } },

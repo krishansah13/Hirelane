@@ -63,8 +63,8 @@ export default async function JobDetail({
     job.companyId && typeof job.companyId === "object" ? job.companyId : null;
 
   const jobType = job.type.charAt(0).toUpperCase() + job.type.slice(1);
-  const skills = Array.isArray(job.skills)
-    ? job.skills.filter(Boolean)
+  const skills: string[] = Array.isArray(job.skills)
+    ? job.skills.filter((skill: unknown): skill is string => Boolean(skill))
     : [];
   const requirements =
     typeof job.requirements === "string" ? job.requirements.trim() : "";
@@ -238,9 +238,9 @@ export default async function JobDetail({
                     <span className="ml-1 text-xs italic text-gray-500">per year</span>
                   </dd>
                 </div>
-                <div className="rounded-xl bg-gray-50 p-4">
-                  <dt className="text-lg font-bold uppercase tracking-wide text-gray-700">
-                    Joining date
+                <div className="rounded-xl bg-gray-100 p-4">
+                  <dt className="text-lg font-bold  tracking-wide text-gray-700">
+                    Joining Date
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {job.joiningDate ? formatDate(job.joiningDate) : "Not Specified"}

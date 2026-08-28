@@ -16,6 +16,7 @@ import {
     UserRound,
 } from "lucide-react";
 import { signup } from "@/lib/actions/signup";
+import { getHomePath } from "@/lib/roles";
 
 type Role = "seeker" | "employer";
 
@@ -91,7 +92,7 @@ export default function SignupForm() {
             const session = await getSession();
             const destination =
                 getSafeCallbackUrl(searchParams.get("callbackUrl")) ??
-                (session?.user.role === "employer" ? "/employer" : "/dashboard");
+                getHomePath(session?.user.role);
 
             router.push(destination);
             router.refresh();

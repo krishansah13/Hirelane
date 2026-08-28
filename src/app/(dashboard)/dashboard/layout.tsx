@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { getHomePath } from "@/lib/roles";
 
 export default async function SeekerLayout({
     children,
@@ -13,7 +14,7 @@ export default async function SeekerLayout({
     }
 
     if (session.user.role !== "seeker") {
-        redirect("/employer");
+        redirect(getHomePath(session.user.role));
     }
 
     return <>{children}</>;

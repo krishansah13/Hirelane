@@ -271,7 +271,98 @@ export const signupSchema = z
     }
   });
 
+function emptyToUndefined(value: unknown) {
+  if (value == null) return undefined;
+  if (typeof value === "string" && value.trim() === "") return undefined;
+  return value;
+}
+
+export const adminUserQuerySchema = z.object({
+  q: z.preprocess(emptyToUndefined, z.string().trim().max(80).optional()),
+  role: z.preprocess(
+    emptyToUndefined,
+    z.enum(["seeker", "employer", "admin"]).optional(),
+  ),
+  status: z.preprocess(
+    emptyToUndefined,
+    z.enum(["active", "suspended"]).optional(),
+  ),
+  page: z.coerce.number().int().positive().default(1),
+});
+
+export const setUserStatusSchema = z.object({
+  userId: objectIdSchema,
+  status: z.enum(["active", "suspended"]),
+});
+
+export const adminJobQuerySchema = z.object({
+  q: z.preprocess(emptyToUndefined, z.string().trim().max(80).optional()),
+  status: z.preprocess(
+    emptyToUndefined,
+    z.enum(["draft", "published", "expired"]).optional(),
+  ),
+  type: z.preprocess(
+    emptyToUndefined,
+    z.enum(["part-time", "contract", "full-time", "internship"]).optional(),
+  ),
+  remote: z.preprocess(
+    emptyToUndefined,
+    z.enum(["true", "false", "any"]).optional(),
+  ),
+  page: z.coerce.number().int().positive().default(1),
+});
+
+export const adminCompanyQuerySchema = z.object({
+  q: z.preprocess(emptyToUndefined, z.string().trim().max(80).optional()),
+  page: z.coerce.number().int().positive().default(1),
+});
+
+export const updateAdminCompanySchema = z.object({
+  companyId: objectIdSchema,
+  name: z
+    .string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(80, "Name must be 80 characters or fewer"),
+  website: z.string().trim().min(1, "Enter a company website"),
+  about: z
+    .string()
+    .trim()
+    .max(2000, "About must be 2000 characters or fewer")
+    .optional(),
+});
+
+export function normalizeMobile(value: string) {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2);
+  if (digits.length === 11 && digits.startsWith("0")) return digits.slice(1);
+  return digits;
+}
+
+export const accountSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(80, "Name must be 80 characters or fewer"),
+
+  mobile: z
+    .string()
+    .trim()
+    .transform(normalizeMobile)
+    .refine((value) => value === "" || /^[6-9]\d{9}$/.test(value), {
+      message: "Enter a valid 10-digit mobile number",
+    }),
+
+  image: z
+    .union([z.string().url("Invalid profile photo"), z.literal("")])
+    .optional(),
+});
+
 export type JobQueryInput = z.infer<typeof jobQuerySchema>;
+export type AdminUserQueryInput = z.infer<typeof adminUserQuerySchema>;
+export type AdminJobQueryInput = z.infer<typeof adminJobQuerySchema>;
+export type AdminCompanyQueryInput = z.infer<typeof adminCompanyQuerySchema>;
 
 export type ApplicationStage = z.infer<typeof stageSchema>;
 

@@ -1,10 +1,15 @@
 "use server";
 
+import User from "../models/User";
+import Company from "../models/Company";
+import { sendNewJobAlertEmail } from "../email";
+
 import { auth } from "@/auth";
 
 import { jobIdSchema, jobWriteSchema } from "../validation";
 
 import { connectToDatabase } from "../utils/db";
+import { isUserActive } from "../session";
 
 import Job from "../models/Job";
 
@@ -14,21 +19,21 @@ import { parseSkillList } from "../utils/skills";
 import { revalidateJobBoard } from "../cache";
 
 export type JobActionState = {
-    ok: boolean;
-    error?: string;
-    jobId?: string;
+  ok: boolean;
+  error?: string;
+  jobId?: string;
 };
 
 function firstIssueMessage(error: {
-    issues: { path: PropertyKey[]; message: string }[];
+  issues: { path: PropertyKey[]; message: string }[];
 }) {
-    const issue = error.issues[0];
+  const issue = error.issues[0];
 
-    if (!issue) return "Invalid form data";
+  if (!issue) return "Invalid form data";
 
-    const field = issue.path.map(String).join(".");
+  const field = issue.path.map(String).join(".");
 
-    return field ? `${field}: ${issue.message}` : issue.message;
+  return field ? `${field}: ${issue.message}` : issue.message;
 }
 
 function formfields(formData: FormData) {
@@ -43,95 +48,99 @@ function formfields(formData: FormData) {
         salaryMin: formData.get("salaryMin"),
         salaryMax: formData.get("salaryMax"),
 
-        // Optional joining date
-        joiningDate: formData.get("joiningDate"),
+    // Optional joining date
+    joiningDate: formData.get("joiningDate"),
 
-        expiresAt: formData.get("expiresAt"),
-        publish: formData.get("publish") || "false",
-    };
+    expiresAt: formData.get("expiresAt"),
+    publish: formData.get("publish") || "false",
+  };
 }
 
 async function requireEmployerSession() {
-    const session = await auth();
+  const session = await auth();
 
-    if (!session?.user) {
-        return {
-            error: "You must be signed in" as const,
-        };
-    }
-
-    if (session.user.role !== "employer" || !session.user.companyId) {
-        return {
-            error: "Only employer can manage jobs" as const,
-        };
-    }
-
+  if (!session?.user) {
     return {
-        userId: session.user.id,
-        companyId: session.user.companyId,
+      error: "You must be signed in" as const,
     };
+  }
+
+  if (session.user.role !== "employer" || !session.user.companyId) {
+    return {
+      error: "Only employer can manage jobs" as const,
+    };
+  }
+
+  if (!(await isUserActive(session.user.id))) {
+    return {
+      error: "This account has been suspended" as const,
+    };
+  }
+
+  return {
+    userId: session.user.id,
+    companyId: session.user.companyId,
+  };
 }
 
 export async function createJob(
-    _prev: JobActionState,
-    formData: FormData,
+  _prev: JobActionState,
+  formData: FormData,
 ): Promise<JobActionState> {
-    const session = await requireEmployerSession();
+  const session = await requireEmployerSession();
 
-    if ("error" in session) {
-        return {
-            ok: false,
-            error: session.error,
-        };
-    }
-
-    const parsed = jobWriteSchema.safeParse(formfields(formData));
-
-    if (!parsed.success) {
-        return {
-            ok: false,
-            error: firstIssueMessage(parsed.error),
-        };
-    }
-
-    const data = parsed.data;
-
-    const shouldPublish = data.publish === "true";
-
-    const now = new Date();
-
-    const expiresAt = new Date(data.expiresAt);
-
-    // Convert optional joining date.
-    // Empty input becomes null instead of Invalid Date.
-    const joiningDate = data.joiningDate
-    ? new Date(data.joiningDate)
-    : null;
-
-if (shouldPublish && expiresAt.getTime() <= now.getTime()) {
+  if ("error" in session) {
     return {
-        ok: false,
-        error: "Expiry date must be in the future to publish",
+      ok: false,
+      error: session.error,
     };
-}
+  }
 
-if (joiningDate && joiningDate.getTime() <= now.getTime()) {
+  const parsed = jobWriteSchema.safeParse(formfields(formData));
+
+  if (!parsed.success) {
     return {
-        ok: false,
-        error: "joiningDate: Joining date must be in the future",
+      ok: false,
+      error: firstIssueMessage(parsed.error),
     };
-}
+  }
 
-    try {
-        await connectToDatabase();
+  const data = parsed.data;
 
-        const job = await Job.create({
-            companyId: session.companyId,
-            postedById: session.userId,
+  const shouldPublish = data.publish === "true";
 
-            title: data.title,
+  const now = new Date();
 
-            slug: slugifyJobTitle(data.title),
+  const expiresAt = new Date(data.expiresAt);
+
+  // Convert optional joining date.
+  // Empty input becomes null instead of Invalid Date.
+  const joiningDate = data.joiningDate ? new Date(data.joiningDate) : null;
+
+  if (shouldPublish && expiresAt.getTime() <= now.getTime()) {
+    return {
+      ok: false,
+      error: "Expiry date must be in the future to publish",
+    };
+  }
+
+  if (joiningDate && joiningDate.getTime() <= now.getTime()) {
+    return {
+      ok: false,
+      error: "joiningDate: Joining date must be in the future",
+    };
+  }
+
+  try {
+    await connectToDatabase();
+
+    const job = await Job.create({
+      companyId: session.companyId,
+      postedById: session.userId,
+
+      title: data.title,
+
+      slug: slugifyJobTitle(data.title),
 
             description: data.description,
 
@@ -139,120 +148,140 @@ if (joiningDate && joiningDate.getTime() <= now.getTime()) {
 
             requirements: data.requirements,
 
-            location: data.location,
+      location: data.location,
 
-            type: data.type,
+      type: data.type,
 
-            isRemote: data.isRemote === "true",
+      isRemote: data.isRemote === "true",
 
-            salaryMin: data.salaryMin,
+      salaryMin: data.salaryMin,
 
-            salaryMax: data.salaryMax,
+      salaryMax: data.salaryMax,
 
-            joiningDate,
+      joiningDate,
 
-            expiresAt,
+      expiresAt,
 
-            status: shouldPublish ? "published" : "draft",
+      status: shouldPublish ? "published" : "draft",
 
-            publishedAt: shouldPublish ? now : null,
-        });
+      publishedAt: shouldPublish ? now : null,
+    });
 
-        if (shouldPublish) {
-            revalidateJobBoard(job.slug);
-        }
-
-        return {
-            ok: true,
-            jobId: job._id.toString(),
-        };
-    } catch (error) {
-        console.error("Create job failed", error);
-
-        return {
-            ok: false,
-            error: "Could not create job",
-        };
+    if (shouldPublish) {
+      revalidateJobBoard(job.slug);
     }
+
+    if (shouldPublish) {
+      const [seekers, company] = await Promise.all([
+        User.find({ role: "seeker" }).select("name email").lean(),
+        Company.findById(session.companyId).select("name").lean(),
+      ]);
+
+      const jobUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/jobs/${job.slug}`;
+
+      void Promise.all(
+        seekers
+          .filter((seeker) => seeker.email)
+          .map((seeker) =>
+            sendNewJobAlertEmail({
+              to: seeker.email,
+              seekerName: seeker.name,
+              jobTitle: job.title,
+              companyName: company?.name ?? "A company",
+              jobUrl,
+              expiresAt: job.expiresAt,
+            }),
+          ),
+      );
+    }
+
+    return {
+      ok: true,
+      jobId: job._id.toString(),
+    };
+  } catch (error) {
+    console.error("Create job failed", error);
+
+    return {
+      ok: false,
+      error: "Could not create job",
+    };
+  }
 }
 
 export async function updateJob(
-    _prev: JobActionState,
-    formData: FormData,
+  _prev: JobActionState,
+  formData: FormData,
 ): Promise<JobActionState> {
-    const session = await requireEmployerSession();
+  const session = await requireEmployerSession();
 
-    if ("error" in session) {
-        return {
-            ok: false,
-            error: session.error,
-        };
-    }
+  if ("error" in session) {
+    return {
+      ok: false,
+      error: session.error,
+    };
+  }
 
-    const idParsed = jobIdSchema.safeParse({
-        jobId: formData.get("jobId"),
+  const idParsed = jobIdSchema.safeParse({
+    jobId: formData.get("jobId"),
+  });
+
+  if (!idParsed.success) {
+    return {
+      ok: false,
+      error: "Invalid job id",
+    };
+  }
+
+  const parsed = jobWriteSchema.safeParse(formfields(formData));
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: firstIssueMessage(parsed.error),
+    };
+  }
+
+  const data = parsed.data;
+
+  const shouldPublish = data.publish === "true";
+
+  const now = new Date();
+
+  try {
+    await connectToDatabase();
+
+    const existing = await Job.findOne({
+      _id: idParsed.data.jobId,
+      companyId: session.companyId,
     });
 
-    if (!idParsed.success) {
-        return {
-            ok: false,
-            error: "Invalid job id",
-        };
+    if (!existing) {
+      return {
+        ok: false,
+        error: "Job not found",
+      };
     }
 
-    const parsed = jobWriteSchema.safeParse(formfields(formData));
+    const expiresAt = new Date(data.expiresAt);
 
-    if (!parsed.success) {
-        return {
-            ok: false,
-            error: firstIssueMessage(parsed.error),
-        };
-    }
+    const joiningDate = data.joiningDate ? new Date(data.joiningDate) : null;
 
-    const data = parsed.data;
+    const pastExpiry = expiresAt.getTime() <= now.getTime();
 
-    const shouldPublish = data.publish === "true";
+    const nextStatus =
+      pastExpiry &&
+      (shouldPublish ||
+        existing.status === "published" ||
+        existing.status === "expired")
+        ? "expired"
+        : shouldPublish || existing.status === "published"
+          ? "published"
+          : existing.status === "expired"
+            ? "expired"
+            : "draft";
 
-    const now = new Date();
-
-    try {
-        await connectToDatabase();
-
-        const existing = await Job.findOne({
-            _id: idParsed.data.jobId,
-            companyId: session.companyId,
-        });
-
-        if (!existing) {
-            return {
-                ok: false,
-                error: "Job not found",
-            };
-        }
-
-        const expiresAt = new Date(data.expiresAt);
-
-        const joiningDate = data.joiningDate
-            ? new Date(data.joiningDate)
-            : null;
-
-        const pastExpiry = expiresAt.getTime() <= now.getTime();
-
-        const nextStatus =
-            pastExpiry &&
-                (
-                    shouldPublish ||
-                    existing.status === "published" ||
-                    existing.status === "expired"
-                )
-                ? "expired"
-                : shouldPublish || existing.status === "published"
-                    ? "published"
-                    : existing.status === "expired"
-                        ? "expired"
-                        : "draft";
-
-        existing.title = data.title;
+    existing.title = data.title;
 
         existing.description = data.description;
 
@@ -260,116 +289,164 @@ export async function updateJob(
 
         existing.requirements = data.requirements;
 
-        existing.location = data.location;
+    existing.location = data.location;
 
-        existing.type = data.type;
+    existing.type = data.type;
 
-        existing.isRemote = data.isRemote === "true";
+    existing.isRemote = data.isRemote === "true";
 
-        existing.salaryMin = data.salaryMin;
+    existing.salaryMin = data.salaryMin;
 
-        existing.salaryMax = data.salaryMax;
+    existing.salaryMax = data.salaryMax;
 
-        existing.joiningDate = joiningDate;
+    existing.joiningDate = joiningDate;
 
-        existing.expiresAt = expiresAt;
+    existing.expiresAt = expiresAt;
 
-        existing.status = nextStatus;
+    const wasPublished = existing.status === "published";
+    const isNewlyPublished = nextStatus === "published" && !wasPublished;
 
-        if (nextStatus === "published" && !existing.publishedAt) {
-            existing.publishedAt = now;
-        }
+    existing.status = nextStatus;
 
-        await existing.save();
-
-        if (nextStatus === "published") {
-            revalidateJobBoard(existing.slug);
-        }
-
-        return {
-            ok: true,
-            jobId: existing._id.toString(),
-        };
-    } catch (error) {
-        console.error("Update job failed", error);
-
-        return {
-            ok: false,
-            error: "Could not update job",
-        };
+    if (nextStatus === "published" && !existing.publishedAt) {
+      existing.publishedAt = now;
     }
+
+    await existing.save();
+
+    if (nextStatus === "published") {
+      revalidateJobBoard(existing.slug);
+    }
+
+    if (isNewlyPublished) {
+      const [seekers, company] = await Promise.all([
+        User.find({ role: "seeker" }).select("name email").lean(),
+        Company.findById(session.companyId).select("name").lean(),
+      ]);
+
+      const jobUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/jobs/${existing.slug}`;
+
+      void Promise.all(
+        seekers
+          .filter((seeker) => seeker.email)
+          .map((seeker) =>
+            sendNewJobAlertEmail({
+              to: seeker.email,
+              seekerName: seeker.name,
+              jobTitle: existing.title,
+              companyName: company?.name ?? "A company",
+              jobUrl,
+              expiresAt: existing.expiresAt,
+            }),
+          ),
+      );
+    }
+
+    return {
+      ok: true,
+      jobId: existing._id.toString(),
+    };
+  } catch (error) {
+    console.error("Update job failed", error);
+
+    return {
+      ok: false,
+      error: "Could not update job",
+    };
+  }
 }
 
 export async function publishJob(
-    _prev: JobActionState,
-    formData: FormData,
+  _prev: JobActionState,
+  formData: FormData,
 ): Promise<JobActionState> {
-    const session = await requireEmployerSession();
+  const session = await requireEmployerSession();
 
-    if ("error" in session) {
-        return {
-            ok: false,
-            error: session.error,
-        };
-    }
+  if ("error" in session) {
+    return {
+      ok: false,
+      error: session.error,
+    };
+  }
 
-    const idParsed = jobIdSchema.safeParse({
-        jobId: formData.get("jobId"),
+  const idParsed = jobIdSchema.safeParse({
+    jobId: formData.get("jobId"),
+  });
+
+  if (!idParsed.success) {
+    return {
+      ok: false,
+      error: "Invalid job id",
+    };
+  }
+
+  try {
+    await connectToDatabase();
+
+    const job = await Job.findOne({
+      _id: idParsed.data.jobId,
+      companyId: session.companyId,
     });
 
-    if (!idParsed.success) {
-        return {
-            ok: false,
-            error: "Invalid job id",
-        };
+    if (!job) {
+      return {
+        ok: false,
+        error: "Job not found",
+      };
     }
 
-    try {
-        await connectToDatabase();
-
-        const job = await Job.findOne({
-            _id: idParsed.data.jobId,
-            companyId: session.companyId,
-        });
-
-        if (!job) {
-            return {
-                ok: false,
-                error: "Job not found",
-            };
-        }
-
-        if (
-            job.status === "expired" ||
-            (job.expiresAt &&
-                new Date(job.expiresAt).getTime() <= Date.now())
-        ) {
-            return {
-                ok: false,
-                error: "Expired jobs cannot be published",
-            };
-        }
-
-        job.status = "published";
-
-        if (!job.publishedAt) {
-            job.publishedAt = new Date();
-        }
-
-        await job.save();
-
-        revalidateJobBoard(job.slug);
-
-        return {
-            ok: true,
-            jobId: job._id.toString(),
-        };
-    } catch (error) {
-        console.error("Publish job failed", error);
-
-        return {
-            ok: false,
-            error: "Could not publish job",
-        };
+    if (
+      job.status === "expired" ||
+      (job.expiresAt && new Date(job.expiresAt).getTime() <= Date.now())
+    ) {
+      return {
+        ok: false,
+        error: "Expired jobs cannot be published",
+      };
     }
+
+    job.status = "published";
+
+    if (!job.publishedAt) {
+      job.publishedAt = new Date();
+    }
+
+    await job.save();
+
+    revalidateJobBoard(job.slug);
+
+    const [seekers, company] = await Promise.all([
+      User.find({ role: "seeker" }).select("name email").lean(),
+      Company.findById(session.companyId).select("name").lean(),
+    ]);
+
+    const jobUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/jobs/${job.slug}`;
+
+    void Promise.all(
+      seekers
+        .filter((seeker) => seeker.email)
+        .map((seeker) =>
+          sendNewJobAlertEmail({
+            to: seeker.email,
+            seekerName: seeker.name,
+            jobTitle: job.title,
+            companyName: company?.name ?? "A company",
+            jobUrl,
+            expiresAt: job.expiresAt,
+          }),
+        ),
+    );
+
+    return {
+      ok: true,
+      jobId: job._id.toString(),
+    };
+  } catch (error) {
+    console.error("Publish job failed", error);
+
+    return {
+      ok: false,
+      error: "Could not publish job",
+    };
+  }
 }

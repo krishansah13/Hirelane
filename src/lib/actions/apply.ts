@@ -6,6 +6,7 @@ import { connectToDatabase } from "../utils/db";
 import Job from "../models/Job";
 import Application from "../models/Application";
 import { publicJobFilter } from "../job-status";
+import { isUserActive } from "../session";
 
 export type ApplyState = {
   ok: boolean;
@@ -27,6 +28,12 @@ export async function applyToJob(
     return {
       ok: false,
       error: "Only Seekers can apply for jobs",
+    };
+  }
+  if (!(await isUserActive(session.user.id))) {
+    return {
+      ok: false,
+      error: "This account has been suspended",
     };
   }
 

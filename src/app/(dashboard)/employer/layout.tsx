@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { getHomePath } from "@/lib/roles";
 
 export default async function EmployerLayout({
   children,
@@ -13,7 +14,7 @@ export default async function EmployerLayout({
   }
 
   if (session.user.role !== "employer") {
-    redirect("/dashboard");
+    redirect(getHomePath(session.user.role));
   }
 
   return <>{children}</>;

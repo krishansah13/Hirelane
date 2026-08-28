@@ -22,7 +22,7 @@ export async function getCompanyJobById(companyId: string, jobId: string) {
     return serialize(job);
 }
 
-const USER_SELECT="name email";
+const USER_SELECT = "name email image mobile";
 export async function getJobApplicants(companyId: string, jobId : string) {
     const job = await getCompanyJobById(companyId, jobId);
     if(!job) {

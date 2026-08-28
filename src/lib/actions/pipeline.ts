@@ -9,6 +9,7 @@ import { canTransition } from "../stage-transitions";
 import { revalidatePath } from "next/cache";
 import { sendStageChangeEmail } from "../email";
 import User from "../models/User";
+import { isUserActive } from "../session";
 
 export type PipelineActionState={
     ok: boolean;
@@ -27,6 +28,12 @@ export async function updateApplicationStage(_prev: PipelineActionState, formDat
         return {
             ok : false,
             error : "Only employers can update stages"
+        }
+    }
+    if(!(await isUserActive(session.user.id))) {
+        return {
+            ok: false,
+            error: "This account has been suspended"
         }
     }
     const parsed=updateStageSchema.safeParse({
