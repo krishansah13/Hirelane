@@ -19,7 +19,6 @@ export default async function Home() {
 
     return (
         <main className="flex-1 bg-white">
-            <LandingHero stats={stats} />
             <LandingCompanies companies={companies} />
             <LandingCategories />
             <LandingFeatured jobs={jobs as Job[]} total={stats.openRoles} />
