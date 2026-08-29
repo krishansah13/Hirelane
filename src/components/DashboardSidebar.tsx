@@ -24,20 +24,18 @@ type DashboardSidebarProps = {
 
 const seekerLinks = [
   { href: "/dashboard", label: "Applications", icon: LayoutDashboard },
-  { href: "/account", label: "Account", icon: CircleUserRound },
 ];
 
 const employerLinks = [
   { href: "/employer", label: "Posted roles", icon: Briefcase },
   { href: "/employer/jobs/new", label: "Post a job", icon: PlusCircle },
-  { href: "/account", label: "Account", icon: CircleUserRound },
 ];
 
 const adminLinks = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
-  { href: "/admin/companies", label: "Companies", icon: Building2 },
+  // { href: "/admin/users", label: "Users", icon: Users },
+  // { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
+  // { href: "/admin/companies", label: "Companies", icon: Building2 },
 ];
 
 function getLinks(role: UserRole) {
@@ -84,7 +82,7 @@ export default function DashboardSidebar({
   }, [applicationId, role]);
 
   return (
-    <aside className="flex w-full flex-col border-b border-gray-200 bg-white lg:w-60 lg:border-b-0 lg:border-r">
+    <aside className="flex w-full flex-col border-b border-gray-200 bg-white lg:w-60 lg:border-b-0 lg:border-r ">
       <div className="flex items-center gap-3 px-5 py-5">
         <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#eef0ff] text-xs font-semibold text-[#2e46ba]">
           {image ? (
