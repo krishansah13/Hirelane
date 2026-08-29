@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { getHomePath, type UserRole } from "@/lib/roles";
 import UserMenu from "./UserMenu";
 
@@ -75,8 +75,8 @@ export default function Navbar() {
 
     function linkClass(href: string) {
         return `text-sm font-medium transition ${isActive(href)
-                ? "text-[#2E46BA]"
-                : "text-gray-950 hover:text-[#2E46BA]"
+            ? "text-[#2E46BA]"
+            : "text-gray-950 hover:text-[#2E46BA]"
             }`;
     }
 
@@ -168,8 +168,8 @@ export default function Navbar() {
                                     href={link.href}
                                     onClick={() => setMenuOpen(false)}
                                     className={`rounded-lg px-3 py-2 ${isActive(link.href)
-                                            ? "bg-[#eef0ff] text-[#2E46BA]"
-                                            : "text-gray-700 hover:bg-gray-50"
+                                        ? "bg-[#eef0ff] text-[#2E46BA]"
+                                        : "text-gray-700 hover:bg-gray-50"
                                         } text-sm font-medium`}
                                 >
                                     {link.label}
