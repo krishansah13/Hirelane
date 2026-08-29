@@ -47,7 +47,7 @@ export default function LandingHero({ stats }: { stats: LandingStats }) {
                 </div>
 
                 <div className="mx-auto mt-10 max-w-5xl">
-                    <SearchForm params={{}} />
+                    <SearchForm/>
                 </div>
 
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-2">

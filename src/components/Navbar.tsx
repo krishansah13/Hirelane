@@ -12,7 +12,6 @@ type NavLink = { href: string; label: string };
 
 const BROWSE_LINKS: NavLink[] = [
     { href: "/jobs", label: "Find Jobs" },
-    { href: "/#companies", label: "Companies" },
 ];
 
 /**

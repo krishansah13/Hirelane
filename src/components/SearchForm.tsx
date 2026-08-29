@@ -1,31 +1,60 @@
-import { JobSearchProps } from "@/types/JobTypes";
+"use client";
+
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
 import { Search, MapPin, ArrowRight } from "lucide-react";
 
 const FIELD_CLASS =
     "flex h-14 items-center px-4 sm:h-full sm:flex-1 sm:px-0";
 
-// text-[16px] keeps iOS Safari from zooming in on focus.
 const INPUT_CLASS =
     "h-full w-full min-w-0 bg-transparent text-[16px] font-normal outline-none placeholder:text-[#a5a4ae]";
 
 const ICON_CLASS = "mr-3 shrink-0 text-[#484855] sm:mr-4";
 
-export default function SearchForm({
-    params,
-}: {
-    params: JobSearchProps;
-}) {
+export default function SearchForm() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const [q, setQ] = useState(searchParams.get("q") ?? "");
+    const [location, setLocation] = useState(
+        searchParams.get("location") ?? ""
+    );
+
+    useEffect(() => {
+        setQ(searchParams.get("q") ?? "");
+        setLocation(searchParams.get("location") ?? "");
+    }, [searchParams]);
+
+    function handleSubmit(e: FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+
+        const params = new URLSearchParams();
+
+        if (q.trim()) {
+            params.set("q", q.trim());
+        }
+
+        if (location.trim()) {
+            params.set("location", location.trim());
+        }
+
+        const type = searchParams.get("type");
+        const remote = searchParams.get("remote");
+        const sort = searchParams.get("sort");
+
+        if (type) params.set("type", type);
+        if (remote) params.set("remote", remote);
+        if (sort) params.set("sort", sort);
+
+        router.push(`/jobs?${params.toString()}`);
+    }
+
     return (
         <form
-            action="/jobs"
-            method="GET"
+            onSubmit={handleSubmit}
             className="flex w-full flex-col gap-2.5 sm:h-[70px] sm:flex-row sm:items-center sm:gap-0 sm:rounded-2xl sm:bg-[#fbf9ff] sm:px-3 sm:shadow-[0_4px_12px_rgba(0,0,0,0.10)]"
         >
-            {/*
-              On mobile both fields share one white card so the search reads as a
-              single control. `sm:contents` dissolves the card on larger screens
-              so the fields sit directly in the horizontal search bar.
-            */}
             <div className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_4px_16px_rgba(76,61,130,0.10)] sm:contents">
                 <div className={FIELD_CLASS}>
                     <Search
@@ -33,10 +62,12 @@ export default function SearchForm({
                         strokeWidth={2.2}
                         className={`${ICON_CLASS} sm:ml-2`}
                     />
+
                     <input
                         name="q"
                         type="search"
-                        defaultValue={params.q}
+                        value={q}
+                        onChange={(e) => setQ(e.target.value)}
                         placeholder="Job title or keyword"
                         className={INPUT_CLASS}
                     />
@@ -50,27 +81,17 @@ export default function SearchForm({
                         strokeWidth={2.2}
                         className={`${ICON_CLASS} sm:ml-5`}
                     />
+
                     <input
                         name="location"
                         type="search"
-                        defaultValue={params.location}
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
                         placeholder="City or location"
                         className={INPUT_CLASS}
                     />
                 </div>
             </div>
-
-            {params.type && (
-                <input type="hidden" name="type" value={params.type} />
-            )}
-
-            {params.remote && (
-                <input type="hidden" name="remote" value={params.remote} />
-            )}
-
-            {params.sort && (
-                <input type="hidden" name="sort" value={params.sort} />
-            )}
 
             <button
                 type="submit"

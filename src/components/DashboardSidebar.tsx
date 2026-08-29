@@ -145,13 +145,6 @@ export default function DashboardSidebar({
         )}
       </nav>
 
-      <button
-        type="button"
-        onClick={() => signOut({ callbackUrl: "/" })}
-        className="mt-auto hidden rounded-none border-t border-gray-100 px-5 py-3 text-left text-sm text-gray-500 hover:bg-gray-50 lg:block"
-      >
-        Sign out
-      </button>
     </aside>
   );
 }
