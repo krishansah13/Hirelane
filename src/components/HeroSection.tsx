@@ -20,7 +20,7 @@ export default function HeroSection({params}: {params: JobSearchProps}) {
             </section>
 
             <section className="mx-auto mt-10 max-w-5xl">
-                <SearchForm params={params} />
+                <SearchForm/>
             </section>
         </div>
     );

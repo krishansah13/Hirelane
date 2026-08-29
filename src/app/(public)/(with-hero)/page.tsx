@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import LandingHero from "@/components/landing-pages/LandingHero";
 import LandingCompanies from "@/components/landing-pages/LandingCompanies";
 import LandingCategories from "@/components/landing-pages/LandingCategories";
 import LandingFeatured from "@/components/landing-pages/LandingFeatured";

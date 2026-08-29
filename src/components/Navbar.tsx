@@ -137,7 +137,7 @@ export default function Navbar() {
                                         (session.user.name?.charAt(0) ?? "U").toUpperCase()
                                     )}
                                 </span>
-                                <span className="hidden max-w-[140px] truncate lg:inline">
+                                <span className="hidden max-w-35 truncate lg:inline">
                                     {session.user.name}
                                 </span>
                             </Link>
