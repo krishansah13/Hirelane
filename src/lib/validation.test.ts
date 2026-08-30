@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { jobStepSchemas, jobWriteSchema } from "./validation";
+import { jobStepSchemas, jobWriteSchema, signupSchema } from "./validation";
 
 const roleStep = jobStepSchemas[0];
 
@@ -67,6 +67,74 @@ test("role step requires meaningful requirements copy", () => {
   if (!result.success) {
     assert.equal(result.error.issues[0]?.path[0], "requirements");
   }
+});
+
+function validSignup() {
+  return {
+    name: "  Rahul   Sharma  ",
+    email: "  Rahul@Example.com  ",
+    password: "Seeker@123",
+    role: "seeker" as const,
+  };
+}
+
+test("signup trims name and lowercases email", () => {
+  const result = signupSchema.safeParse(validSignup());
+  assert.equal(result.success, true);
+  if (result.success) {
+    assert.equal(result.data.name, "Rahul Sharma");
+    assert.equal(result.data.email, "rahul@example.com");
+  }
+});
+
+test("signup rejects names with numbers or symbols", () => {
+  assert.equal(
+    signupSchema.safeParse({ ...validSignup(), name: "Rahul123" }).success,
+    false,
+  );
+  assert.equal(
+    signupSchema.safeParse({ ...validSignup(), name: "Rahul@" }).success,
+    false,
+  );
+});
+
+test("signup requires a strong password", () => {
+  assert.equal(
+    signupSchema.safeParse({ ...validSignup(), password: "seeker@123" })
+      .success,
+    false,
+  );
+  assert.equal(
+    signupSchema.safeParse({ ...validSignup(), password: "SEEKER@123" })
+      .success,
+    false,
+  );
+  assert.equal(
+    signupSchema.safeParse({ ...validSignup(), password: "Seeker123" }).success,
+    false,
+  );
+  assert.equal(
+    signupSchema.safeParse({ ...validSignup(), password: "Seeker @123" })
+      .success,
+    false,
+  );
+  assert.equal(
+    signupSchema.safeParse({ ...validSignup(), password: "Seeker@abc" })
+      .success,
+    false,
+  );
+});
+
+test("signup rejects invalid emails", () => {
+  assert.equal(
+    signupSchema.safeParse({ ...validSignup(), email: "not-an-email" }).success,
+    false,
+  );
+  assert.equal(
+    signupSchema.safeParse({ ...validSignup(), email: "user@localhost" })
+      .success,
+    false,
+  );
 });
 
 test("full job schema still enforces salary range", () => {

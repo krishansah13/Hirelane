@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { signup } from "@/lib/actions/signup";
 import { getHomePath } from "@/lib/roles";
+import PasswordChecks from "@/components/ui/PasswordChecks";
 
 type Role = "seeker" | "employer";
 
@@ -232,9 +233,15 @@ export default function SignupForm() {
                                     value={name}
                                     onChange={(event) => setName(event.target.value)}
                                     required
+                                    minLength={2}
+                                    maxLength={80}
+                                    autoCapitalize="words"
                                     className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]"
                                 />
                             </div>
+                            <p className="mt-1.5 text-xs text-gray-400">
+                                Letters and spaces only
+                            </p>
                         </div>
 
                         <div>
@@ -342,7 +349,7 @@ export default function SignupForm() {
                                     id="password"
                                     type={showPassword ? "text" : "password"}
                                     autoComplete="new-password"
-                                    placeholder="At least 8 characters"
+                                    placeholder="Min 8 chars, upper, lower, symbol"
                                     value={password}
                                     onChange={(event) =>
                                         setPassword(event.target.value)
@@ -370,6 +377,7 @@ export default function SignupForm() {
                                     )}
                                 </button>
                             </div>
+                            <PasswordChecks password={password} />
                         </div>
 
                         <div>

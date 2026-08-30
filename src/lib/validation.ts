@@ -224,20 +224,86 @@ export const updateStageSchema = z.object({
   stage: stageSchema,
 });
 
+const personNameSchema = z
+  .string()
+  .trim()
+  .transform((value) => value.replace(/\s+/g, " ").trim())
+  .pipe(
+    z
+      .string()
+      .min(2, "Name must be at least 2 characters")
+      .max(80, "Name must be 80 characters or fewer")
+      .regex(
+        /^[\p{L}]+(?: [\p{L}]+)*$/u,
+        "Name can only contain letters and spaces",
+      ),
+  );
+
+const emailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .pipe(z.email("Enter a valid email"))
+  .refine((value) => /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(value), {
+    message: "Enter a valid email",
+  });
+
+export const PASSWORD_CHECKS = [
+  {
+    id: "length",
+    label: "At least 8 characters",
+    message: "Password must be at least 8 characters",
+    test: (value: string) => value.length >= 8,
+  },
+  {
+    id: "upper",
+    label: "One uppercase letter",
+    message: "Password must include an uppercase letter",
+    test: (value: string) => /[A-Z]/.test(value),
+  },
+  {
+    id: "lower",
+    label: "One lowercase letter",
+    message: "Password must include a lowercase letter",
+    test: (value: string) => /[a-z]/.test(value),
+  },
+  {
+    id: "number",
+    label: "One number",
+    message: "Password must include a number",
+    test: (value: string) => /[0-9]/.test(value),
+  },
+  {
+    id: "special",
+    label: "One special character",
+    message: "Password must include a special character",
+    test: (value: string) => /[^A-Za-z0-9\s]/.test(value),
+  },
+  {
+    id: "spaces",
+    label: "No spaces",
+    message: "Password cannot contain spaces",
+    test: (value: string) => value.length > 0 && !/\s/.test(value),
+  },
+] as const;
+
 const passwordSchema = z
   .string()
-  .min(8, "Password must be at least 8 characters")
-  .max(100, "Password must be 100 characters or fewer");
+  .max(100, "Password must be 100 characters or fewer")
+  .superRefine((value, ctx) => {
+    const failed = PASSWORD_CHECKS.find((check) => !check.test(value));
+    if (!failed) return;
+    ctx.addIssue({
+      code: "custom",
+      message: failed.message,
+    });
+  });
 
 export const signupSchema = z
   .object({
-    name: z
-      .string()
-      .trim()
-      .min(2, "Name must be at least 2 characters")
-      .max(80, "Name must be 80 characters or fewer"),
+    name: personNameSchema,
 
-    email: z.email("Enter a valid email").trim().toLowerCase(),
+    email: emailSchema,
 
     password: passwordSchema,
 
@@ -355,12 +421,8 @@ export const createAdminCompanySchema = updateAdminCompanySchema.omit({
 
 export const createAdminEmployerSchema = z.object({
   companyId: objectIdSchema,
-  name: z
-    .string()
-    .trim()
-    .min(2, "Name must be at least 2 characters")
-    .max(80, "Name must be 80 characters or fewer"),
-  email: z.email("Enter a valid email").trim().toLowerCase(),
+  name: personNameSchema,
+  email: emailSchema,
   password: passwordSchema,
 });
 
@@ -372,11 +434,7 @@ export function normalizeMobile(value: string) {
 }
 
 export const accountSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, "Name must be at least 2 characters")
-    .max(80, "Name must be 80 characters or fewer"),
+  name: personNameSchema,
 
   mobile: z
     .string()
