@@ -33,7 +33,6 @@ function getNavLinks(role?: UserRole): NavLink[] {
         return [
             { href: dashboardHref, label: "Dashboard" },
             { href: "/employer/jobs/new", label: "Post a Job" },
-            ...BROWSE_LINKS,
         ];
     }
 
@@ -129,12 +128,15 @@ export default function Navbar() {
                             <Link
                                 href="/signup"
                                 className="hidden rounded-md border border-[#2E46BA] px-4 py-2 text-sm font-medium text-[#2E46BA] transition hover:bg-[#2E46BA]/5 sm:inline-flex sm:px-5"
+                                prefetch={false}
                             >
                                 Sign up
                             </Link>
                             <Link
                                 href="/login"
                                 className="rounded-md border border-[#2E46BA] bg-[#2E46BA] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1739ad] sm:px-6"
+                                prefetch={false}
+
                             >
                                 Sign in
                             </Link>
@@ -177,7 +179,7 @@ export default function Navbar() {
                             ))
                         )}
 
-                        {isAuthenticated && (
+                        {/* {isAuthenticated && (
                             <>
                                 <Link
                                     href="/account"
@@ -194,7 +196,7 @@ export default function Navbar() {
                                     Dashboard
                                 </Link>
                             </>
-                        )}
+                        )} */}
 
                         {!isSessionLoading && !isAuthenticated && (
                             <Link

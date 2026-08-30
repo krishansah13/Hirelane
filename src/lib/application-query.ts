@@ -7,7 +7,7 @@ import { serialize } from "./utils/serialize";
 import { objectIdSchema } from "./validation";
 
 const JOB_SELECT = "title slug location type isRemote companyId"
-const COMPANY_SELECT = "name logoUrl slug"
+const COMPANY_SELECT = "name logoURL slug"
 
 export async function getMyApplications(userId: string) {
     await connectToDatabase();

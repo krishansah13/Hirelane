@@ -1,12 +1,13 @@
 import { Suspense } from "react";
 import { jobQuerySchema } from "@/lib/validation";
 import { JobSearchProps } from "@/types/JobTypes";
-import HeroSection from "@/components/HeroSection";
 import Filters from "@/components/Filters";
 import JobResults from "@/components/jobs/JobResults";
 import { JobCardSkeleton, Skeleton } from "@/components/ui/Skeleton";
-import LandingHero from "@/components/landing-pages/LandingHero";
-import { getLandingContent } from "@/lib/job-query";
+import { auth } from "@/auth";
+import EmptyState from "@/components/EmptyState";
+import { redirect } from "next/navigation";
+
 
 function JobsFallback() {
   return (
@@ -48,15 +49,23 @@ export default async function JobSearch({
   };
 
   const suspenseKey = JSON.stringify(currentParams);
-  
+
+  const session = await auth();
+
+  if (session?.user?.role === "admin") {
+    redirect("/admin");
+  }
+
+  if (session?.user?.role === "employer") {
+    redirect("/employer");
+  }
+
   return (
     <main>
       <section className="min-h-125 bg-white px-4 py-6 sm:p-7">
         <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
           <Filters params={currentParams} />
 
-          {/* min-w-0 lets the results column shrink below its content's
-              intrinsic width instead of widening the page on small screens. */}
           <div className="min-w-0">
             <Suspense key={suspenseKey} fallback={<JobsFallback />}>
               <JobResults currentParams={currentParams} />
