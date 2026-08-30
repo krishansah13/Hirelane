@@ -21,6 +21,7 @@ type JobModalProps = {
   companyName?: string;
   companySlug?: string;
   companyLogo?: string;
+  existingApplication?: { id: string; stage: string } | null;
 };
 export default function JobModal({
   jobId,
@@ -37,6 +38,7 @@ export default function JobModal({
   companyName,
   companySlug,
   companyLogo,
+  existingApplication = null,
 }: JobModalProps) {
   const router = useRouter();
 
@@ -160,7 +162,12 @@ export default function JobModal({
           </div>
         ) : null}
         <div className="mt-8 border-t border-gray-100 pt-6">
-          <ApplyForm jobId={jobId} slug={slug} compact />
+          <ApplyForm
+            jobId={jobId}
+            slug={slug}
+            compact
+            existingApplication={existingApplication}
+          />
 
           <a
             href={`/jobs/${slug}`}

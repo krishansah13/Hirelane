@@ -209,6 +209,28 @@ export async function getMyApplications(
     };
 }
 
+export async function getMyApplicationForJob(userId: string, jobId: string) {
+    const userParsed = objectIdSchema.safeParse(userId);
+    const jobParsed = objectIdSchema.safeParse(jobId);
+    if (!userParsed.success || !jobParsed.success) return null;
+
+    await connectToDatabase();
+
+    const application = await Application.findOne({
+        userId: new mongoose.Types.ObjectId(userParsed.data),
+        jobId: new mongoose.Types.ObjectId(jobParsed.data),
+    })
+        .select("_id stage")
+        .lean();
+
+    if (!application) return null;
+
+    return {
+        id: String(application._id),
+        stage: application.stage ?? "applied",
+    };
+}
+
 export async function getMyApplicationById(userId: string, applicationId: string) {
     const idParsed = objectIdSchema.safeParse(applicationId);
     if (!idParsed.success) return null;

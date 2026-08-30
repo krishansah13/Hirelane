@@ -93,6 +93,21 @@ export default async function JobDetail({
         {/* Header */}
         <section className="relative overflow-hidden bg-linear-100 from-white via-white to-indigo-200">
           <div className="relative px-6 py-12 sm:px-10 lg:py-16">
+            {session?.user?.role === "seeker" ? (
+              <Link
+                href="/jobs"
+                className="mb-6 inline-flex text-sm font-medium text-[#2e46ba] hover:underline"
+              >
+                ← Back to applications
+              </Link>
+            ) : !previewHome ? (
+              <Link
+                href="/jobs"
+                className="mb-6 inline-flex text-sm font-medium text-[#2e46ba] hover:underline"
+              >
+                ← Back to jobs
+              </Link>
+            ) : null}
             <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
               <div className="">
                 {/* Brand */}

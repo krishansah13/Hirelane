@@ -1,6 +1,10 @@
 import JobModal from "@/components/jobs/JobModal";
+import { auth } from "@/auth";
+import { getMyApplicationForJob } from "@/lib/application-query";
 import { getJobBySlug } from "@/lib/job-query";
 import { notFound } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 export default async function JobModalPage({
   params,
@@ -8,15 +12,20 @@ export default async function JobModalPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const job = await getJobBySlug(slug);
+  const [job, session] = await Promise.all([getJobBySlug(slug), auth()]);
   if (!job) notFound();
 
   const company =
     job.companyId && typeof job.companyId === "object" ? job.companyId : null;
+  const jobId = String(job._id);
+  const existingApplication =
+    session?.user?.role === "seeker"
+      ? await getMyApplicationForJob(session.user.id, jobId)
+      : null;
 
   return (
     <JobModal
-      jobId={String(job._id)}
+      jobId={jobId}
       slug={slug}
       title={job.title}
       description={job.description}
@@ -30,6 +39,7 @@ export default async function JobModalPage({
       companyName={company?.name}
       companySlug={company?.slug}
       companyLogo={company?.logoURL}
+      existingApplication={existingApplication}
     />
   );
 }
