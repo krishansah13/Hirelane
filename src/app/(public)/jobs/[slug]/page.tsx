@@ -83,7 +83,7 @@ export default async function JobDetail({
         <div className="border-b border-indigo-100 bg-[#eef0ff] px-6 py-3 sm:px-10">
           <p className="text-sm text-[#2e46ba]">
             Public listing preview — this is what seekers see.{" "}
-            <Link href={previewHome} className="font-semibold hover:underline">
+            <Link prefetch={false} href={previewHome} className="font-semibold hover:underline">
               Back to dashboard
             </Link>
           </p>
@@ -177,38 +177,38 @@ export default async function JobDetail({
         <section className="mx-auto grid gap-8 px-6 py-10 sm:px-10 lg:grid-cols-[1fr_320px] lg:py-14">
           {/* Left: About */}
           <div className="flex flex-col gap-8">
-          <article className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-xl font-bold text-gray-950">Job Description</h2>
-
-            <div className="mt-5 whitespace-pre-line text-[15px] leading-7 text-gray-600">
-              {job.description}
-            </div>
-          </article>
-
-          {requirements ? (
             <article className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-              <h2 className="text-xl font-bold text-gray-950">Requirements</h2>
+              <h2 className="text-xl font-bold text-gray-950">Job Description</h2>
+
               <div className="mt-5 whitespace-pre-line text-[15px] leading-7 text-gray-600">
-                {requirements}
+                {job.description}
               </div>
             </article>
-          ) : null}
 
-          {skills.length > 0 ? (
-            <article className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-              <h2 className="text-xl font-bold text-gray-950">Skills</h2>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="rounded-full bg-[#eef0ff] px-3 py-1.5 text-sm font-medium text-[#2e46ba]"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </article>
-          ) : null}
+            {requirements ? (
+              <article className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-xl font-bold text-gray-950">Requirements</h2>
+                <div className="mt-5 whitespace-pre-line text-[15px] leading-7 text-gray-600">
+                  {requirements}
+                </div>
+              </article>
+            ) : null}
+
+            {skills.length > 0 ? (
+              <article className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-xl font-bold text-gray-950">Skills</h2>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="rounded-full bg-[#eef0ff] px-3 py-1.5 text-sm font-medium text-[#2e46ba]"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </article>
+            ) : null}
           </div>
 
           {/* Right column */}

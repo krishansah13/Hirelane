@@ -21,7 +21,7 @@ export default function AdminUsersPagination({
   return (
     <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
       {page > 1 ? (
-        <Link href={buildAdminUsersHref(params, page - 1)} className={STEP_ACTIVE}>
+        <Link prefetch={false} href={buildAdminUsersHref(params, page - 1)} className={STEP_ACTIVE}>
           <ChevronLeft size={16} />
           <span className="hidden sm:inline">Previous</span>
         </Link>
@@ -51,11 +51,10 @@ export default function AdminUsersPagination({
                 ) : null}
                 <Link
                   href={buildAdminUsersHref(params, pageNumber)}
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl text-sm ${
-                    pageNumber === page
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl text-sm ${pageNumber === page
                       ? "bg-[#2E46BA] text-white"
                       : "bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   {pageNumber}
                 </Link>
@@ -65,7 +64,7 @@ export default function AdminUsersPagination({
       </div>
 
       {page < totalPages ? (
-        <Link href={buildAdminUsersHref(params, page + 1)} className={STEP_ACTIVE}>
+        <Link prefetch={false} href={buildAdminUsersHref(params, page + 1)} className={STEP_ACTIVE}>
           <span className="hidden sm:inline">Next</span>
           <ChevronRight size={16} />
         </Link>
