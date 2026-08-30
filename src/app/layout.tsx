@@ -4,6 +4,7 @@ import "./globals.css";
 import Provider from "@/Providers";
 import Navbar from "@/components/Navbar";
 import { auth } from "@/auth";
+import FooterSection from "@/components/FooterSection";
 
 const hankenGrotesk = Hanken_Grotesk({
   subsets: ["latin"],
@@ -26,6 +27,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <Provider session={session}>
           <Navbar />
           {children}
+          <FooterSection/>
         </Provider>
       </body>
     </html>

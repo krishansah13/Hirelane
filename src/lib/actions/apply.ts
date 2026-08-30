@@ -7,11 +7,18 @@ import Job from "../models/Job";
 import Application from "../models/Application";
 import { publicJobFilter } from "../job-status";
 import { isUserActive } from "../session";
+import { getMyApplicationForJob } from "../application-query";
 
 export type ApplyState = {
   ok: boolean;
   error?: string;
 };
+
+export async function getMyJobApplicationStatus(jobId: string) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "seeker") return null;
+  return getMyApplicationForJob(session.user.id, jobId);
+}
 
 export async function applyToJob(
   _prev: ApplyState,

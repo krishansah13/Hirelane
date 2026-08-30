@@ -4,12 +4,22 @@ import { useActionState, useEffect, useState, startTransition } from "react";
 import { useFormStatus } from "react-dom";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { applyToJob, type ApplyState } from "@/lib/actions/apply";
+import {
+  applyToJob,
+  getMyJobApplicationStatus,
+  type ApplyState,
+} from "@/lib/actions/apply";
+
+type ExistingApplication = {
+  id: string;
+  stage: string;
+};
 
 type ApplyFormProps = {
   jobId: string;
   slug: string;
   compact?: boolean;
+  existingApplication?: ExistingApplication | null;
 };
 
 const initialState: ApplyState = { ok: false };
@@ -28,10 +38,52 @@ function SubmitButton({ label }: { label: string }) {
   );
 }
 
+function ApplicationStatusNotice({
+  application,
+}: {
+  application: ExistingApplication;
+}) {
+  const rejected = application.stage === "rejected";
+
+  return (
+    <div
+      className={`rounded-xl px-4 py-3 ${
+        rejected ? "bg-rose-50" : "bg-[#eef0ff]"
+      }`}
+    >
+      <p
+        className={`text-sm font-semibold ${
+          rejected ? "text-rose-700" : "text-[#2e46ba]"
+        }`}
+      >
+        {rejected ? "Rejected" : "Already applied"}
+      </p>
+      <p
+        className={`mt-0.5 text-xs leading-5 ${
+          rejected ? "text-rose-700/70" : "text-[#2e46ba]/70"
+        }`}
+      >
+        {rejected
+          ? "This company has closed your application."
+          : "Track this role from your dashboard."}
+      </p>
+      <Link
+        href={`/dashboard/applications/${application.id}`}
+        className={`mt-2 inline-flex text-xs font-medium hover:underline ${
+          rejected ? "text-rose-700" : "text-[#2e46ba]"
+        }`}
+      >
+        View application
+      </Link>
+    </div>
+  );
+}
+
 export default function ApplyForm({
   jobId,
   slug,
   compact = false,
+  existingApplication = null,
 }: ApplyFormProps) {
   const { data: session, status } = useSession();
   const [state, formAction] = useActionState(applyToJob, initialState);
@@ -41,10 +93,41 @@ export default function ApplyForm({
   const [clientError, setClientError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [succeeded, setSucceeded] = useState(false);
+  const [application, setApplication] = useState(existingApplication);
+  const [loadingApplication, setLoadingApplication] = useState(
+    !existingApplication,
+  );
 
   useEffect(() => {
     if (state.ok) setSucceeded(true);
   }, [state.ok]);
+
+  useEffect(() => {
+    if (existingApplication) {
+      setApplication(existingApplication);
+      setLoadingApplication(false);
+      return;
+    }
+
+    if (status !== "authenticated" || session?.user?.role !== "seeker") {
+      setLoadingApplication(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingApplication(true);
+
+    getMyJobApplicationStatus(jobId).then((result) => {
+      if (!cancelled) {
+        setApplication(result);
+        setLoadingApplication(false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [jobId, existingApplication, status, session?.user?.role]);
 
   const callbackUrl = `/jobs/${slug}`;
   const loginHref = `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`;
@@ -73,9 +156,26 @@ export default function ApplyForm({
 
   if (session.user.role !== "seeker") {
     return (
-      <p className="text-sm text-gray-600">
-        Employer accounts cannot apply. Use a seeker account instead.
-      </p>
+      <div className={compact ? "" : "rounded-2xl bg-white p-6 shadow-sm"}>
+        <p className="text-sm text-gray-600">
+          This is the public listing seekers see. You can review it here, but
+          only seekers can apply.
+        </p>
+      </div>
+    );
+  }
+
+  if (loadingApplication) {
+    return (
+      <p className="text-sm text-gray-500">Checking your application...</p>
+    );
+  }
+
+  if (application) {
+    return (
+      <div className={compact ? "" : "rounded-2xl bg-white p-6 shadow-sm"}>
+        <ApplicationStatusNotice application={application} />
+      </div>
     );
   }
 

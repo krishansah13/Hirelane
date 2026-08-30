@@ -6,7 +6,7 @@ import { connectToDatabase } from "./utils/db";
 import { serialize } from "./utils/serialize";
 import { objectIdSchema, type AdminCompanyQueryInput } from "./validation";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 10;
 
 export type AdminCompanyQuery = {
   q?: string;
@@ -26,8 +26,8 @@ export type AdminCompanyListItem = {
 
 export type AdminCompanyStats = {
   total: number;
-  withJobs: number;
-  withEmployers: number;
+  jobCount: number;
+  employerCount: number;
 };
 
 function escapeRegex(value: string) {
@@ -64,7 +64,7 @@ async function relatedCounts(companyIds: mongoose.Types.ObjectId[]) {
 
   const [employerRows, jobRows] = await Promise.all([
     User.aggregate<{ _id: mongoose.Types.ObjectId; count: number }>([
-      { $match: { companyId: { $in: companyIds } } },
+      { $match: { companyId: { $in: companyIds }, role: "employer" } },
       { $group: { _id: "$companyId", count: { $sum: 1 } } },
     ]),
     Job.aggregate<{ _id: mongoose.Types.ObjectId; count: number }>([
@@ -82,15 +82,22 @@ async function relatedCounts(companyIds: mongoose.Types.ObjectId[]) {
 export async function getAdminCompanyStats(): Promise<AdminCompanyStats> {
   await connectToDatabase();
 
-  const [total, withJobs, withEmployers] = await Promise.all([
+  const companyIds = await Company.distinct("_id");
+
+  const [total, jobCount, employerCount] = await Promise.all([
     Company.countDocuments({}),
-    Job.distinct("companyId").then((ids) => ids.length),
-    User.distinct("companyId", { companyId: { $ne: null } }).then(
-      (ids) => ids.length,
-    ),
+    companyIds.length === 0
+      ? Promise.resolve(0)
+      : Job.countDocuments({ companyId: { $in: companyIds } }),
+    companyIds.length === 0
+      ? Promise.resolve(0)
+      : User.countDocuments({
+          role: "employer",
+          companyId: { $in: companyIds },
+        }),
   ]);
 
-  return { total, withJobs, withEmployers };
+  return { total, jobCount, employerCount };
 }
 
 export async function getAdminCompanies(query: AdminCompanyQuery) {
@@ -152,12 +159,12 @@ export async function getAdminCompanyById(companyId: string) {
   if (!company) return null;
 
   const [employers, jobs, jobCount] = await Promise.all([
-    User.find({ companyId: company._id })
+    User.find({ companyId: company._id, role: "employer" })
       .select("name email role status createdAt")
       .sort({ createdAt: -1 })
       .lean(),
     Job.find({ companyId: company._id })
-      .select("title status location type createdAt")
+      .select("title status location type expiresAt createdAt")
       .sort({ createdAt: -1 })
       .limit(20)
       .lean(),

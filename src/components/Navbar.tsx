@@ -5,8 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { getHomePath, type UserRole } from "@/lib/roles";
+import UserMenu from "./UserMenu";
 
 type NavLink = { href: string; label: string };
 
@@ -20,37 +21,36 @@ const BROWSE_LINKS: NavLink[] = [
  */
 function getNavLinks(role?: UserRole): NavLink[] {
     const dashboardHref = getHomePath(role);
-  
+
     if (role === "seeker") {
-      return [
-          { href: dashboardHref, label: "Dashboard" },
-          ...BROWSE_LINKS,
-      ];
+        return [
+            { href: dashboardHref, label: "Dashboard" },
+            ...BROWSE_LINKS,
+        ];
     }
-  
+
     if (role === "employer") {
-      return [
-          { href: dashboardHref, label: "Dashboard" },
-          { href: "/employer/jobs/new", label: "Post a Job" },
-          ...BROWSE_LINKS,
-      ];
+        return [
+            { href: dashboardHref, label: "Dashboard" },
+            { href: "/employer/jobs/new", label: "Post a Job" },
+        ];
     }
 
     if (role === "admin") {
-      return [
-          { href: dashboardHref, label: "Dashboard" },
-          { href: "/admin/users", label: "Users" },
-          { href: "/admin/jobs", label: "Jobs" },
-          { href: "/admin/companies", label: "Companies" },
-      ];
+        return [
+            { href: dashboardHref, label: "Dashboard" },
+            { href: "/admin/users", label: "Users" },
+            { href: "/admin/jobs", label: "Jobs" },
+            { href: "/admin/companies", label: "Companies" },
+        ];
     }
-  
+
     return [
         { href: "/login", label: "Dashboard" },
         { href: "/login", label: "Post a Job" },
         ...BROWSE_LINKS,
     ];
-  }
+}
 
 export default function Navbar() {
     const { data: session, status } = useSession();
@@ -73,18 +73,20 @@ export default function Navbar() {
     }
 
     function linkClass(href: string) {
-        return `text-sm font-medium transition ${
-            isActive(href)
-                ? "text-[#2E46BA]"
-                : "text-gray-950 hover:text-[#2E46BA]"
-        }`;
+        return `text-sm font-medium transition ${isActive(href)
+            ? "text-[#2E46BA]"
+            : "text-gray-950 hover:text-[#2E46BA]"
+            }`;
     }
 
     return (
         <nav className="sticky top-0 z-40 border-b border-[#eeeaf8] bg-white/80 backdrop-blur">
             <div className="mx-auto flex justify-between h-16 items-center gap-4 px-4 sm:px-8">
                 <div className="flex justify-start">
-                    <Link href="/" className="flex items-center gap-3">
+                    <Link
+                        href={isAuthenticated ? dashboardHref : "/"}
+                        className="flex items-center gap-3"
+                    >
                         <Image
                             src="/images/hirelane_brand_mark.png"
                             alt="HireLane"
@@ -122,44 +124,22 @@ export default function Navbar() {
                         <div className="h-10 w-24 animate-pulse rounded-md bg-gray-100" />
                     ) : isAuthenticated ? (
                         <>
-                            <Link
-                                href="/account"
-                                className="flex items-center gap-2 text-sm font-medium text-gray-700 transition hover:text-[#2E46BA]"
-                            >
-                                <span className="inline-flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[#eef0ff] text-xs font-semibold text-[#2E46BA]">
-                                    {session.user.image ? (
-                                        <img
-                                            src={session.user.image}
-                                            alt=""
-                                            className="h-full w-full object-cover"
-                                        />
-                                    ) : (
-                                        (session.user.name?.charAt(0) ?? "U").toUpperCase()
-                                    )}
-                                </span>
-                                <span className="hidden max-w-[140px] truncate lg:inline">
-                                    {session.user.name}
-                                </span>
-                            </Link>
-                            <button
-                                type="button"
-                                onClick={() => signOut({ callbackUrl: "/" })}
-                                className="rounded-md bg-[#2E46BA] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1739ad] sm:px-6"
-                            >
-                                Sign out
-                            </button>
+                            <UserMenu user={session.user} />
                         </>
                     ) : (
                         <>
                             <Link
                                 href="/signup"
                                 className="hidden rounded-md border border-[#2E46BA] px-4 py-2 text-sm font-medium text-[#2E46BA] transition hover:bg-[#2E46BA]/5 sm:inline-flex sm:px-5"
+                                prefetch={false}
                             >
                                 Sign up
                             </Link>
                             <Link
                                 href="/login"
                                 className="rounded-md border border-[#2E46BA] bg-[#2E46BA] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1739ad] sm:px-6"
+                                prefetch={false}
+
                             >
                                 Sign in
                             </Link>
@@ -192,35 +172,34 @@ export default function Navbar() {
                                     key={link.label}
                                     href={link.href}
                                     onClick={() => setMenuOpen(false)}
-                                    className={`rounded-lg px-3 py-2 ${
-                                        isActive(link.href)
-                                            ? "bg-[#eef0ff] text-[#2E46BA]"
-                                            : "text-gray-700 hover:bg-gray-50"
-                                    } text-sm font-medium`}
+                                    className={`rounded-lg px-3 py-2 ${isActive(link.href)
+                                        ? "bg-[#eef0ff] text-[#2E46BA]"
+                                        : "text-gray-700 hover:bg-gray-50"
+                                        } text-sm font-medium`}
                                 >
                                     {link.label}
                                 </Link>
                             ))
                         )}
 
-                        {isAuthenticated && (
+                        {/* {isAuthenticated && (
                             <>
-                            <Link
-                                href="/account"
-                                onClick={() => setMenuOpen(false)}
-                                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                            >
-                                Account
-                            </Link>
-                            <Link
-                                href={dashboardHref}
-                                onClick={() => setMenuOpen(false)}
-                                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:hidden"
-                            >
-                                Dashboard
-                            </Link>
+                                <Link
+                                    href="/account"
+                                    onClick={() => setMenuOpen(false)}
+                                    className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                >
+                                    Account
+                                </Link>
+                                <Link
+                                    href={dashboardHref}
+                                    onClick={() => setMenuOpen(false)}
+                                    className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:hidden"
+                                >
+                                    Dashboard
+                                </Link>
                             </>
-                        )}
+                        )} */}
 
                         {!isSessionLoading && !isAuthenticated && (
                             <Link

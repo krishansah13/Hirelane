@@ -17,5 +17,7 @@ export default async function AdminLayout({
     redirect(getHomePath(session.user.role));
   }
 
-  return <>{children}</>;
+  return <>
+    {children}
+      </>;
 }

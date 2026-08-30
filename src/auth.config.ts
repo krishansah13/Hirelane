@@ -44,6 +44,15 @@ export const authConfig = {
       const isAdmin = pathname.startsWith("/admin");
       const isAccount = pathname.startsWith("/account");
 
+      if (pathname === "/" && isLoggedIn) {
+        return Response.redirect(new URL(getHomePath(role), request.url));
+      }
+
+      const isJobBoard = pathname === "/jobs" || pathname === "/jobs/";
+      if (isJobBoard && (role === "employer" || role === "admin")) {
+        return Response.redirect(new URL(getHomePath(role), request.url));
+      }
+
       if ((isDashboard || isEmployer || isAdmin || isAccount) && !isLoggedIn) {
         return false;
       }

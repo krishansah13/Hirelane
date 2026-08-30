@@ -2,6 +2,7 @@ const SIZE = {
     sm: "h-7 w-7 rounded-lg text-[10px]",
     md: "h-10 w-10 rounded-lg text-[13px] sm:h-12 sm:w-12 sm:rounded-xl sm:text-sm",
     lg: "h-11 w-11 rounded-xl text-sm",
+    xl: "h-14 w-14 rounded-2xl text-base sm:h-16 sm:w-16",
 } as const;
 
 const PALETTE = [

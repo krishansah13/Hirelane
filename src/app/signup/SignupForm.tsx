@@ -49,6 +49,7 @@ export default function SignupForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showConfPass, setShowConfPass] = useState(false);
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -356,7 +357,7 @@ export default function SignupForm() {
                                 />
                                 <input
                                     id="confirmPassword"
-                                    type={showPassword ? "text" : "password"}
+                                    type={showConfPass ? "text" : "password"}
                                     autoComplete="new-password"
                                     placeholder="Repeat your password"
                                     value={confirmPassword}
@@ -367,6 +368,24 @@ export default function SignupForm() {
                                     required
                                     className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]"
                                 />
+                                 <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowConfPass((visible) => !visible)
+                                    }
+                                    className="ml-2 shrink-0 text-[#484855] transition hover:text-gray-950"
+                                    aria-label={
+                                        showConfPass
+                                            ? "Hide password"
+                                            : "Show password"
+                                    }
+                                >
+                                    {showConfPass ? (
+                                        <EyeOff size={16} />
+                                    ) : (
+                                        <Eye size={16} />
+                                    )}
+                                </button>
                             </div>
                         </div>
 

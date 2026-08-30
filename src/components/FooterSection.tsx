@@ -1,67 +1,98 @@
+import Image from "next/image";
 import Link from "next/link";
+import { auth } from "@/auth";
+import { getHomePath, type UserRole } from "@/lib/roles";
 
 const LINK_CLASS =
-    "text-xs text-[#3f3b4a] transition-colors hover:text-[#4f46e5]";
+    "text-sm font-medium text-gray-500 transition-colors hover:text-[#2E46BA]";
 
-const COLUMNS = [
-    {
-        heading: "For Candidates",
-        links: [
-            { href: "/jobs", label: "Browse Jobs" },
-            { href: "/dashboard", label: "My Applications" },
-        ],
-    },
-    {
-        heading: "For Employers",
-        links: [
-            { href: "/employer/jobs/new", label: "Post a Job" },
-            { href: "/employer", label: "Manage Roles" },
-        ],
-    },
-];
+type FooterLink = { href: string; label: string };
 
-export default function FooterSection() {
+function getFooterLinks(role?: UserRole | null): FooterLink[] {
+    if (role === "seeker") {
+        return [
+            { href: "/dashboard", label: "Applications" },
+            { href: "/jobs", label: "Find jobs" },
+            { href: "/account", label: "Account" },
+        ];
+    }
+
+    if (role === "employer") {
+        return [
+            { href: "/employer", label: "Posted roles" },
+            { href: "/employer/jobs/new", label: "Post a job" },
+            { href: "/account", label: "Account" },
+        ];
+    }
+
+    if (role === "admin") {
+        return [
+            { href: "/admin", label: "Overview" },
+            { href: "/admin/users", label: "Users" },
+            { href: "/admin/jobs", label: "Jobs" },
+            { href: "/admin/companies", label: "Companies" },
+            { href: "/account", label: "Account" },
+        ];
+    }
+
+    return [
+        { href: "/jobs", label: "Browse jobs" },
+        { href: "/login", label: "Sign in" },
+        { href: "/signup?role=employer", label: "Post a job" },
+    ];
+}
+
+export default async function FooterSection() {
+    const session = await auth();
+    const role = session?.user?.role;
+    const links = getFooterLinks(role);
+    const homeHref = role ? getHomePath(role) : "/";
+
     return (
-        <footer className="bg-[#f7f5ff]">
-            <div className="mx-auto max-w-7xl px-8 py-16">
-                <div className="flex flex-wrap gap-16 sm:gap-32">
-                    {COLUMNS.map((column) => (
-                        <div key={column.heading}>
-                            <h3 className="text-sm font-medium text-[#17151c]">
-                                {column.heading}
-                            </h3>
+        <footer className="mt-auto border-t border-[#eeeaf8] bg-white">
+            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
+                <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                    <Link
+                        href={homeHref}
+                        className="inline-flex shrink-0 items-center gap-2.5"
+                    >
+                        <Image
+                            src="/images/hirelane_brand_mark.png"
+                            alt=""
+                            width={28}
+                            height={28}
+                        />
+                        <span className="text-lg font-semibold tracking-tight text-[#2E46BA]">
+                            Hirelane
+                        </span>
+                    </Link>
 
-                            <div className="mt-3 flex flex-col gap-2">
-                                {column.links.map((link) => (
-                                    <Link
-                                        key={link.href}
-                                        href={link.href}
-                                        className={LINK_CLASS}
-                                    >
-                                        {link.label}
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
+                    <nav
+                        aria-label="Footer"
+                        className="flex flex-wrap items-center gap-x-6 gap-y-2 sm:justify-end"
+                    >
+                        {links.map((link) => (
+                            <Link
+                                key={`${link.href}-${link.label}`}
+                                href={link.href}
+                                className={LINK_CLASS}
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
+                    </nav>
                 </div>
 
-                <div className="my-8 h-px bg-[#dcd8ea]" />
+                <p className="mt-4 max-w-lg text-sm leading-6 text-gray-400">
+                    Find work that fits you, or hire from the lane that leads to
+                    your next teammate.
+                </p>
 
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                    <p className="text-xs text-[#3f3b4a]">
+                <div className="mt-8 border-t border-[#eeeaf8] pt-6">
+                    <p className="text-xs text-gray-400">
                         &copy; {new Date().getFullYear()} Hirelane. Modern
-                        Recruitment Excellence.
+                        recruitment excellence.
                     </p>
-
-                    <div className="flex items-center gap-7">
-                        <Link href="/" className={LINK_CLASS}>
-                            Home
-                        </Link>
-                        <Link href="/jobs" className={LINK_CLASS}>
-                            Jobs
-                        </Link>
-                    </div>
                 </div>
             </div>
         </footer>

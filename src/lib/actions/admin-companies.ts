@@ -9,13 +9,33 @@ import User from "@/lib/models/User";
 import Application from "@/lib/models/Application";
 import { connectToDatabase } from "@/lib/utils/db";
 import { isUserActive } from "@/lib/session";
-import { objectIdSchema, updateAdminCompanySchema } from "@/lib/validation";
+import {
+  createAdminCompanySchema,
+  objectIdSchema,
+  updateAdminCompanySchema,
+} from "@/lib/validation";
 import { revalidateJobBoard } from "@/lib/cache";
+import { slugifyCompanyName } from "@/lib/utils/slug";
+
+export type AdminCompanyFormValues = {
+  name: string;
+  website: string;
+  about: string;
+};
 
 export type AdminCompanyActionState = {
   ok: boolean;
   error?: string;
+  values?: AdminCompanyFormValues;
 };
+
+function companyFormValues(formData: FormData): AdminCompanyFormValues {
+  return {
+    name: String(formData.get("name") ?? ""),
+    website: String(formData.get("website") ?? ""),
+    about: String(formData.get("about") ?? ""),
+  };
+}
 
 async function requireAdminActor() {
   const session = await auth();
@@ -36,6 +56,82 @@ function normalizeWebsite(value: string) {
   if (!trimmed) return trimmed;
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
   return `https://${trimmed}`;
+}
+
+export async function createAdminCompany(
+  _prev: AdminCompanyActionState,
+  formData: FormData,
+): Promise<AdminCompanyActionState> {
+  const values = companyFormValues(formData);
+
+  const actor = await requireAdminActor();
+  if ("error" in actor) {
+    return { ok: false, error: actor.error, values };
+  }
+
+  const parsed = createAdminCompanySchema.safeParse({
+    name: formData.get("name"),
+    website: formData.get("website"),
+    about: formData.get("about") || undefined,
+  });
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid company",
+      values,
+    };
+  }
+
+  const website = normalizeWebsite(parsed.data.website);
+
+  try {
+    new URL(website);
+  } catch {
+    return { ok: false, error: "Enter a valid company website", values };
+  }
+
+  let companyId: string;
+
+  try {
+    await connectToDatabase();
+
+    if (await Company.findOne({ name: parsed.data.name })) {
+      return { ok: false, error: "Company already exists", values };
+    }
+
+    if (await Company.findOne({ website })) {
+      return {
+        ok: false,
+        error: "Company with this website already exists",
+        values,
+      };
+    }
+
+    const company = await Company.create({
+      name: parsed.data.name,
+      slug: slugifyCompanyName(parsed.data.name),
+      website,
+      logoURL: "",
+      about: parsed.data.about ?? "",
+    });
+
+    companyId = String(company._id);
+
+    revalidateJobBoard();
+    revalidatePath("/admin");
+    revalidatePath("/admin/companies");
+    revalidatePath(`/admin/companies/${companyId}`);
+  } catch (error) {
+    console.error("Failed to create company", error);
+    return {
+      ok: false,
+      error: "Could not create this company. Try again.",
+      values,
+    };
+  }
+
+  redirect(`/admin/companies/${companyId}`);
 }
 
 export async function updateAdminCompany(

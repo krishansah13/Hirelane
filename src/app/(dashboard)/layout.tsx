@@ -1,6 +1,5 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import DashboardSidebar from "@/components/DashboardSidebar";
 import { isUserActive } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -21,13 +20,14 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-[#f7f5ff] lg:flex-row">
-      <DashboardSidebar
-        role={session.user.role}
-        name={session.user.name ?? "Account"}
-        image={session.user.image}
-      />
-      <main className="min-w-0 flex-1 px-4 py-6 sm:px-8">{children}</main>
-    </div>
+    <main className="relative isolate min-w-0 flex-1 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 bg-[#f7f5ff]" />
+      <div className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-indigo-200/45 blur-3xl" />
+      <div className="pointer-events-none absolute -left-20 bottom-0 h-56 w-56 rounded-full bg-[#2E46BA]/10 blur-3xl" />
+
+      <div className="relative mx-auto max-w-full px-4 py-4 sm:px-8 sm:py-10">
+        {children}
+      </div>
+    </main>
   );
 }
