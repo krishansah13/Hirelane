@@ -42,7 +42,9 @@ export default function LoginForm() {
   const [error, setError] = useState(
     searchParams.get("error") === "suspended"
       ? "This account has been suspended. Contact support if you need access."
-      : "",
+      : searchParams.get("error") === "pending"
+        ? "Your employer account is waiting for admin approval. You'll get an email when it's ready."
+        : "",
   );
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,7 +66,9 @@ export default function LoginForm() {
         setError(
           code.includes("account_suspended")
             ? "This account has been suspended. Contact support if you need access."
-            : "Invalid email or password.",
+            : code.includes("account_pending")
+              ? "Your employer account is waiting for admin approval. You'll get an email when it's ready."
+              : "Invalid email or password.",
         );
         return;
       }

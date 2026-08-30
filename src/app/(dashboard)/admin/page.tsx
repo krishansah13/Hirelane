@@ -5,6 +5,7 @@ import {
   Building2,
   Shield,
   Sparkles,
+  UserCheck,
   Users,
 } from "lucide-react";
 import { requireAdmin } from "@/lib/session";
@@ -43,9 +44,9 @@ export default async function AdminPage() {
       hint: `${companyStats.employerCount} employers · ${companyStats.jobCount} jobs`,
     },
     {
-      label: "Suspended",
-      value: userStats.suspended,
-      hint: "Need a closer look",
+      label: "Pending",
+      value: userStats.pending,
+      hint: `${userStats.suspended} suspended`,
     },
   ];
 
@@ -54,7 +55,7 @@ export default async function AdminPage() {
       href: "/admin/users",
       icon: Users,
       title: "User management",
-      body: `${userStats.total} accounts · ${userStats.suspended} suspended. Search, filter, and suspend seekers or employers.`,
+      body: `${userStats.total} accounts · ${userStats.pending} pending · ${userStats.suspended} suspended. Approve employers and manage access.`,
     },
     {
       href: "/admin/jobs",
@@ -67,6 +68,12 @@ export default async function AdminPage() {
       icon: Building2,
       title: "Company management",
       body: `${companyStats.total} companies · ${companyStats.employerCount} employers · ${companyStats.jobCount} jobs. Review profiles and clean up employer listings.`,
+    },
+    {
+      href: "/admin/approvals",
+      icon: UserCheck,
+      title: "Account approvals",
+      body: `${userStats.pending} employer ${userStats.pending === 1 ? "account" : "accounts"} waiting. Review name, email, and company, then approve or remove.`,
     },
   ];
 
@@ -91,7 +98,7 @@ export default async function AdminPage() {
             </p>
           </div>
 
-          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#eef0ff] px-4 py-2 text-sm font-medium text-[#2E46BA]">
+          <span className="inline-flex shrink-0 gap-1.5 rounded-xl bg-[#eef0ff] px-4 py-2 text-sm font-medium text-[#2E46BA] text-center items-center justify-center">
             <Shield size={15} />
             Platform admin
           </span>
@@ -120,7 +127,7 @@ export default async function AdminPage() {
           <h2 className="text-sm font-semibold text-gray-950">Manage Hirelane</h2>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           {panels.map((panel) => {
             const Icon = panel.icon;
 

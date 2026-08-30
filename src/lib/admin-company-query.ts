@@ -11,6 +11,8 @@ const PAGE_SIZE = 10;
 export type AdminCompanyQuery = {
   q?: string;
   page?: number;
+  pendingPage?: number;
+  activePage?: number;
 };
 
 export type AdminCompanyListItem = {
@@ -28,6 +30,8 @@ export type AdminCompanyStats = {
   total: number;
   jobCount: number;
   employerCount: number;
+  pendingEmployerCount: number;
+  activeEmployerCount: number;
 };
 
 function escapeRegex(value: string) {
@@ -40,6 +44,8 @@ export function toAdminCompanyQuery(
   return {
     q: input.q,
     page: input.page,
+    pendingPage: input.pendingPage,
+    activePage: input.activePage,
   };
 }
 
@@ -50,8 +56,29 @@ export function buildAdminCompaniesHref(
   const search = new URLSearchParams();
   if (params.q) search.set("q", params.q);
   if (page > 1) search.set("page", String(page));
+  if (params.pendingPage && params.pendingPage > 1) {
+    search.set("pendingPage", String(params.pendingPage));
+  }
+  if (params.activePage && params.activePage > 1) {
+    search.set("activePage", String(params.activePage));
+  }
   const query = search.toString();
   return query ? `/admin/companies?${query}` : "/admin/companies";
+}
+
+export function buildAdminCompanyEmployersHref(
+  params: AdminCompanyQuery,
+  list: "pending" | "active",
+  listPage: number,
+) {
+  return buildAdminCompaniesHref(
+    {
+      ...params,
+      pendingPage: list === "pending" ? listPage : params.pendingPage,
+      activePage: list === "active" ? listPage : params.activePage,
+    },
+    params.page ?? 1,
+  );
 }
 
 async function relatedCounts(companyIds: mongoose.Types.ObjectId[]) {
@@ -84,20 +111,41 @@ export async function getAdminCompanyStats(): Promise<AdminCompanyStats> {
 
   const companyIds = await Company.distinct("_id");
 
-  const [total, jobCount, employerCount] = await Promise.all([
-    Company.countDocuments({}),
-    companyIds.length === 0
-      ? Promise.resolve(0)
-      : Job.countDocuments({ companyId: { $in: companyIds } }),
-    companyIds.length === 0
-      ? Promise.resolve(0)
-      : User.countDocuments({
-          role: "employer",
-          companyId: { $in: companyIds },
-        }),
-  ]);
+  const [total, jobCount, employerCount, pendingEmployerCount, activeEmployerCount] =
+    await Promise.all([
+      Company.countDocuments({}),
+      companyIds.length === 0
+        ? Promise.resolve(0)
+        : Job.countDocuments({ companyId: { $in: companyIds } }),
+      companyIds.length === 0
+        ? Promise.resolve(0)
+        : User.countDocuments({
+            role: "employer",
+            companyId: { $in: companyIds },
+          }),
+      companyIds.length === 0
+        ? Promise.resolve(0)
+        : User.countDocuments({
+            role: "employer",
+            status: "pending",
+            companyId: { $in: companyIds },
+          }),
+      companyIds.length === 0
+        ? Promise.resolve(0)
+        : User.countDocuments({
+            role: "employer",
+            status: "active",
+            companyId: { $in: companyIds },
+          }),
+    ]);
 
-  return { total, jobCount, employerCount };
+  return {
+    total,
+    jobCount,
+    employerCount,
+    pendingEmployerCount,
+    activeEmployerCount,
+  };
 }
 
 export async function getAdminCompanies(query: AdminCompanyQuery) {
@@ -149,6 +197,23 @@ export async function getAdminCompanies(query: AdminCompanyQuery) {
   };
 }
 
+export function buildAdminCompanyDetailEmployersHref(
+  companyId: string,
+  params: { pendingPage?: number; activePage?: number },
+  list: "pending" | "active",
+  listPage: number,
+) {
+  const search = new URLSearchParams();
+  const pendingPage = list === "pending" ? listPage : params.pendingPage ?? 1;
+  const activePage = list === "active" ? listPage : params.activePage ?? 1;
+  if (pendingPage > 1) search.set("pendingPage", String(pendingPage));
+  if (activePage > 1) search.set("activePage", String(activePage));
+  const query = search.toString();
+  return query
+    ? `/admin/companies/${companyId}?${query}`
+    : `/admin/companies/${companyId}`;
+}
+
 export async function getAdminCompanyById(companyId: string) {
   const parsed = objectIdSchema.safeParse(companyId);
   if (!parsed.success) return null;
@@ -158,11 +223,8 @@ export async function getAdminCompanyById(companyId: string) {
   const company = await Company.findById(parsed.data).lean();
   if (!company) return null;
 
-  const [employers, jobs, jobCount] = await Promise.all([
-    User.find({ companyId: company._id, role: "employer" })
-      .select("name email role status createdAt")
-      .sort({ createdAt: -1 })
-      .lean(),
+  const [employerCount, jobs, jobCount] = await Promise.all([
+    User.countDocuments({ companyId: company._id, role: "employer" }),
     Job.find({ companyId: company._id })
       .select("title status location type expiresAt createdAt")
       .sort({ createdAt: -1 })
@@ -173,9 +235,8 @@ export async function getAdminCompanyById(companyId: string) {
 
   return {
     company: serialize(company),
-    employers: serialize(employers),
     jobs: serialize(jobs),
-    employerCount: employers.length,
+    employerCount,
     jobCount,
   };
 }

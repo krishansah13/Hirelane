@@ -1,5 +1,5 @@
 export type UserRole = "seeker" | "employer" | "admin";
-export type AccountStatus = "active" | "suspended";
+export type AccountStatus = "active" | "suspended" | "pending";
 
 export function getHomePath(role?: UserRole | string | null): string {
   if (role === "admin") return "/admin";
@@ -20,5 +20,7 @@ export function formatRoleName(role?: UserRole | string | null): string {
 }
 
 export function formatAccountStatus(status?: AccountStatus | string | null): AccountStatus {
-  return status === "suspended" ? "suspended" : "active";
+  if (status === "suspended") return "suspended";
+  if (status === "pending") return "pending";
+  return "active";
 }

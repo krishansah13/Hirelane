@@ -11,11 +11,14 @@ import type { AccountStatus } from "@/lib/roles";
 const initialState: AdminUserActionState = { ok: false };
 
 function SubmitButton({
+  currentStatus,
   nextStatus,
 }: {
+  currentStatus: AccountStatus;
   nextStatus: AccountStatus;
 }) {
   const { pending } = useFormStatus();
+  const isApprove = currentStatus === "pending";
   const isSuspend = nextStatus === "suspended";
 
   return (
@@ -29,12 +32,16 @@ function SubmitButton({
       }`}
     >
       {pending
-        ? isSuspend
-          ? "Suspending…"
-          : "Restoring…"
-        : isSuspend
-          ? "Suspend"
-          : "Restore"}
+        ? isApprove
+          ? "Approving…"
+          : isSuspend
+            ? "Suspending…"
+            : "Restoring…"
+        : isApprove
+          ? "Approve"
+          : isSuspend
+            ? "Suspend"
+            : "Restore"}
     </button>
   );
 }
@@ -48,14 +55,14 @@ export default function AdminUserStatusButton({
 }) {
   const [state, formAction] = useActionState(setUserAccountStatus, initialState);
   const nextStatus: AccountStatus =
-    status === "suspended" ? "active" : "suspended";
+    status === "suspended" || status === "pending" ? "active" : "suspended";
 
   return (
     <div className="flex flex-col items-start gap-1">
       <form action={formAction}>
         <input type="hidden" name="userId" value={userId} />
         <input type="hidden" name="status" value={nextStatus} />
-        <SubmitButton nextStatus={nextStatus} />
+        <SubmitButton currentStatus={status} nextStatus={nextStatus} />
       </form>
       {state.error ? (
         <p className="text-xs text-rose-600">{state.error}</p>

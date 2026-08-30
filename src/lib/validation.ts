@@ -285,7 +285,7 @@ export const adminUserQuerySchema = z.object({
   ),
   status: z.preprocess(
     emptyToUndefined,
-    z.enum(["active", "suspended"]).optional(),
+    z.enum(["active", "suspended", "pending"]).optional(),
   ),
   page: z.coerce.number().int().positive().default(1),
 });
@@ -315,6 +315,8 @@ export const adminJobQuerySchema = z.object({
 export const adminCompanyQuerySchema = z.object({
   q: z.preprocess(emptyToUndefined, z.string().trim().max(80).optional()),
   page: z.coerce.number().int().positive().default(1),
+  pendingPage: z.coerce.number().int().positive().optional(),
+  activePage: z.coerce.number().int().positive().optional(),
 });
 
 export const seekerApplicationQuerySchema = z.object({

@@ -163,3 +163,85 @@ Good luck with your application!
     console.error("New-job alert email failed", error);
   }
 }
+
+type EmployerApprovedEmail = {
+  to: string;
+  employerName: string;
+  companyName: string;
+};
+
+export async function sendEmployerApprovedEmail({
+  to,
+  employerName,
+  companyName,
+}: EmployerApprovedEmail) {
+  const mail = getTransport();
+  if (!mail) {
+    console.error(
+      "Missing SMTP_HOST/PORT/USER/PASS/FROM; skipped employer approval email",
+    );
+    return;
+  }
+
+  const greeting = employerName.trim() || "there";
+  const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/login`;
+  const subject = "Your Hirelane employer account is ready";
+  const text = `Hi ${greeting},
+
+Your employer account for ${companyName} has been approved.
+
+You can now sign in and start posting jobs:
+${loginUrl}
+
+Welcome to Hirelane.
+`;
+
+  const logoUrl =
+    "https://hirelane-flax.vercel.app/images/hirelane_brand_mark.png";
+
+  const html = `
+  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+    <div style="text-align: center; padding: 24px 0;">
+      <img
+        src="${logoUrl}"
+        alt="Hirelane"
+        style="max-width: 180px; height: auto;"
+      />
+    </div>
+
+    <div style="padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px;">
+      <h2 style="margin-top: 0; color: #111827;">
+        Your employer account is ready
+      </h2>
+
+      <p>Hi ${greeting},</p>
+
+      <p>
+        Your employer account for <strong>${companyName}</strong> has been
+        approved. You can now sign in and start posting jobs on Hirelane.
+      </p>
+
+      <p>
+        <a
+          href="${loginUrl}"
+          style="display: inline-block; padding: 10px 18px; background: #2e46ba; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600;"
+        >
+          Sign in
+        </a>
+      </p>
+    </div>
+  </div>
+`;
+
+  try {
+    await mail.transporter.sendMail({
+      from: mail.from,
+      to,
+      subject,
+      text,
+      html,
+    });
+  } catch (error) {
+    console.error("Employer approval email failed", error);
+  }
+}

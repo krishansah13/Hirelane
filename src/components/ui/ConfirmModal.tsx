@@ -17,7 +17,7 @@ function ConfirmButton({
     <button
       type="submit"
       disabled={pending}
-      className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+      className="rounded-xl bg-[#2E46BA] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
     >
       {pending ? pendingLabel : label}
     </button>
@@ -99,7 +99,7 @@ export default function ConfirmModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+            className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 cursor-pointer"
           >
             Cancel
           </button>

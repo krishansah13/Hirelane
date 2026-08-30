@@ -7,6 +7,7 @@ import User from "@/lib/models/User";
 import Company from "@/lib/models/Company";
 import { connectToDatabase } from "@/lib/utils/db";
 import { isUserActive } from "@/lib/session";
+import { sendEmployerApprovedEmail } from "@/lib/email";
 import {
   createAdminEmployerSchema,
   objectIdSchema,
@@ -143,6 +144,7 @@ export async function deleteAdminEmployer(
     await user.deleteOne();
 
     revalidatePath("/admin");
+    revalidatePath("/admin/approvals");
     revalidatePath("/admin/users");
     revalidatePath("/admin/companies");
     revalidatePath(`/admin/companies/${companyId.data}`);
@@ -184,7 +186,9 @@ export async function setUserAccountStatus(
   try {
     await connectToDatabase();
 
-    const user = await User.findById(parsed.data.userId).select("role status");
+    const user = await User.findById(parsed.data.userId).select(
+      "name email role status companyId",
+    );
 
     if (!user) {
       return { ok: false, error: "User not found" };
@@ -194,11 +198,33 @@ export async function setUserAccountStatus(
       return { ok: false, error: "Admin accounts cannot be suspended" };
     }
 
+    const wasPending = user.status === "pending";
     user.status = parsed.data.status;
     await user.save();
 
+    if (
+      wasPending &&
+      parsed.data.status === "active" &&
+      user.role === "employer"
+    ) {
+      const company = user.companyId
+        ? await Company.findById(user.companyId).select("name")
+        : null;
+
+      await sendEmployerApprovedEmail({
+        to: user.email,
+        employerName: user.name,
+        companyName: company?.name ?? "your company",
+      });
+    }
+
     revalidatePath("/admin");
+    revalidatePath("/admin/approvals");
     revalidatePath("/admin/users");
+    revalidatePath("/admin/companies");
+    if (user.companyId) {
+      revalidatePath(`/admin/companies/${user.companyId}`);
+    }
 
     return { ok: true };
   } catch (error) {

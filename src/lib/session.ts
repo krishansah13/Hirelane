@@ -1,6 +1,10 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { getHomePath } from "@/lib/roles";
+import {
+  formatAccountStatus,
+  getHomePath,
+  type AccountStatus,
+} from "@/lib/roles";
 import { connectToDatabase } from "@/lib/utils/db";
 import User from "@/lib/models/User";
 
@@ -9,11 +13,26 @@ export async function getCurrentUser() {
   return session?.user ?? null;
 }
 
-export async function isUserActive(userId: string) {
+export async function getAccountStatus(
+  userId: string,
+): Promise<AccountStatus | null> {
   await connectToDatabase();
   const record = await User.findById(userId).select("status").lean();
-  if (!record) return false;
-  return record.status !== "suspended";
+  if (!record) return null;
+  return formatAccountStatus(record.status);
+}
+
+export async function isUserActive(userId: string) {
+  return (await getAccountStatus(userId)) === "active";
+}
+
+function redirectIfInactive(status: AccountStatus | null) {
+  if (status === "pending") {
+    redirect("/account-pending");
+  }
+  if (status !== "active") {
+    redirect("/account-suspended");
+  }
 }
 
 export async function requireUser() {
@@ -21,9 +40,7 @@ export async function requireUser() {
   if (!user) {
     redirect("/login");
   }
-  if (!(await isUserActive(user.id))) {
-    redirect("/account-suspended");
-  }
+  redirectIfInactive(await getAccountStatus(user.id));
   return user;
 }
 
