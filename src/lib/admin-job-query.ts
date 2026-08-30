@@ -8,7 +8,7 @@ import { expireOverduePublishedJobs } from "./job-query";
 import { effectiveJobStatus } from "./job-status";
 import { objectIdSchema, type AdminJobQueryInput } from "./validation";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 10;
 
 export type AdminJobQuery = {
   q?: string;

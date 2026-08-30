@@ -6,7 +6,7 @@ import { connectToDatabase } from "./utils/db";
 import { serialize } from "./utils/serialize";
 import { objectIdSchema, type AdminCompanyQueryInput } from "./validation";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 10;
 
 export type AdminCompanyQuery = {
   q?: string;

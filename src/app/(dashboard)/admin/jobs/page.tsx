@@ -55,7 +55,7 @@ export default async function AdminJobsPage({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-2xl bg-linear-100 from-white via-white to-indigo-200 p-6 shadow-sm sm:p-8">
         <p className="text-xs font-medium tracking-wide text-gray-400">
           ADMIN
         </p>
@@ -110,7 +110,7 @@ export default async function AdminJobsPage({
           <div className="rounded-2xl bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 sm:px-6">
               <p className="text-sm text-gray-500">
-                Showing {rangeStart}–{rangeEnd} of {result.total}
+                Showing {rangeStart} - {rangeEnd} of {result.total}
               </p>
               {filtersActive ? (
                 <Link

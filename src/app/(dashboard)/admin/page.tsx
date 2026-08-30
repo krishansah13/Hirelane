@@ -71,12 +71,12 @@ export default async function AdminPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <section className="relative overflow-hidden rounded-3xl bg-linear-100 from-white via-white to-indigo-200 shadow-sm">
+    <div className="mx-auto max-w-full space-y-6">
+      <section className="relative overflow-hidden rounded-3xl bg-linear-100 from-white via-white to-indigo-400 shadow-sm">
         <div className="pointer-events-none absolute -right-16 top-6 h-48 w-48 rounded-full bg-indigo-200/50 blur-3xl" />
         <div className="pointer-events-none absolute -left-10 bottom-0 h-36 w-36 rounded-full bg-[#2E46BA]/10 blur-3xl" />
 
-        <div className="relative flex flex-col gap-6 px-6 py-8 sm:flex-row sm:items-end sm:justify-between sm:px-8 sm:py-10">
+        <div className="relative flex flex-col gap-6 px-6 py-8 sm:flex-row sm:items-end sm:justify-between sm:px-8 sm:py-10"> 
           <div className="max-w-xl">
             <p className="inline-flex items-center gap-1.5 text-xs font-medium tracking-wide text-[#2E46BA]">
               <Sparkles size={13} />
@@ -86,7 +86,7 @@ export default async function AdminPage() {
               Admin dashboard
             </h1>
             <p className="mt-3 text-sm leading-6 text-gray-500">
-              A quick look across accounts, jobs, and companies — then jump
+              A quick look across accounts, jobs, and companies → then jump
               into the queue that needs you.
             </p>
           </div>

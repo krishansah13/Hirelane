@@ -5,7 +5,6 @@ import Filters from "@/components/Filters";
 import JobResults from "@/components/jobs/JobResults";
 import { JobCardSkeleton, Skeleton } from "@/components/ui/Skeleton";
 import { auth } from "@/auth";
-import EmptyState from "@/components/EmptyState";
 import { redirect } from "next/navigation";
 
 
