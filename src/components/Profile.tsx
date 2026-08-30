@@ -164,8 +164,13 @@ export default function Profile({ name, email, mobile, image }: ProfileProps) {
           }}
           required
           minLength={2}
+          maxLength={80}
+          autoCapitalize="words"
           className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2"
         />
+        <span className="mt-1 block text-xs font-normal text-gray-400">
+          Letters and spaces only
+        </span>
       </label>
 
       <label className="block text-sm font-medium text-gray-700">

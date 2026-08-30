@@ -8,6 +8,7 @@ import {
   createAdminEmployer,
   type AdminUserActionState,
 } from "@/lib/actions/admin-users";
+import PasswordChecks from "@/components/ui/PasswordChecks";
 
 const initialState: AdminUserActionState = { ok: false };
 
@@ -123,10 +124,14 @@ export default function AdminAddEmployer({ companyId }: { companyId: string }) {
                     required
                     minLength={2}
                     maxLength={80}
+                    autoCapitalize="words"
                     value={name}
                     onChange={(event) => setName(event.target.value)}
                     className={FIELD_CLASS}
                   />
+                  <span className="mt-1.5 block text-xs text-gray-400">
+                    Letters and spaces only
+                  </span>
                 </label>
 
                 <label className="block">
@@ -154,6 +159,7 @@ export default function AdminAddEmployer({ companyId }: { companyId: string }) {
                       required
                       minLength={8}
                       maxLength={100}
+                      autoComplete="new-password"
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
                       className={`${FIELD_CLASS} pr-11`}
@@ -169,6 +175,7 @@ export default function AdminAddEmployer({ companyId }: { companyId: string }) {
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+                  <PasswordChecks password={password} />
                 </label>
 
                 {state.error ? (
