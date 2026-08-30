@@ -332,6 +332,21 @@ export const updateAdminCompanySchema = z.object({
     .optional(),
 });
 
+export const createAdminCompanySchema = updateAdminCompanySchema.omit({
+  companyId: true,
+});
+
+export const createAdminEmployerSchema = z.object({
+  companyId: objectIdSchema,
+  name: z
+    .string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(80, "Name must be 80 characters or fewer"),
+  email: z.email("Enter a valid email").trim().toLowerCase(),
+  password: passwordSchema,
+});
+
 export function normalizeMobile(value: string) {
   const digits = value.replace(/\D/g, "");
   if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2);

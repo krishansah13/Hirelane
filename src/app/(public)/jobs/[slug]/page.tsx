@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { getHomePath } from "@/lib/roles";
 import { getJobBySlug, getPublishedJobSlugs } from "@/lib/job-query";
 import { ArrowUpRight } from "lucide-react";
 import { formatInr } from "@/lib/utils/format";
@@ -51,6 +53,11 @@ export default async function JobDetail({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const session = await auth();
+  if (session?.user?.role === "employer" || session?.user?.role === "admin") {
+    redirect(getHomePath(session.user.role));
+  }
+
   const { slug } = await params;
   const job = await getJobBySlug(slug);
 

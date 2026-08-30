@@ -83,7 +83,10 @@ export default function Navbar() {
         <nav className="sticky top-0 z-40 border-b border-[#eeeaf8] bg-white/80 backdrop-blur">
             <div className="mx-auto flex justify-between h-16 items-center gap-4 px-4 sm:px-8">
                 <div className="flex justify-start">
-                    <Link href="/" className="flex items-center gap-3">
+                    <Link
+                        href={isAuthenticated ? dashboardHref : "/"}
+                        className="flex items-center gap-3"
+                    >
                         <Image
                             src="/images/hirelane_brand_mark.png"
                             alt="HireLane"

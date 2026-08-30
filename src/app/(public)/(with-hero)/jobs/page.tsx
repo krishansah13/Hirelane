@@ -6,6 +6,7 @@ import JobResults from "@/components/jobs/JobResults";
 import { JobCardSkeleton, Skeleton } from "@/components/ui/Skeleton";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { getHomePath } from "@/lib/roles";
 
 
 function JobsFallback() {
@@ -35,6 +36,11 @@ export default async function JobSearch({
 }: {
   searchParams: Promise<JobSearchProps>;
 }) {
+  const session = await auth();
+  if (session?.user?.role === "employer" || session?.user?.role === "admin") {
+    redirect(getHomePath(session.user.role));
+  }
+
   const params = await searchParams;
   const parsed = jobQuerySchema.parse(params);
 
@@ -49,15 +55,8 @@ export default async function JobSearch({
 
   const suspenseKey = JSON.stringify(currentParams);
 
-  const session = await auth();
 
-  if (session?.user?.role === "admin") {
-    redirect("/admin");
-  }
 
-  if (session?.user?.role === "employer") {
-    redirect("/employer");
-  }
 
   return (
     <main>

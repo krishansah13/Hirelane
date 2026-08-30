@@ -40,7 +40,7 @@ export default async function AdminPage() {
     {
       label: "Companies",
       value: companyStats.total,
-      hint: `${companyStats.withJobs} with open listings`,
+      hint: `${companyStats.employerCount} employers · ${companyStats.jobCount} jobs`,
     },
     {
       label: "Suspended",
@@ -66,7 +66,7 @@ export default async function AdminPage() {
       href: "/admin/companies",
       icon: Building2,
       title: "Company management",
-      body: `${companyStats.total} companies · ${companyStats.withJobs} with jobs. Review profiles and clean up employer listings.`,
+      body: `${companyStats.total} companies · ${companyStats.employerCount} employers · ${companyStats.jobCount} jobs. Review profiles and clean up employer listings.`,
     },
   ];
 

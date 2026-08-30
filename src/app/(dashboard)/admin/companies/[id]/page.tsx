@@ -6,6 +6,8 @@ import CompanyLogo from "@/components/CompanyLogo";
 import JobStatusBadge from "@/components/jobs/JobStatusBadge";
 import AdminCompanyForm from "@/components/admin/AdminCompanyForm";
 import AdminCompanyActions from "@/components/admin/AdminCompanyActions";
+import AdminAddEmployer from "@/components/admin/AdminAddEmployer";
+import AdminRemoveEmployer from "@/components/admin/AdminRemoveEmployer";
 import { effectiveJobStatus } from "@/lib/job-status";
 
 function formatDate(value?: string | Date | null) {
@@ -126,7 +128,10 @@ export default async function AdminCompanyDetailPage({
 
         <aside className="space-y-4">
           <section className="rounded-2xl bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-950">Employers</h2>
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="text-lg font-semibold text-gray-950">Employers</h2>
+              <AdminAddEmployer companyId={String(company._id)} />
+            </div>
             {employers.length === 0 ? (
               <p className="mt-3 text-sm text-gray-500">
                 No employer accounts are linked to this company.
@@ -134,11 +139,21 @@ export default async function AdminCompanyDetailPage({
             ) : (
               <ul className="mt-4 space-y-3">
                 {employers.map((employer) => (
-                  <li key={String(employer._id)}>
-                    <p className="text-sm font-medium text-gray-950">
-                      {employer.name}
-                    </p>
-                    <p className="text-xs text-gray-500">{employer.email}</p>
+                  <li
+                    key={String(employer._id)}
+                    className="flex items-start justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-950">
+                        {employer.name}
+                      </p>
+                      <p className="text-xs text-gray-500">{employer.email}</p>
+                    </div>
+                    <AdminRemoveEmployer
+                      userId={String(employer._id)}
+                      companyId={String(company._id)}
+                      name={employer.name ?? "this employer"}
+                    />
                   </li>
                 ))}
               </ul>

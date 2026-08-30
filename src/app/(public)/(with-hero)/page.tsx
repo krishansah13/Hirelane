@@ -6,6 +6,9 @@ import LandingHowItWorks from "@/components/landing-pages/LandingHowItWorks";
 import LandingEmployerCta from "@/components/landing-pages/LandingEmployerCta";
 import { getLandingContent } from "@/lib/job-query";
 import { Job } from "@/types/JobTypes";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { getHomePath } from "@/lib/roles";
 
 export const metadata: Metadata = {
     title: "Hirelane | Find work that fits you",
@@ -14,8 +17,12 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-    const { jobs, stats, companies } = await getLandingContent();
+    const session = await auth();
+    if (session?.user) {
+        redirect(getHomePath(session.user.role));
+    }
 
+    const { jobs, stats, companies } = await getLandingContent();
     return (
         <main className="flex-1 bg-white">
             <LandingCompanies companies={companies} />

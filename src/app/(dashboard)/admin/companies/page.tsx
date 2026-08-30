@@ -10,6 +10,7 @@ import { adminCompanyQuerySchema } from "@/lib/validation";
 import CompanyLogo from "@/components/CompanyLogo";
 import AdminCompanySearch from "@/components/admin/AdminCompanySearch";
 import AdminCompaniesPagination from "@/components/admin/AdminCompaniesPagination";
+import AdminAddCompany from "@/components/admin/AdminAddCompany";
 
 function formatDate(value?: string) {
   if (!value) return "—";
@@ -39,8 +40,8 @@ export default async function AdminCompaniesPage({
 
   const statCards = [
     { label: "Total companies", value: stats.total },
-    { label: "With employers", value: stats.withEmployers },
-    { label: "With jobs", value: stats.withJobs },
+    { label: "Employers", value: stats.employerCount },
+    { label: "Jobs", value: stats.jobCount },
   ];
 
   const filtersActive = Boolean(query.q);
@@ -50,16 +51,20 @@ export default async function AdminCompaniesPage({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl bg-linear-100 from-white via-white to-indigo-200 p-6 shadow-sm sm:p-8">        <p className="text-xs font-medium tracking-wide text-gray-400">
-          ADMIN
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-gray-950">
-          Companies
-        </h1>
-        <p className="mt-3 max-w-xl text-sm leading-6 text-gray-500">
-          Review employer companies, inspect their jobs and accounts, and update
-          or remove a listing when it should not stay on the platform.
-        </p>
+      <div className="flex flex-col gap-4 rounded-2xl bg-linear-100 from-white via-white to-indigo-200 p-6 shadow-sm sm:flex-row sm:items-start sm:justify-between sm:p-8">
+        <div>
+          <p className="text-xs font-medium tracking-wide text-gray-400">
+            ADMIN
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-gray-950">
+            Companies
+          </h1>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-gray-500">
+            Review employer companies, inspect their jobs and accounts, and update
+            or remove a listing when it should not stay on the platform.
+          </p>
+        </div>
+          <AdminAddCompany />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -97,7 +102,11 @@ export default async function AdminCompaniesPage({
             >
               Clear search
             </Link>
-          ) : null}
+          ) : (
+            <div className="mt-5">
+              <AdminAddCompany />
+            </div>
+          )}
         </div>
       ) : (
         <>

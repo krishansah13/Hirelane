@@ -1,37 +1,26 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import {
   closeAdminJob,
   deleteAdminJob,
   type AdminJobActionState,
 } from "@/lib/actions/admin-jobs";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 const initialState: AdminJobActionState = { ok: false };
 
-function ActionButton({
-  label,
-  pendingLabel,
-  danger = false,
-}: {
-  label: string;
-  pendingLabel: string;
-  danger?: boolean;
-}) {
+function CloseButton() {
   const { pending } = useFormStatus();
 
   return (
     <button
       type="submit"
       disabled={pending}
-      className={`rounded-lg px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70 ${
-        danger
-          ? "text-rose-700 hover:bg-rose-50"
-          : "bg-[#eef0ff] text-[#2e46ba] hover:bg-indigo-100"
-      }`}
+      className="rounded-lg bg-[#eef0ff] px-3 py-2 text-sm font-medium text-[#2e46ba] transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-70"
     >
-      {pending ? pendingLabel : label}
+      {pending ? "Closing…" : "Close job"}
     </button>
   );
 }
@@ -45,6 +34,7 @@ export default function AdminJobActions({
   canClose: boolean;
   redirectToList?: boolean;
 }) {
+  const [open, setOpen] = useState(false);
   const [closeState, closeAction] = useActionState(closeAdminJob, initialState);
   const [deleteState, deleteAction] = useActionState(deleteAdminJob, initialState);
   const error = closeState.error || deleteState.error;
@@ -55,33 +45,34 @@ export default function AdminJobActions({
         {canClose ? (
           <form action={closeAction}>
             <input type="hidden" name="jobId" value={jobId} />
-            <ActionButton label="Close job" pendingLabel="Closing…" />
+            <CloseButton />
           </form>
         ) : null}
 
-        <form
-          action={deleteAction}
-          onSubmit={(event) => {
-            if (
-              !window.confirm(
-                "Remove this job and its applications? This cannot be undone.",
-              )
-            ) {
-              event.preventDefault();
-            }
-          }}
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="rounded-lg px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
         >
-          <input type="hidden" name="jobId" value={jobId} />
-          {redirectToList ? (
-            <input type="hidden" name="redirectTo" value="list" />
-          ) : null}
-          <ActionButton
-            label="Remove"
-            pendingLabel="Removing…"
-            danger
-          />
-        </form>
+          Remove
+        </button>
       </div>
+
+      <ConfirmModal
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Remove job"
+        description="Remove this job and its applications? This cannot be undone."
+        confirmLabel="Remove job"
+        pendingLabel="Removing…"
+        formAction={deleteAction}
+      >
+        <input type="hidden" name="jobId" value={jobId} />
+        {redirectToList ? (
+          <input type="hidden" name="redirectTo" value="list" />
+        ) : null}
+      </ConfirmModal>
+
       {error ? <p className="text-xs text-rose-600">{error}</p> : null}
     </div>
   );
