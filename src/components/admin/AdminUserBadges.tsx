@@ -9,6 +9,7 @@ const ROLE_STYLES: Record<UserRole, string> = {
 
 const STATUS_STYLES: Record<AccountStatus, string> = {
   active: "bg-emerald-50 text-emerald-800",
+  pending: "bg-amber-50 text-amber-800",
   suspended: "bg-rose-50 text-rose-700",
 };
 
@@ -28,12 +29,21 @@ export function AccountStatusBadge({
 }: {
   status: AccountStatus | string;
 }) {
-  const key = status === "suspended" ? "suspended" : "active";
+  const key: AccountStatus =
+    status === "suspended"
+      ? "suspended"
+      : status === "pending"
+        ? "pending"
+        : "active";
   return (
     <span
       className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[key]}`}
     >
-      {key === "suspended" ? "Suspended" : "Active"}
+      {key === "suspended"
+        ? "Suspended"
+        : key === "pending"
+          ? "Pending"
+          : "Active"}
     </span>
   );
 }

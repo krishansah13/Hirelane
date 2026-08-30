@@ -2,14 +2,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, Briefcase, Globe, Users } from "lucide-react";
 import { requireAdmin } from "@/lib/session";
-import { getAdminCompanyById } from "@/lib/admin-company-query";
+import {
+  buildAdminCompanyDetailEmployersHref,
+  getAdminCompanyById,
+} from "@/lib/admin-company-query";
+import { getAdminEmployers } from "@/lib/admin-query";
 import CompanyLogo from "@/components/CompanyLogo";
 import JobStatusBadge from "@/components/jobs/JobStatusBadge";
 import AdminCompanyForm from "@/components/admin/AdminCompanyForm";
 import AdminCompanyActions from "@/components/admin/AdminCompanyActions";
 import AdminAddEmployer from "@/components/admin/AdminAddEmployer";
-import AdminRemoveEmployer from "@/components/admin/AdminRemoveEmployer";
-import { AccountStatusBadge } from "@/components/admin/AdminUserBadges";
+import AdminEmployerReviewCard from "@/components/admin/AdminEmployerReviewCard";
+import QueryPagination from "@/components/ui/QueryPagination";
 import { effectiveJobStatus } from "@/lib/job-status";
 import { formatJobType } from "@/lib/utils/format";
 
@@ -32,18 +36,38 @@ function websiteHref(website?: string) {
 
 export default async function AdminCompanyDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   await requireAdmin();
   const { id } = await params;
+  const query = await searchParams;
+  const pendingPage = Number(query.pendingPage) > 0 ? Number(query.pendingPage) : 1;
+  const activePage = Number(query.activePage) > 0 ? Number(query.activePage) : 1;
   const result = await getAdminCompanyById(id);
 
   if (!result) {
     notFound();
   }
 
-  const { company, employers, jobs, employerCount, jobCount } = result;
+  const { company, jobs, employerCount, jobCount } = result;
+  const [pendingEmployers, activeEmployers] = await Promise.all([
+    getAdminEmployers({
+      status: "pending",
+      companyId: id,
+      page: pendingPage,
+      pageSize: 6,
+    }),
+    getAdminEmployers({
+      status: "active",
+      companyId: id,
+      page: activePage,
+      pageSize: 6,
+    }),
+  ]);
+  const employerPages = { pendingPage, activePage };
   const site = websiteHref(company.website);
   const companyId = String(company._id);
 
@@ -185,14 +209,61 @@ export default async function AdminCompanyDetailPage({
           </section>
         </div>
 
-        <aside>
+        <aside className="space-y-4">
+          <section className="rounded-2xl bg-white p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-gray-950">
+              Pending employers
+            </h2>
+            <p className="mt-1 text-xs text-gray-400">
+              {pendingEmployers.total} waiting
+            </p>
+
+            {pendingEmployers.employers.length === 0 ? (
+              <p className="mt-6 text-sm text-gray-400">
+                No pending employer accounts for this company.
+              </p>
+            ) : (
+              <>
+                <ul className="mt-5 space-y-3">
+                  {pendingEmployers.employers.map((employer) => (
+                    <AdminEmployerReviewCard
+                      key={employer._id}
+                      employer={employer}
+                      showApprove
+                    />
+                  ))}
+                </ul>
+                <QueryPagination
+                  page={pendingEmployers.page}
+                  totalPages={pendingEmployers.totalPages}
+                  hrefForPage={(page) =>
+                    buildAdminCompanyDetailEmployersHref(
+                      companyId,
+                      employerPages,
+                      "pending",
+                      page,
+                    )
+                  }
+                />
+              </>
+            )}
+          </section>
+
           <section className="rounded-2xl bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-gray-950">Employers</h2>
-              <AdminAddEmployer companyId={companyId} />
+              <h2 className="min-w-0 text-lg font-semibold text-gray-950">
+                Active employers
+              </h2>
+              <div className="shrink-0">
+                <AdminAddEmployer companyId={companyId} />
+              </div>
             </div>
+            <p className="mt-1 text-xs text-gray-400">
+              {activeEmployers.total} approved
+            </p>
 
-            {employers.length === 0 ? (
+            {activeEmployers.employers.length === 0 &&
+            pendingEmployers.total === 0 ? (
               <div className="mt-6 rounded-2xl border border-dashed border-[#dcd8ea] px-4 py-8 text-center">
                 <span className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[#eef0ff] text-[#2E46BA]">
                   <Users size={18} />
@@ -201,41 +272,33 @@ export default async function AdminCompanyDetailPage({
                   No employer accounts are linked yet.
                 </p>
               </div>
+            ) : activeEmployers.employers.length === 0 ? (
+              <p className="mt-6 text-sm text-gray-400">
+                No active employer accounts for this company.
+              </p>
             ) : (
-              <ul className="mt-5 space-y-3">
-                {employers.map((employer) => (
-                  <li
-                    key={String(employer._id)}
-                    className="rounded-2xl bg-[#fbf9ff] px-3 py-3"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex min-w-0 items-start gap-3">
-                        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#eef0ff] text-xs font-semibold text-[#2E46BA]">
-                          {(employer.name ?? "E").charAt(0).toUpperCase()}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-gray-950">
-                            {employer.name}
-                          </p>
-                          <p className="truncate text-xs text-gray-500">
-                            {employer.email}
-                          </p>
-                          <div className="mt-2">
-                            <AccountStatusBadge
-                              status={employer.status ?? "active"}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <AdminRemoveEmployer
-                        userId={String(employer._id)}
-                        companyId={companyId}
-                        name={employer.name ?? "this employer"}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <ul className="mt-5 space-y-3">
+                  {activeEmployers.employers.map((employer) => (
+                    <AdminEmployerReviewCard
+                      key={employer._id}
+                      employer={employer}
+                    />
+                  ))}
+                </ul>
+                <QueryPagination
+                  page={activeEmployers.page}
+                  totalPages={activeEmployers.totalPages}
+                  hrefForPage={(page) =>
+                    buildAdminCompanyDetailEmployersHref(
+                      companyId,
+                      employerPages,
+                      "active",
+                      page,
+                    )
+                  }
+                />
+              </>
             )}
           </section>
         </aside>

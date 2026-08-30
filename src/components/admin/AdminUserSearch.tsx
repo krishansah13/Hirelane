@@ -57,6 +57,7 @@ export default function AdminUserSearch({
         >
           <option value="">All statuses</option>
           <option value="active">Active</option>
+          <option value="pending">Pending</option>
           <option value="suspended">Suspended</option>
         </select>
       </label>

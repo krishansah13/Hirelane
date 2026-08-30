@@ -28,6 +28,7 @@ function getFooterLinks(role?: UserRole | null): FooterLink[] {
     if (role === "admin") {
         return [
             { href: "/admin", label: "Overview" },
+            { href: "/admin/approvals", label: "Approvals" },
             { href: "/admin/users", label: "Users" },
             { href: "/admin/jobs", label: "Jobs" },
             { href: "/admin/companies", label: "Companies" },

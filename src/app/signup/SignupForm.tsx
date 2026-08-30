@@ -50,6 +50,7 @@ export default function SignupForm() {
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showConfPass, setShowConfPass] = useState(false);
+    const [pendingApproval, setPendingApproval] = useState(false);
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -76,6 +77,11 @@ export default function SignupForm() {
             const created = await signup(formData);
             if (!created.ok) {
                 setError(created.error ?? "Could not create your account");
+                return;
+            }
+
+            if (created.pendingApproval) {
+                setPendingApproval(true);
                 return;
             }
 
@@ -131,11 +137,31 @@ export default function SignupForm() {
                             Create your account
                         </h1>
                         <p className="mt-2 text-sm leading-6 text-gray-500">
-                            Seekers apply in minutes. Employers post a role the
-                            same day. Pick a side and start.
+                            Seekers apply in minutes. Employers join a listed
+                            company and wait for admin approval before posting
+                            jobs.
                         </p>
                     </div>
 
+                    {pendingApproval ? (
+                        <div className="rounded-xl bg-emerald-50 px-4 py-5 text-center">
+                            <p className="text-sm font-semibold text-emerald-800">
+                                Account created — pending approval
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-emerald-800/80">
+                                An admin will review your employer account.
+                                You&apos;ll get an email when it&apos;s ready to
+                                use.
+                            </p>
+                            <Link
+                                prefetch={false}
+                                href="/login"
+                                className="mt-4 inline-flex text-sm font-medium text-[#2E46BA] hover:text-[#12329c]"
+                            >
+                                Back to sign in
+                            </Link>
+                        </div>
+                    ) : (
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
                             <p className="mb-2 text-sm font-medium text-gray-900">
@@ -178,9 +204,9 @@ export default function SignupForm() {
                                     <span className="block text-xs font-semibold text-[#2E46BA]">
                                         Hire people
                                     </span>
-                                    <span className="mt-0.5 block text-[11px] text-gray-500">
-                                        Post jobs and review
-                                    </span>
+                                        <span className="mt-0.5 block text-[11px] text-gray-500">
+                                            Request access to hire
+                                        </span>
                                 </button>
                             </div>
                         </div>
@@ -291,6 +317,10 @@ export default function SignupForm() {
                                             className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]"
                                         />
                                     </div>
+                                    <p className="mt-1.5 text-xs text-gray-400">
+                                        Must match a company already listed by
+                                        an admin, including the website.
+                                    </p>
                                 </div>
                             </>
                         ) : null}
@@ -410,6 +440,7 @@ export default function SignupForm() {
                                   : "Create seeker account"}
                         </button>
                     </form>
+                    )}
 
                     <p className="mt-8 text-center text-sm text-gray-500">
                         Already on Hirelane?{" "}

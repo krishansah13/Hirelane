@@ -2,15 +2,19 @@ import Link from "next/link";
 import { Building2 } from "lucide-react";
 import { requireAdmin } from "@/lib/session";
 import {
+  buildAdminCompanyEmployersHref,
   getAdminCompanies,
   getAdminCompanyStats,
   toAdminCompanyQuery,
 } from "@/lib/admin-company-query";
+import { getAdminEmployers } from "@/lib/admin-query";
 import { adminCompanyQuerySchema } from "@/lib/validation";
 import CompanyLogo from "@/components/CompanyLogo";
 import AdminCompanySearch from "@/components/admin/AdminCompanySearch";
 import AdminCompaniesPagination from "@/components/admin/AdminCompaniesPagination";
 import AdminAddCompany from "@/components/admin/AdminAddCompany";
+import AdminEmployerReviewCard from "@/components/admin/AdminEmployerReviewCard";
+import QueryPagination from "@/components/ui/QueryPagination";
 
 function formatDate(value?: string) {
   if (!value) return "—";
@@ -33,9 +37,11 @@ export default async function AdminCompaniesPage({
   const parsed = adminCompanyQuerySchema.safeParse(params);
   const query = parsed.success ? toAdminCompanyQuery(parsed.data) : { page: 1 };
 
-  const [stats, result] = await Promise.all([
+  const [stats, result, pendingEmployers, activeEmployers] = await Promise.all([
     getAdminCompanyStats(),
     getAdminCompanies(query),
+    getAdminEmployers({ status: "pending", page: query.pendingPage }),
+    getAdminEmployers({ status: "active", page: query.activePage }),
   ]);
 
   const statCards = [
@@ -224,6 +230,73 @@ export default async function AdminCompaniesPage({
           />
         </>
       )}
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+          <h2 className="text-lg font-semibold text-gray-950">
+            Pending employers
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            {pendingEmployers.total} waiting for approval
+          </p>
+          {pendingEmployers.employers.length === 0 ? (
+            <p className="mt-6 text-sm text-gray-400">
+              No employer accounts are waiting for review.
+            </p>
+          ) : (
+            <>
+              <ul className="mt-5 space-y-3">
+                {pendingEmployers.employers.map((employer) => (
+                  <AdminEmployerReviewCard
+                    key={employer._id}
+                    employer={employer}
+                    showApprove
+                  />
+                ))}
+              </ul>
+              <QueryPagination
+                page={pendingEmployers.page}
+                totalPages={pendingEmployers.totalPages}
+                hrefForPage={(page) =>
+                  buildAdminCompanyEmployersHref(query, "pending", page)
+                }
+              />
+            </>
+          )}
+        </section>
+
+        <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+          <h2 className="text-lg font-semibold text-gray-950">
+            Active employers
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            {activeEmployers.total} approved accounts
+          </p>
+          {activeEmployers.employers.length === 0 ? (
+            <p className="mt-6 text-sm text-gray-400">
+              No active employer accounts yet.
+            </p>
+          ) : (
+            <>
+              <ul className="mt-5 space-y-3">
+                {activeEmployers.employers.map((employer) => (
+                  <AdminEmployerReviewCard
+                    key={employer._id}
+                    employer={employer}
+                  />
+                ))}
+              </ul>
+              <QueryPagination
+                page={activeEmployers.page}
+                totalPages={activeEmployers.totalPages}
+                hrefForPage={(page) =>
+                  buildAdminCompanyEmployersHref(query, "active", page)
+                }
+              />
+            </>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

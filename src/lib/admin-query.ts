@@ -19,15 +19,28 @@ export type AdminUserListItem = {
   email: string;
   role: UserRole;
   status: AccountStatus;
+  companyId: string | null;
   companyName: string | null;
   createdAt?: string;
 };
+
+export type AdminEmployerListItem = {
+  _id: string;
+  name: string;
+  email: string;
+  status: AccountStatus;
+  companyId: string | null;
+  companyName: string | null;
+};
+
+const EMPLOYER_PAGE_SIZE = 8;
 
 export type AdminUserStats = {
   total: number;
   seekers: number;
   employers: number;
   admins: number;
+  pending: number;
   suspended: number;
 };
 
@@ -37,7 +50,8 @@ function escapeRegex(value: string) {
 
 function statusFilter(status?: AccountStatus) {
   if (status === "suspended") return { status: "suspended" };
-  if (status === "active") return { status: { $ne: "suspended" } };
+  if (status === "pending") return { status: "pending" };
+  if (status === "active") return { status: "active" };
   return {};
 }
 
@@ -60,19 +74,29 @@ export function buildAdminUsersHref(params: AdminUserQuery, page = params.page ?
   return query ? `/admin/users?${query}` : "/admin/users";
 }
 
+function companyRef(companyId?: { _id?: unknown; name?: string } | string | null) {
+  if (companyId && typeof companyId === "object") {
+    return {
+      id: companyId._id ? String(companyId._id) : null,
+      name: companyId.name ?? null,
+    };
+  }
+  if (typeof companyId === "string") {
+    return { id: companyId, name: null };
+  }
+  return { id: null, name: null };
+}
+
 function mapUser(user: {
   _id: unknown;
   name?: string;
   email?: string;
   role?: string;
   status?: string;
-  companyId?: { name?: string } | string | null;
+  companyId?: { _id?: unknown; name?: string } | string | null;
   createdAt?: string | Date;
 }): AdminUserListItem {
-  const company =
-    user.companyId && typeof user.companyId === "object"
-      ? user.companyId
-      : null;
+  const company = companyRef(user.companyId);
 
   return {
     _id: String(user._id),
@@ -80,23 +104,78 @@ function mapUser(user: {
     email: user.email ?? "",
     role: (user.role as UserRole) ?? "seeker",
     status: formatAccountStatus(user.status),
-    companyName: company?.name ?? null,
+    companyId: company.id,
+    companyName: company.name,
     createdAt: user.createdAt ? String(user.createdAt) : undefined,
+  };
+}
+
+export async function getAdminEmployers(query: {
+  status: "pending" | "active";
+  page?: number;
+  companyId?: string;
+  pageSize?: number;
+}) {
+  await connectToDatabase();
+
+  const pageSize =
+    query.pageSize && query.pageSize > 0 ? query.pageSize : EMPLOYER_PAGE_SIZE;
+  const page = query.page && query.page > 0 ? query.page : 1;
+  const filter: Record<string, unknown> = {
+    role: "employer",
+    status: query.status,
+  };
+
+  if (query.companyId) {
+    filter.companyId = query.companyId;
+  }
+
+  const [total, rows] = await Promise.all([
+    User.countDocuments(filter),
+    User.find(filter)
+      .select("name email status companyId")
+      .populate({ path: "companyId", select: "name" })
+      .sort({ createdAt: -1, _id: -1 })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+      .lean(),
+  ]);
+
+  const employers: AdminEmployerListItem[] = serialize(rows).map((user) => {
+    const company = companyRef(user.companyId);
+    return {
+      _id: String(user._id),
+      name: user.name ?? "",
+      email: user.email ?? "",
+      status: formatAccountStatus(user.status),
+      companyId: company.id,
+      companyName: company.name,
+    };
+  });
+
+  return {
+    employers,
+    total,
+    page,
+    pageSize,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
   };
 }
 
 export async function getAdminUserStats(): Promise<AdminUserStats> {
   await connectToDatabase();
 
-  const [total, seekers, employers, admins, suspended] = await Promise.all([
-    User.countDocuments({}),
-    User.countDocuments({ role: "seeker" }),
-    User.countDocuments({ role: "employer" }),
-    User.countDocuments({ role: "admin" }),
-    User.countDocuments({ status: "suspended" }),
-  ]);
+  const [total, seekers, employers, admins, pending, suspended] =
+    await Promise.all([
+      User.countDocuments({}),
+      User.countDocuments({ role: "seeker" }),
+      User.countDocuments({ role: "employer" }),
+      User.countDocuments({ role: "admin" }),
+      User.countDocuments({ status: "pending" }),
+      User.countDocuments({ status: "suspended" }),
+    ]);
 
-  return { total, seekers, employers, admins, suspended };
+  return { total, seekers, employers, admins, pending, suspended };
 }
 
 export async function getAdminUsers(query: AdminUserQuery) {

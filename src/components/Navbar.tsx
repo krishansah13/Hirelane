@@ -39,6 +39,7 @@ function getNavLinks(role?: UserRole): NavLink[] {
     if (role === "admin") {
         return [
             { href: dashboardHref, label: "Dashboard" },
+            { href: "/admin/approvals", label: "Approvals" },
             { href: "/admin/users", label: "Users" },
             { href: "/admin/jobs", label: "Jobs" },
             { href: "/admin/companies", label: "Companies" },

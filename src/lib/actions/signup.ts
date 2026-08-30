@@ -5,12 +5,11 @@ import { signupSchema } from "../validation";
 import { connectToDatabase } from "../utils/db";
 import User from "../models/User";
 import Company from "../models/Company";
-import { slugifyCompanyName } from "../utils/slug";
-import { revalidateJobBoard } from "../cache";
 
 export type SignupState = {
   ok: boolean;
   error?: string;
+  pendingApproval?: boolean;
 };
 
 function firstIssueMessage(error: {
@@ -26,6 +25,21 @@ function normalizeWebsite(value: string) {
   if (!trimmed) return trimmed;
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
   return `https://${trimmed}`;
+}
+
+function websiteKey(value: string) {
+  try {
+    const url = new URL(normalizeWebsite(value));
+    const host = url.hostname.replace(/^www\./i, "").toLowerCase();
+    const path = url.pathname.replace(/\/+$/, "");
+    return `${host}${path}`;
+  } catch {
+    return value.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/+$/, "");
+  }
+}
+
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 export async function signup(formData: FormData): Promise<SignupState> {
@@ -66,29 +80,41 @@ export async function signup(formData: FormData): Promise<SignupState> {
         return { ok: false, error: "Enter a valid company website" };
       }
 
-      const company = await Company.create({
-        name: data.companyName,
-        slug: slugifyCompanyName(data.companyName ?? "company"),
-        website,
-        logoURL: "",
-        about: "",
-      });
+      const companyName = (data.companyName ?? "").trim();
+      const listed = await Company.find({
+        name: { $regex: `^${escapeRegex(companyName)}$`, $options: "i" },
+      }).select("_id name website");
 
-      try {
-        await User.create({
-          name: data.name,
-          email,
-          passwordHash,
-          role: "employer",
-          companyId: company._id,
-        });
-      } catch (error) {
-        await Company.deleteOne({ _id: company._id });
-        throw error;
+      if (listed.length === 0) {
+        return {
+          ok: false,
+          error:
+            "This company is not listed on Hirelane yet. Ask an admin to add it before you sign up.",
+        };
       }
 
-      revalidateJobBoard();
-      return { ok: true };
+      const company = listed.find(
+        (entry) => websiteKey(entry.website) === websiteKey(website),
+      );
+
+      if (!company) {
+        return {
+          ok: false,
+          error:
+            "This company name and website do not match a listed company.",
+        };
+      }
+
+      await User.create({
+        name: data.name,
+        email,
+        passwordHash,
+        role: "employer",
+        status: "pending",
+        companyId: company._id,
+      });
+
+      return { ok: true, pendingApproval: true };
     }
 
     await User.create({

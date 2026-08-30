@@ -24,7 +24,7 @@ const userSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["active", "suspended"],
+      enum: ["active", "suspended", "pending"],
       default: "active",
     },
     companyId: {
@@ -45,6 +45,20 @@ const userSchema = new Schema(
     timestamps: true,
   },
 );
+
+function statusAllowsPending(model: mongoose.Model<unknown>) {
+  const path = model.schema.path("status") as unknown as {
+    validators?: { type?: string; enumValues?: unknown }[];
+  } | undefined;
+  const allowed = path?.validators?.find((validator) => validator.type === "enum")
+    ?.enumValues;
+  return Array.isArray(allowed) && allowed.includes("pending");
+}
+
+const cached = mongoose.models.User as mongoose.Model<unknown> | undefined;
+if (cached && !statusAllowsPending(cached)) {
+  mongoose.deleteModel("User");
+}
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 

@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { createPortal } from "react-dom";
+import { Eye, EyeOff } from "lucide-react";
 import {
   createAdminEmployer,
   type AdminUserActionState,
@@ -34,6 +35,7 @@ export default function AdminAddEmployer({ companyId }: { companyId: string }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -45,6 +47,7 @@ export default function AdminAddEmployer({ companyId }: { companyId: string }) {
       setName("");
       setEmail("");
       setPassword("");
+      setShowPassword(false);
       return;
     }
 
@@ -76,7 +79,7 @@ export default function AdminAddEmployer({ companyId }: { companyId: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-lg bg-[#eef0ff] px-3 py-1.5 text-sm font-medium text-[#2E46BA] transition hover:bg-indigo-100"
+        className="rounded-lg bg-[#eef0ff] px-3 mt-1 py-1.5 text-sm font-medium text-[#2E46BA] transition hover:bg-indigo-100 cursor-pointer"
       >
         Add employer
       </button>
@@ -98,7 +101,7 @@ export default function AdminAddEmployer({ companyId }: { companyId: string }) {
             >
               <h2
                 id="add-employer-title"
-                className="text-lg font-bold text-gray-950"
+                className="text-lg font-semibold text-gray-950"
               >
                 Add employer
               </h2>
@@ -144,16 +147,28 @@ export default function AdminAddEmployer({ companyId }: { companyId: string }) {
                   <span className="mb-1.5 block text-xs font-medium text-gray-500">
                     Password
                   </span>
-                  <input
-                    name="password"
-                    type="password"
-                    required
-                    minLength={8}
-                    maxLength={100}
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    className={FIELD_CLASS}
-                  />
+                  <div className="relative">
+                    <input
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      minLength={8}
+                      maxLength={100}
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      className={`${FIELD_CLASS} pr-11`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((visible) => !visible)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#484855] transition hover:text-gray-950"
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </label>
 
                 {state.error ? (

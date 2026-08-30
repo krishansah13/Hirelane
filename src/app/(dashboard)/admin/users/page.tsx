@@ -64,7 +64,7 @@ export default async function AdminUsersPage({
     { label: "Total users", value: stats.total },
     { label: "Seekers", value: stats.seekers },
     { label: "Employers", value: stats.employers },
-    { label: "Suspended", value: stats.suspended },
+    { label: "Pending", value: stats.pending },
   ];
 
   const filtersActive = Boolean(query.q || query.role || query.status);
@@ -83,8 +83,8 @@ export default async function AdminUsersPage({
           Users
         </h1>
         <p className="mt-3 max-w-xl text-sm leading-6 text-gray-500">
-          Search the directory, filter by role or status, and suspend accounts
-          that should not sign in.
+          Search the directory, filter by role or status, and approve pending
+          employer accounts.
         </p>
       </div>
 

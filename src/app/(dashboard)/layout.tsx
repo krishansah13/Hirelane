@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { isUserActive } from "@/lib/session";
+import { getAccountStatus } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,11 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  if (!(await isUserActive(session.user.id))) {
+  const status = await getAccountStatus(session.user.id);
+  if (status === "pending") {
+    redirect("/account-pending");
+  }
+  if (status !== "active") {
     redirect("/account-suspended");
   }
 
