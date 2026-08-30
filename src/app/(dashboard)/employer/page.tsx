@@ -73,7 +73,7 @@ export default async function EmployerPage({
             </p>
           </div>
 
-          <Link
+          <Link prefetch={false}
             href="/employer/jobs/new"
             className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#2E46BA] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#2E46BA]/15 transition hover:bg-[#1739ad]"
           >
@@ -116,14 +116,14 @@ export default async function EmployerPage({
               : "Create your first draft and publish when you are ready. Live roles will show up here."}
           </p>
           {filtersActive ? (
-            <Link
+            <Link prefetch={false}
               href="/employer"
               className="mt-5 inline-flex rounded-xl bg-[#2e46ba] px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
             >
               Clear search
             </Link>
           ) : (
-            <Link
+            <Link prefetch={false}
               href="/employer/jobs/new"
               className="mt-5 inline-flex rounded-xl bg-[#2E46BA] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1739ad]"
             >
@@ -139,7 +139,7 @@ export default async function EmployerPage({
                 Showing {rangeStart}–{rangeEnd} of {result.total}
               </p>
               {filtersActive ? (
-                <Link
+                <Link prefetch={false}
                   href="/employer"
                   className="text-sm font-medium text-[#2E46BA] hover:text-[#12329c]"
                 >
@@ -153,7 +153,7 @@ export default async function EmployerPage({
                 <li key={job._id} className="space-y-3 p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <Link
+                      <Link prefetch={false}
                         href={`/employer/jobs/${job._id}/edit`}
                         className="font-semibold text-gray-950 hover:text-[#2E46BA]"
                       >
@@ -178,13 +178,13 @@ export default async function EmployerPage({
                     <JobStatusBadge status={job.status} />
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <Link
+                    <Link prefetch={false}
                       href={`/employer/jobs/${job._id}/edit`}
                       className="rounded-lg bg-[#eef0ff] px-3 py-2 text-sm font-medium text-[#2E46BA] hover:bg-indigo-100"
                     >
                       Edit
                     </Link>
-                    <Link
+                    <Link prefetch={false}
                       href={`/employer/jobs/${job._id}/applicants`}
                       className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
                     >
@@ -223,7 +223,7 @@ export default async function EmployerPage({
                   {result.jobs.map((job) => (
                     <tr key={job._id} className="align-middle">
                       <td className="px-6 py-4">
-                        <Link
+                        <Link prefetch={false}
                           href={`/employer/jobs/${job._id}/edit`}
                           className="font-semibold text-gray-950 hover:text-[#2E46BA]"
                         >
@@ -253,13 +253,13 @@ export default async function EmployerPage({
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
-                          <Link
+                          <Link prefetch={false}
                             href={`/employer/jobs/${job._id}/edit`}
                             className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
                           >
                             Edit
                           </Link>
-                          <Link
+                          <Link prefetch={false}
                             href={`/employer/jobs/${job._id}/applicants`}
                             className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
                           >

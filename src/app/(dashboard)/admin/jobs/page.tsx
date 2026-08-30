@@ -97,7 +97,7 @@ export default async function AdminJobsPage({
               : "No roles have been posted yet."}
           </p>
           {filtersActive ? (
-            <Link
+            <Link prefetch={false}
               href="/admin/jobs"
               className="mt-5 inline-flex rounded-xl bg-[#2e46ba] px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
             >
@@ -113,7 +113,7 @@ export default async function AdminJobsPage({
                 Showing {rangeStart} - {rangeEnd} of {result.total}
               </p>
               {filtersActive ? (
-                <Link
+                <Link prefetch={false}
                   href="/admin/jobs"
                   className="text-sm font-medium text-[#2E46BA] hover:text-[#12329c]"
                 >
@@ -127,7 +127,7 @@ export default async function AdminJobsPage({
                 <li key={job._id} className="space-y-3 p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <Link
+                      <Link prefetch={false}
                         href={`/admin/jobs/${job._id}`}
                         className="font-semibold text-gray-950 hover:text-[#2E46BA]"
                       >
@@ -152,7 +152,7 @@ export default async function AdminJobsPage({
                       {formatDate(job.createdAt)}
                     </p>
                     <div className="flex flex-wrap items-center gap-2">
-                      <Link
+                      <Link prefetch={false}
                         href={`/admin/jobs/${job._id}`}
                         className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
                       >
@@ -188,7 +188,7 @@ export default async function AdminJobsPage({
                   {result.jobs.map((job) => (
                     <tr key={job._id} className="align-middle">
                       <td className="px-6 py-4">
-                        <Link
+                        <Link prefetch={false}
                           href={`/admin/jobs/${job._id}`}
                           className="font-semibold text-gray-950 hover:text-[#2E46BA]"
                         >
@@ -218,7 +218,7 @@ export default async function AdminJobsPage({
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
-                          <Link
+                          <Link prefetch={false}
                             href={`/admin/jobs/${job._id}`}
                             className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
                           >

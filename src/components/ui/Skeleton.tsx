@@ -44,7 +44,7 @@ export function SkeletonScreen({
 
 export function JobCardSkeleton() {
     return (
-        <div className="flex items-start gap-3 rounded-xl bg-white p-3.5 shadow-xs sm:min-h-[116px] sm:items-center sm:gap-5 sm:px-6 sm:py-5">
+        <div className="flex items-start gap-3 rounded-xl bg-white p-3.5 shadow-xs sm:min-h-29 sm:items-center sm:gap-5 sm:px-6 sm:py-5">
             <Skeleton className="h-10 w-10 shrink-0 rounded-lg sm:h-12 sm:w-12 sm:rounded-xl" />
 
             <div className="min-w-0 flex-1 space-y-2">
@@ -119,7 +119,7 @@ export function SearchHeroSkeleton({ compact = false }: { compact?: boolean }) {
                 </div>
 
                 <Skeleton
-                    className="mt-10 h-[70px] w-full rounded-2xl"
+                    className="mt-10 h-17.5 w-full rounded-2xl"
                     variant="subtle"
                 />
 

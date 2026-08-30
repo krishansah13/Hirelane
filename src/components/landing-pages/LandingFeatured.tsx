@@ -32,7 +32,7 @@ export default function LandingFeatured({
                         </p>
                     </div>
 
-                    <Link
+                    <Link prefetch={false}
                         href="/jobs"
                         className="inline-flex items-center gap-2 text-sm font-semibold text-[#2E46BA] transition hover:text-[#12329c]"
                     >

@@ -16,7 +16,7 @@ export default async function EditJobPage({ params }: { params: Promise<{ id: st
     return (
         <div className="space-y-6">
             <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-                <Link
+                <Link prefetch={false}
                     href="/employer"
                     className="text-sm font-medium text-[#2e46ba] hover:underline"
                 >

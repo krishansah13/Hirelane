@@ -83,7 +83,7 @@ export default function Navbar() {
         <nav className="sticky top-0 z-40 border-b border-[#eeeaf8] bg-white/80 backdrop-blur">
             <div className="mx-auto flex justify-between h-16 items-center gap-4 px-4 sm:px-8">
                 <div className="flex justify-start">
-                    <Link
+                    <Link prefetch={false}
                         href={isAuthenticated ? dashboardHref : "/"}
                         className="flex items-center gap-3"
                     >
@@ -108,7 +108,7 @@ export default function Navbar() {
                         </>
                     ) : (
                         links.map((link) => (
-                            <Link
+                            <Link prefetch={false}
                                 key={link.label}
                                 href={link.href}
                                 className={linkClass(link.href)}
@@ -128,18 +128,15 @@ export default function Navbar() {
                         </>
                     ) : (
                         <>
-                            <Link
+                            <Link prefetch={false}
                                 href="/signup"
                                 className="hidden rounded-md border border-[#2E46BA] px-4 py-2 text-sm font-medium text-[#2E46BA] transition hover:bg-[#2E46BA]/5 sm:inline-flex sm:px-5"
-                                prefetch={false}
                             >
                                 Sign up
                             </Link>
-                            <Link
+                            <Link prefetch={false}
                                 href="/login"
                                 className="rounded-md border border-[#2E46BA] bg-[#2E46BA] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1739ad] sm:px-6"
-                                prefetch={false}
-
                             >
                                 Sign in
                             </Link>
@@ -168,7 +165,7 @@ export default function Navbar() {
                             </>
                         ) : (
                             links.map((link) => (
-                                <Link
+                                <Link prefetch={false}
                                     key={link.label}
                                     href={link.href}
                                     onClick={() => setMenuOpen(false)}
@@ -182,27 +179,8 @@ export default function Navbar() {
                             ))
                         )}
 
-                        {/* {isAuthenticated && (
-                            <>
-                                <Link
-                                    href="/account"
-                                    onClick={() => setMenuOpen(false)}
-                                    className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                                >
-                                    Account
-                                </Link>
-                                <Link
-                                    href={dashboardHref}
-                                    onClick={() => setMenuOpen(false)}
-                                    className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:hidden"
-                                >
-                                    Dashboard
-                                </Link>
-                            </>
-                        )} */}
-
                         {!isSessionLoading && !isAuthenticated && (
-                            <Link
+                            <Link prefetch={false}
                                 href="/signup"
                                 onClick={() => setMenuOpen(false)}
                                 className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:hidden"

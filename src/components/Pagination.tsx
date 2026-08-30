@@ -25,7 +25,7 @@ function buildUrl(params: JobSearchProps, page: number) {
 
     if (params.remote) {
         searchParams.set("remote", params.remote);
-    } 
+    }
 
     if (params.sort) {
         searchParams.set("sort", params.sort);
@@ -51,7 +51,7 @@ export default function Pagination({
     return (
         <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
             {page > 1 ? (
-                <Link
+                <Link prefetch={false}
                     href={buildUrl(params, page - 1)}
                     className={STEP_ACTIVE}
                 >
@@ -91,7 +91,7 @@ export default function Pagination({
                                     </span>
                                 )}
 
-                                <Link
+                                <Link prefetch={false}
                                     href={buildUrl(params, pageNumber)}
                                     className={`flex h-10 w-10 items-center justify-center rounded-xl text-sm ${pageNumber === page
                                         ? "bg-[#2E46BA] text-white"
@@ -106,7 +106,7 @@ export default function Pagination({
             </div>
 
             {page < totalPages ? (
-                <Link
+                <Link prefetch={false}
                     href={buildUrl(params, page + 1)}
                     className={STEP_ACTIVE}
                 >

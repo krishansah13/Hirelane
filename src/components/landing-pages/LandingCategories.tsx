@@ -62,7 +62,7 @@ export default function LandingCategories() {
                         const Icon = category.icon;
 
                         return (
-                            <Link
+                            <Link prefetch={false}
                                 key={category.href}
                                 href={category.href}
                                 className="group rounded-2xl bg-[#fbf9ff] p-5 ring-1 ring-[#eeeaf8] transition hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(76,61,130,0.10)]"

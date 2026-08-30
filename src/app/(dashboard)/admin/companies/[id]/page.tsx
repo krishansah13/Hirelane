@@ -60,7 +60,7 @@ export default async function AdminCompanyDetailPage({
         <div className="pointer-events-none absolute -left-10 bottom-0 h-36 w-36 rounded-full bg-[#2E46BA]/10 blur-3xl" />
 
         <div className="relative px-6 py-8 sm:px-8 sm:py-10">
-          <Link
+          <Link prefetch={false}
             href="/admin/companies"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2E46BA] hover:text-[#1739ad]"
           >
@@ -163,7 +163,7 @@ export default async function AdminCompanyDetailPage({
               <ul className="mt-5 space-y-3">
                 {jobs.map((job) => (
                   <li key={String(job._id)}>
-                    <Link
+                    <Link prefetch={false}
                       href={`/admin/jobs/${job._id}`}
                       className="flex items-center justify-between gap-3 rounded-2xl bg-[#fbf9ff] px-4 py-3.5 transition hover:bg-[#eef0ff]"
                     >

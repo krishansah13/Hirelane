@@ -20,7 +20,7 @@ export default function EmptyState() {
                 filters to see more opportunities.
             </p>
 
-            <Link
+            <Link prefetch={false}
                 href="/jobs"
                 className="mt-5 rounded-xl bg-[#2e46ba] px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 hover:scale-105 transition-all"
             >

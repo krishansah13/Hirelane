@@ -58,7 +58,7 @@ export default async function ApplicationDetailPage({
   return (
     <div className="space-y-6">
       <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-        <Link
+        <Link prefetch={false}
           href="/dashboard"
           className="text-sm font-medium text-[#2e46ba] hover:underline"
         >
@@ -112,7 +112,7 @@ export default async function ApplicationDetailPage({
         </dl>
 
         {job?.slug && (
-          <Link
+          <Link prefetch={false}
             href={`/jobs/${job.slug}`}
             className="mt-5 inline-flex text-sm font-medium text-[#2e46ba] hover:underline"
           >

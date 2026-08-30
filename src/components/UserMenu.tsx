@@ -101,9 +101,8 @@ export default function UserMenu({ user }: UserMenuProps) {
                 </span>
 
                 <svg
-                    className={`hidden h-4 w-4 text-gray-400 transition-transform lg:block ${
-                        open ? "rotate-180" : ""
-                    }`}
+                    className={`hidden h-4 w-4 text-gray-400 transition-transform lg:block ${open ? "rotate-180" : ""
+                        }`}
                     viewBox="0 0 20 20"
                     fill="currentColor"
                     aria-hidden="true"
@@ -152,7 +151,7 @@ export default function UserMenu({ user }: UserMenuProps) {
 
                     {/* Actions */}
                     <div className="p-2">
-                        <Link
+                        <Link prefetch={false}
                             href="/account"
                             role="menuitem"
                             onClick={() => setOpen(false)}
@@ -180,54 +179,54 @@ export default function UserMenu({ user }: UserMenuProps) {
             {mounted &&
                 confirmOpen &&
                 createPortal(
-                <div
-                    className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 p-4"
-                    onClick={cancelSignOut}
-                    role="presentation"
-                >
                     <div
-                        role="dialog"
-                        aria-modal="true"
-                        aria-labelledby="sign-out-title"
-                        aria-describedby="sign-out-description"
-                        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
-                        onClick={(event) => event.stopPropagation()}
+                        className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 p-4"
+                        onClick={cancelSignOut}
+                        role="presentation"
                     >
-                        <h2
-                            id="sign-out-title"
-                            className="text-lg font-bold text-gray-950"
+                        <div
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="sign-out-title"
+                            aria-describedby="sign-out-description"
+                            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+                            onClick={(event) => event.stopPropagation()}
                         >
-                            Sign out
-                        </h2>
-
-                        <p
-                            id="sign-out-description"
-                            className="mt-2 text-sm leading-6 text-gray-600"
-                        >
-                            Are you sure you want to sign out?
-                        </p>
-
-                        <div className="mt-6 flex flex-wrap justify-end gap-3">
-                            <button
-                                type="button"
-                                onClick={cancelSignOut}
-                                className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
-                            >
-                                Cancel
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={confirmSignOut}
-                                className="rounded-xl bg-[#2E46BA] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-600"
+                            <h2
+                                id="sign-out-title"
+                                className="text-lg font-bold text-gray-950"
                             >
                                 Sign out
-                            </button>
+                            </h2>
+
+                            <p
+                                id="sign-out-description"
+                                className="mt-2 text-sm leading-6 text-gray-600"
+                            >
+                                Are you sure you want to sign out?
+                            </p>
+
+                            <div className="mt-6 flex flex-wrap justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={cancelSignOut}
+                                    className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={confirmSignOut}
+                                    className="rounded-xl bg-[#2E46BA] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-600"
+                                >
+                                    Sign out
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </div>,
-                document.body,
-            )}
+                    </div>,
+                    document.body,
+                )}
         </div>
     );
 }

@@ -53,7 +53,7 @@ function ActionLink({
             : "border border-[#dcd8ea] bg-white text-gray-700 hover:bg-[#f7f5ff] hover:text-[#2E46BA]";
 
     return (
-        <Link
+        <Link prefetch={false}
             href={action.href}
             className={`inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition ${styles}`}
         >

@@ -32,13 +32,13 @@ export default async function LandingEmployerCta() {
                         </div>
 
                         <div className="flex flex-col gap-3 sm:flex-row">
-                            <Link
+                            <Link prefetch={false}
                                 href={session?.user?.role === "employer" ? "/employer" : "/signup?role=employer"}
                                 className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-[#1739ad] transition hover:bg-indigo-50"
                             >
                                 Post a job
                             </Link>
-                            <Link
+                            <Link prefetch={false}
                                 href="/jobs"
                                 className="inline-flex items-center justify-center rounded-xl border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
                             >

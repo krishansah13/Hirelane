@@ -64,7 +64,7 @@ export default async function AdminCompaniesPage({
             or remove a listing when it should not stay on the platform.
           </p>
         </div>
-          <AdminAddCompany />
+        <AdminAddCompany />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -96,7 +96,7 @@ export default async function AdminCompaniesPage({
               : "No companies have been created yet."}
           </p>
           {filtersActive ? (
-            <Link
+            <Link prefetch={false}
               href="/admin/companies"
               className="mt-5 inline-flex rounded-xl bg-[#2e46ba] px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
             >
@@ -116,7 +116,7 @@ export default async function AdminCompaniesPage({
                 Showing {rangeStart}–{rangeEnd} of {result.total}
               </p>
               {filtersActive ? (
-                <Link
+                <Link prefetch={false}
                   href="/admin/companies"
                   className="text-sm font-medium text-[#2E46BA] hover:text-[#12329c]"
                 >
@@ -135,7 +135,7 @@ export default async function AdminCompaniesPage({
                     size="md"
                   />
                   <div className="min-w-0 flex-1">
-                    <Link
+                    <Link prefetch={false}
                       href={`/admin/companies/${company._id}`}
                       className="font-semibold text-gray-950 hover:text-[#2E46BA]"
                     >
@@ -182,7 +182,7 @@ export default async function AdminCompaniesPage({
                             src={company.logoURL}
                             size="sm"
                           />
-                          <Link
+                          <Link prefetch={false}
                             href={`/admin/companies/${company._id}`}
                             className="font-semibold text-gray-950 hover:text-[#2E46BA]"
                           >
@@ -203,7 +203,7 @@ export default async function AdminCompaniesPage({
                         {formatDate(company.createdAt)}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <Link
+                        <Link prefetch={false}
                           href={`/admin/companies/${company._id}`}
                           className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
                         >

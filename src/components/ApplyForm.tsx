@@ -47,31 +47,27 @@ function ApplicationStatusNotice({
 
   return (
     <div
-      className={`rounded-xl px-4 py-3 ${
-        rejected ? "bg-rose-50" : "bg-[#eef0ff]"
-      }`}
+      className={`rounded-xl px-4 py-3 ${rejected ? "bg-rose-50" : "bg-[#eef0ff]"
+        }`}
     >
       <p
-        className={`text-sm font-semibold ${
-          rejected ? "text-rose-700" : "text-[#2e46ba]"
-        }`}
+        className={`text-sm font-semibold ${rejected ? "text-rose-700" : "text-[#2e46ba]"
+          }`}
       >
         {rejected ? "Rejected" : "Already applied"}
       </p>
       <p
-        className={`mt-0.5 text-xs leading-5 ${
-          rejected ? "text-rose-700/70" : "text-[#2e46ba]/70"
-        }`}
+        className={`mt-0.5 text-xs leading-5 ${rejected ? "text-rose-700/70" : "text-[#2e46ba]/70"
+          }`}
       >
         {rejected
           ? "This company has closed your application."
           : "Track this role from your dashboard."}
       </p>
-      <Link
+      <Link prefetch={false}
         href={`/dashboard/applications/${application.id}`}
-        className={`mt-2 inline-flex text-xs font-medium hover:underline ${
-          rejected ? "text-rose-700" : "text-[#2e46ba]"
-        }`}
+        className={`mt-2 inline-flex text-xs font-medium hover:underline ${rejected ? "text-rose-700" : "text-[#2e46ba]"
+          }`}
       >
         View application
       </Link>
@@ -144,7 +140,7 @@ export default function ApplyForm({
         <p className="text-sm text-gray-600">
           Sign in as a seeker to apply for this role.
         </p>
-        <Link
+        <Link prefetch={false}
           href={loginHref}
           className="mt-4 inline-flex rounded-xl bg-[#2e46ba] px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
         >

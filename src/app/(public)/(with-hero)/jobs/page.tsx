@@ -55,9 +55,6 @@ export default async function JobSearch({
 
   const suspenseKey = JSON.stringify(currentParams);
 
-
-
-
   return (
     <main>
       <section className="min-h-125 bg-white px-4 py-6 sm:p-7">

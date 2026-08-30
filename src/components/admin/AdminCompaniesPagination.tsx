@@ -52,11 +52,11 @@ export default function AdminCompaniesPagination({
                 {showEllipsis ? (
                   <span className="px-2 text-gray-400">...</span>
                 ) : null}
-                <Link
+                <Link prefetch={false}
                   href={buildAdminCompaniesHref(params, pageNumber)}
                   className={`flex h-10 w-10 items-center justify-center rounded-xl text-sm ${pageNumber === page
-                      ? "bg-[#2E46BA] text-white"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
+                    ? "bg-[#2E46BA] text-white"
+                    : "bg-white text-gray-700 hover:bg-gray-50"
                     }`}
                 >
                   {pageNumber}

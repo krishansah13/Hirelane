@@ -52,7 +52,7 @@ export default async function FooterSection() {
         <footer className="mt-auto border-t border-[#eeeaf8] bg-white">
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-                    <Link
+                    <Link prefetch={false}
                         href={homeHref}
                         className="inline-flex shrink-0 items-center gap-2.5"
                     >
@@ -72,7 +72,7 @@ export default async function FooterSection() {
                         className="flex flex-wrap items-center gap-x-6 gap-y-2 sm:justify-end"
                     >
                         {links.map((link) => (
-                            <Link
+                            <Link prefetch={false}
                                 key={`${link.href}-${link.label}`}
                                 href={link.href}
                                 className={LINK_CLASS}

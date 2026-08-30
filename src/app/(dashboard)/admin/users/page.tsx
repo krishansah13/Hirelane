@@ -74,7 +74,7 @@ export default async function AdminUsersPage({
 
   return (
     <div className="space-y-6">
-      
+
       <div className="rounded-2xl bg-linear-100 from-white via-white to-indigo-200 p-6 shadow-sm sm:p-8">
         <p className="text-xs font-medium tracking-wide text-gray-400">
           ADMIN
@@ -117,7 +117,7 @@ export default async function AdminUsersPage({
               : "No accounts have been created yet."}
           </p>
           {filtersActive ? (
-            <Link
+            <Link prefetch={false}
               href="/admin/users"
               className="mt-5 inline-flex rounded-xl bg-[#2e46ba] px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
             >
@@ -133,7 +133,7 @@ export default async function AdminUsersPage({
                 Showing {rangeStart}–{rangeEnd} of {result.total}
               </p>
               {filtersActive ? (
-                <Link
+                <Link prefetch={false}
                   href="/admin/users"
                   className="text-sm font-medium text-[#2E46BA] hover:text-[#12329c]"
                 >

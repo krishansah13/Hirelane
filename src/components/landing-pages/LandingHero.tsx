@@ -47,7 +47,7 @@ export default function LandingHero({ stats }: { stats: LandingStats }) {
                 </div>
 
                 <div className="mx-auto mt-10 max-w-5xl">
-                    <SearchForm/>
+                    <SearchForm />
                 </div>
 
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
@@ -55,7 +55,7 @@ export default function LandingHero({ stats }: { stats: LandingStats }) {
                         Popular:
                     </span>
                     {popularSearches.map((search) => (
-                        <Link
+                        <Link prefetch={false}
                             key={search.href}
                             href={search.href}
                             className="rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-gray-700 ring-1 ring-[#dcd8ea] transition hover:text-[#2E46BA] hover:ring-[#2E46BA]/30"

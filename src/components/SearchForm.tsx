@@ -53,7 +53,7 @@ export default function SearchForm() {
     return (
         <form
             onSubmit={handleSubmit}
-            className="flex w-full flex-col gap-2.5 sm:h-[70px] sm:flex-row sm:items-center sm:gap-0 sm:rounded-2xl sm:bg-[#fbf9ff] sm:px-3 sm:shadow-[0_4px_12px_rgba(0,0,0,0.10)]"
+            className="flex w-full flex-col gap-2.5 sm:h-17.5 sm:flex-row sm:items-center sm:gap-0 sm:rounded-2xl sm:bg-[#fbf9ff] sm:px-3 sm:shadow-[0_4px_12px_rgba(0,0,0,0.10)]"
         >
             <div className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_4px_16px_rgba(76,61,130,0.10)] sm:contents">
                 <div className={FIELD_CLASS}>
@@ -73,7 +73,7 @@ export default function SearchForm() {
                     />
                 </div>
 
-                <div className="h-px w-full bg-[#eeeaf8] sm:h-[38px] sm:w-px sm:bg-[#c9c6d1]" />
+                <div className="h-px w-full bg-[#eeeaf8] sm:h-9.5 sm:w-px sm:bg-[#c9c6d1]" />
 
                 <div className={FIELD_CLASS}>
                     <MapPin

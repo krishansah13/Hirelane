@@ -145,11 +145,10 @@ export default function SignupForm() {
                                 <button
                                     type="button"
                                     onClick={() => setRole("seeker")}
-                                    className={`rounded-xl px-3 py-3 text-left transition ${
-                                        role === "seeker"
+                                    className={`rounded-xl px-3 py-3 text-left transition ${role === "seeker"
                                             ? "bg-[#eef0ff] ring-2 ring-[#2E46BA]"
                                             : "bg-[#f7f5ff] hover:bg-indigo-50"
-                                    }`}
+                                        }`}
                                 >
                                     <UserRound
                                         size={16}
@@ -165,11 +164,10 @@ export default function SignupForm() {
                                 <button
                                     type="button"
                                     onClick={() => setRole("employer")}
-                                    className={`rounded-xl px-3 py-3 text-left transition ${
-                                        role === "employer"
+                                    className={`rounded-xl px-3 py-3 text-left transition ${role === "employer"
                                             ? "bg-[#eef0ff] ring-2 ring-[#2E46BA]"
                                             : "bg-[#f7f5ff] hover:bg-indigo-50"
-                                    }`}
+                                        }`}
                                 >
                                     <BriefcaseBusiness
                                         size={16}
@@ -368,7 +366,7 @@ export default function SignupForm() {
                                     required
                                     className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]"
                                 />
-                                 <button
+                                <button
                                     type="button"
                                     onClick={() =>
                                         setShowConfPass((visible) => !visible)
@@ -406,14 +404,14 @@ export default function SignupForm() {
                             {isSubmitting
                                 ? "Creating your account..."
                                 : role === "employer"
-                                  ? "Create employer account"
-                                  : "Create seeker account"}
+                                    ? "Create employer account"
+                                    : "Create seeker account"}
                         </button>
                     </form>
 
                     <p className="mt-8 text-center text-sm text-gray-500">
                         Already on Hirelane?{" "}
-                        <Link
+                        <Link prefetch={false}
                             href="/login"
                             className="font-medium text-[#2E46BA] transition hover:text-[#12329c]"
                         >
@@ -422,7 +420,7 @@ export default function SignupForm() {
                     </p>
                     <p className="mt-3 text-center text-sm text-gray-500">
                         Just browsing?{" "}
-                        <Link
+                        <Link prefetch={false}
                             href="/jobs"
                             className="font-medium text-[#2E46BA] transition hover:text-[#12329c]"
                         >

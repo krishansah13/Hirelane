@@ -110,14 +110,13 @@ export default function DashboardSidebar({
           const Icon = link.icon;
 
           return (
-            <Link
+            <Link prefetch={false}
               key={link.href}
               href={link.href}
-              className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                active
+              className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${active
                   ? "bg-[#eef0ff] text-[#2E46BA]"
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-950"
-              }`}
+                }`}
             >
               <Icon size={16} />
               {link.label}

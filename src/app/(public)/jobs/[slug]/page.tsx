@@ -94,14 +94,14 @@ export default async function JobDetail({
         <section className="relative overflow-hidden bg-linear-100 from-white via-white to-indigo-200">
           <div className="relative px-6 py-12 sm:px-10 lg:py-16">
             {session?.user?.role === "seeker" ? (
-              <Link
+              <Link prefetch={false}
                 href="/jobs"
                 className="mb-6 inline-flex text-sm font-medium text-[#2e46ba] hover:underline"
               >
                 ← Back to applications
               </Link>
             ) : !previewHome ? (
-              <Link
+              <Link prefetch={false}
                 href="/jobs"
                 className="mb-6 inline-flex text-sm font-medium text-[#2e46ba] hover:underline"
               >

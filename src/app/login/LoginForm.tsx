@@ -227,7 +227,7 @@ export default function LoginForm() {
 
           <p className="mt-8 text-center text-sm text-gray-500">
             Just browsing?{" "}
-            <Link
+            <Link prefetch={false}
               href="/jobs"
               className="font-medium text-[#2E46BA] transition hover:text-[#12329c]"
             >
@@ -236,7 +236,7 @@ export default function LoginForm() {
           </p>
           <p className="mt-3 text-center text-sm text-gray-500">
             New here?{" "}
-            <Link
+            <Link prefetch={false}
               href="/signup"
               className="font-medium text-[#2E46BA] transition hover:text-[#12329c]"
             >
