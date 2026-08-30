@@ -1,4 +1,4 @@
-import FooterSection from "@/components/FooterSection";
+import PersistModalBackground from "@/components/jobs/PersistModalBackground";
 import LandingHero from "@/components/landing-pages/LandingHero";
 import { getLandingContent } from "@/lib/job-query";
 
@@ -13,7 +13,7 @@ export default async function PublicLayout({
   return (
     <>
       <LandingHero stats={landingStats} />
-      {children}
+      <PersistModalBackground>{children}</PersistModalBackground>
       {modal}
     </>
   );

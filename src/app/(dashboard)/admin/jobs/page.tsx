@@ -55,7 +55,7 @@ export default async function AdminJobsPage({
 
   return (
     <div className="space-y-6">
-          <div className="rounded-2xl bg-linear-100 from-white via-white to-indigo-200 p-6 shadow-sm sm:p-8">
+      <div className="rounded-2xl bg-linear-100 from-white via-white to-indigo-200 p-6 shadow-sm sm:p-8">
         <p className="text-xs font-medium tracking-wide text-gray-400">
           ADMIN
         </p>

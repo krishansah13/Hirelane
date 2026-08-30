@@ -1,18 +1,18 @@
 import Link from "next/link";
-import {
-  ArrowUpRight,
-  Briefcase,
-  Inbox,
-  MapPin,
-  Sparkles,
-} from "lucide-react";
+import { ArrowUpRight, Inbox, Sparkles } from "lucide-react";
 import { requireSeeker } from "@/lib/session";
-import { getMyApplications } from "@/lib/application-query";
+import {
+  buildDashboardHref,
+  getMyApplications,
+  getMyApplicationStats,
+  toSeekerApplicationQuery,
+} from "@/lib/application-query";
+import { seekerApplicationQuerySchema } from "@/lib/validation";
 import StageBadge from "@/components/StageBadge";
 import CompanyLogo from "@/components/CompanyLogo";
+import DashboardSearch from "@/components/dashboard/DashboardSearch";
+import QueryPagination from "@/components/ui/QueryPagination";
 import { formatJobType } from "@/lib/utils/format";
-
-const PIPELINE = ["applied", "screening", "interview", "offer"] as const;
 
 function formatDate(value?: string | Date) {
   if (!value) return "—";
@@ -28,68 +28,44 @@ function firstName(name?: string | null) {
   return part || null;
 }
 
-function StageRail({ stage }: { stage: string }) {
-  const rejected = stage === "rejected";
-  const currentIndex = PIPELINE.indexOf(stage as (typeof PIPELINE)[number]);
-
-  return (
-    <div
-      className="mt-4 flex items-center gap-1"
-      aria-hidden
-    >
-      {PIPELINE.map((step, index) => (
-        <span
-          key={step}
-          className={`h-1.5 flex-1 rounded-full ${rejected
-              ? "bg-rose-100"
-              : currentIndex >= 0 && index <= currentIndex
-                ? "bg-[#2E46BA]"
-                : "bg-gray-100"
-            }`}
-        />
-      ))}
-    </div>
-  );
-}
-
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const user = await requireSeeker();
-  const applications = await getMyApplications(user.id);
+  const params = await searchParams;
+  const parsed = seekerApplicationQuerySchema.safeParse(params);
+  const query = parsed.success ? toSeekerApplicationQuery(parsed.data) : { page: 1 };
+
+  const [stats, result] = await Promise.all([
+    getMyApplicationStats(user.id),
+    getMyApplications(user.id, query),
+  ]);
+
   const greeting = firstName(user.name);
-
-  const counts = {
-    total: applications.length,
-    active: applications.filter(
-      (application) =>
-        application.stage !== "rejected" && application.stage !== "offer",
-    ).length,
-    interview: applications.filter(
-      (application) => application.stage === "interview",
-    ).length,
-    offer: applications.filter((application) => application.stage === "offer")
-      .length,
-  };
-
-  const stats = [
-    { label: "In progress", value: counts.active, hint: "Still moving" },
-    { label: "Interviews", value: counts.interview, hint: "On the calendar" },
-    { label: "Offers", value: counts.offer, hint: "Ready to decide" },
-    { label: "Total applied", value: counts.total, hint: "All roles" },
+  const statCards = [
+    { label: "In progress", value: stats.active, hint: "Still moving" },
+    { label: "Interviews", value: stats.interview, hint: "On the calendar" },
+    { label: "Offers", value: stats.offer, hint: "Ready to decide" },
+    { label: "Total applied", value: stats.total, hint: "All roles" },
   ];
 
-  return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <section className="relative overflow-hidden rounded-3xl bg-linear-100 from-white via-white to-indigo-200 shadow-sm">
-        <div className="pointer-events-none absolute -right-16 top-6 h-48 w-48 rounded-full bg-indigo-200/50 blur-3xl" />
-        <div className="pointer-events-none absolute -left-10 bottom-0 h-36 w-36 rounded-full bg-[#2E46BA]/10 blur-3xl" />
+  const filtersActive = Boolean(query.q || query.stage);
+  const rangeStart =
+    result.total === 0 ? 0 : (result.page - 1) * result.pageSize + 1;
+  const rangeEnd = Math.min(result.page * result.pageSize, result.total);
 
-        <div className="relative flex flex-col gap-6 px-6 py-8 sm:flex-row sm:items-end sm:justify-between sm:px-8 sm:py-10">
-          <div className="max-w-xl">
+  return (
+    <div className="mx-auto  space-y-6">
+      <section className="relative overflow-hidden rounded-2xl bg-linear-100 from-white via-white to-indigo-200 p-6 shadow-sm sm:p-8">
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
             <p className="inline-flex items-center gap-1.5 text-xs font-medium tracking-wide text-[#2E46BA]">
               <Sparkles size={13} />
               {greeting ? `Welcome back, ${greeting}` : "Welcome back"}
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
+            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-gray-950">
               Your applications
             </h1>
             <p className="mt-3 text-sm leading-6 text-gray-500">
@@ -109,7 +85,7 @@ export default async function DashboardPage() {
       </section>
 
       <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {stats.map((stat) => (
+        {statCards.map((stat) => (
           <div
             key={stat.label}
             className="rounded-2xl bg-white px-4 py-4 shadow-sm sm:px-5"
@@ -125,124 +101,168 @@ export default async function DashboardPage() {
         ))}
       </dl>
 
-      {applications.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-[#dcd8ea] bg-white px-6 py-14 text-center">
-          <span className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef0ff] text-[#2E46BA]">
-            <Inbox size={22} />
-          </span>
+      <DashboardSearch params={query} />
+
+      {result.applications.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
+            <Inbox size={22} className="text-[#2e46ba]" />
+          </div>
           <h2 className="mt-5 text-lg font-semibold text-gray-900">
-            No applications yet
+            {filtersActive ? "No applications found" : "No applications yet"}
           </h2>
-          <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-gray-500">
-            Browse open roles and submit your first application. Your pipeline
-            will show up here.
+          <p className="mt-2 text-sm text-gray-500">
+            {filtersActive
+              ? "Try a different role, company, or stage."
+              : "Browse open roles and submit your first application. Your pipeline will show up here."}
           </p>
-          <Link
-            href="/jobs"
-            className="mt-6 inline-flex rounded-xl bg-[#2E46BA] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1739ad]"
-          >
-            Find jobs
-          </Link>
+          {filtersActive ? (
+            <Link
+              href="/dashboard"
+              className="mt-5 inline-flex rounded-xl bg-[#2e46ba] px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              Clear search
+            </Link>
+          ) : (
+            <Link
+              href="/jobs"
+              className="mt-5 inline-flex rounded-xl bg-[#2E46BA] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1739ad]"
+            >
+              Find jobs
+            </Link>
+          )}
         </div>
       ) : (
-        <section className="space-y-3">
-          <div className="flex items-end justify-between gap-3 px-1">
-            <h2 className="text-sm font-semibold text-gray-950">
-              Recent activity
-            </h2>
-            <p className="text-xs text-gray-400">
-              {applications.length}{" "}
-              {applications.length === 1 ? "role" : "roles"}
-            </p>
+        <>
+          <div className="rounded-2xl bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 sm:px-6">
+              <p className="text-sm text-gray-500">
+                Showing {rangeStart}–{rangeEnd} of {result.total}
+              </p>
+              {filtersActive ? (
+                <Link
+                  href="/dashboard"
+                  className="text-sm font-medium text-[#2E46BA] hover:text-[#12329c]"
+                >
+                  Clear search
+                </Link>
+              ) : null}
+            </div>
+
+            <ul className="divide-y divide-gray-100 lg:hidden">
+              {result.applications.map((application) => (
+                <li key={application._id} className="flex items-start gap-3 p-5">
+                  <CompanyLogo
+                    name={application.company?.name || "Company"}
+                    slug={application.company?.slug}
+                    src={application.company?.logoURL}
+                    size="md"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <Link
+                          href={`/dashboard/applications/${application._id}`}
+                          className="font-semibold text-gray-950 hover:text-[#2E46BA]"
+                        >
+                          {application.job?.title ?? "Role unavailable"}
+                        </Link>
+                        <p className="mt-0.5 truncate text-sm text-gray-500">
+                          {application.company?.name ?? "Company"}
+                        </p>
+                        <p className="mt-1 text-xs text-gray-400">
+                          {application.job?.location ?? "—"}
+                          {application.job?.type
+                            ? ` · ${formatJobType(application.job.type)}`
+                            : ""}
+                          {" · Applied "}
+                          {formatDate(application.appliedAt)}
+                        </p>
+                      </div>
+                      <StageBadge stage={application.stage} />
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <div className="hidden overflow-x-auto lg:block">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-[#fbf9ff] text-xs font-medium tracking-wide text-gray-500">
+                  <tr>
+                    <th className="px-6 py-3 font-medium">Role</th>
+                    <th className="px-6 py-3 font-medium">Company</th>
+                    <th className="px-6 py-3 font-medium">Location</th>
+                    <th className="px-6 py-3 font-medium">Type</th>
+                    <th className="px-6 py-3 font-medium">Stage</th>
+                    <th className="px-6 py-3 font-medium">Applied</th>
+                    <th className="px-6 py-3 font-medium">
+                      <span className="sr-only">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {result.applications.map((application) => (
+                    <tr key={application._id} className="align-middle">
+                      <td className="px-6 py-4">
+                        <Link
+                          href={`/dashboard/applications/${application._id}`}
+                          className="font-semibold text-gray-950 hover:text-[#2E46BA]"
+                        >
+                          {application.job?.title ?? "Role unavailable"}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <CompanyLogo
+                            name={application.company?.name || "Company"}
+                            slug={application.company?.slug}
+                            src={application.company?.logoURL}
+                            size="sm"
+                          />
+                          <span className="text-gray-600">
+                            {application.company?.name ?? "Company"}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {application.job?.location ?? "—"}
+                        {application.job?.isRemote ? (
+                          <span className="block text-xs text-gray-400">
+                            Remote
+                          </span>
+                        ) : null}
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {formatJobType(application.job?.type)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <StageBadge stage={application.stage} />
+                      </td>
+                      <td className="px-6 py-4 text-gray-500">
+                        {formatDate(application.appliedAt)}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Link
+                          href={`/dashboard/applications/${application._id}`}
+                          className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                        >
+                          View
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <ul className="space-y-3">
-            {applications.map((application) => {
-              const job =
-                application.jobId && typeof application.jobId === "object"
-                  ? application.jobId
-                  : null;
-              const company =
-                job?.companyId && typeof job.companyId === "object"
-                  ? job.companyId
-                  : null;
-
-              return (
-                <li key={String(application._id)}>
-                  <Link
-                    href={`/dashboard/applications/${application._id}`}
-                    className="group block rounded-2xl bg-white p-4 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(76,61,130,0.10)] sm:p-5"
-                  >
-                    <div className="flex items-start gap-3 sm:items-center sm:gap-4">
-                      <CompanyLogo
-                        name={company?.name || "Company"}
-                        slug={company?.slug}
-                        src={company?.logoURL}
-                        size="md"
-                      />
-
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <h3 className="truncate text-base font-semibold tracking-tight text-gray-950">
-                              {job?.title ?? "Role unavailable"}
-                            </h3>
-                            <p className="mt-1 truncate text-sm text-gray-500">
-                              <span className="font-medium text-gray-700">
-                                {company?.name ?? "Company"}
-                              </span>
-                            </p>
-                          </div>
-                          <StageBadge stage={application.stage} />
-                        </div>
-
-                        <div className="mt-2 hidden flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500 sm:flex">
-                          {job?.location ? (
-                            <span className="inline-flex items-center gap-1">
-                              <MapPin size={11} />
-                              {job.location}
-                            </span>
-                          ) : null}
-                          {job?.type ? (
-                            <>
-                              <span className="text-gray-300">•</span>
-                              <span className="inline-flex items-center gap-1">
-                                <Briefcase size={11} />
-                                {formatJobType(job.type)}
-                              </span>
-                            </>
-                          ) : null}
-                          {job?.isRemote ? (
-                            <>
-                              <span className="text-gray-300">•</span>
-                              <span>Remote</span>
-                            </>
-                          ) : null}
-                          <span className="text-gray-300">•</span>
-                          <span>Applied {formatDate(application.appliedAt)}</span>
-                        </div>
-
-                        <p className="mt-2 text-xs text-gray-400 sm:hidden">
-                          Applied {formatDate(application.appliedAt)}
-                        </p>
-
-                        <StageRail stage={application.stage} />
-                      </div>
-
-                      <span className="hidden shrink-0 items-center gap-1 text-xs font-medium text-[#4338a8] transition-colors group-hover:text-[#2E46BA] sm:inline-flex">
-                        View
-                        <ArrowUpRight
-                          size={13}
-                          className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                        />
-                      </span>
-                    </div>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+          <QueryPagination
+            page={result.page}
+            totalPages={result.totalPages}
+            hrefForPage={(page) => buildDashboardHref(query, page)}
+          />
+        </>
       )}
     </div>
   );

@@ -48,10 +48,8 @@ export const authConfig = {
         return Response.redirect(new URL(getHomePath(role), request.url));
       }
 
-      if (
-        pathname.startsWith("/jobs") &&
-        (role === "employer" || role === "admin")
-      ) {
+      const isJobBoard = pathname === "/jobs" || pathname === "/jobs/";
+      if (isJobBoard && (role === "employer" || role === "admin")) {
         return Response.redirect(new URL(getHomePath(role), request.url));
       }
 

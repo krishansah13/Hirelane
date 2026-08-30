@@ -22,7 +22,7 @@ export default function AdminCompanyActions({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-lg px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
+        className="rounded-xl bg-amber-50 px-4 py-2.5 text-sm font-medium text-rose-700 transition hover:bg-rose-100 cursor-pointer"
       >
         Remove company
       </button>

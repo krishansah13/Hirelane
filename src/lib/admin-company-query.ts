@@ -164,7 +164,7 @@ export async function getAdminCompanyById(companyId: string) {
       .sort({ createdAt: -1 })
       .lean(),
     Job.find({ companyId: company._id })
-      .select("title status location type createdAt")
+      .select("title status location type expiresAt createdAt")
       .sort({ createdAt: -1 })
       .limit(20)
       .lean(),

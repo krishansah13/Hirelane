@@ -5,6 +5,7 @@ import { useFormStatus } from "react-dom";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { applyToJob, type ApplyState } from "@/lib/actions/apply";
+import { getHomePath } from "@/lib/roles";
 
 type ApplyFormProps = {
   jobId: string;
@@ -72,10 +73,15 @@ export default function ApplyForm({
   }
 
   if (session.user.role !== "seeker") {
+    const homeHref = getHomePath(session.user.role);
     return (
-      <p className="text-sm text-gray-600">
-        Employer accounts cannot apply. Use a seeker account instead.
-      </p>
+      <div className={compact ? "" : "rounded-2xl bg-white p-6 shadow-sm"}>
+        <p className="text-sm text-gray-600">
+          This is the public listing seekers see. You can review it here, but
+          only seekers can apply.
+        </p>
+      
+      </div>
     );
   }
 

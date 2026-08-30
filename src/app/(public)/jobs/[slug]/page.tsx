@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import Link from "next/link";
 import { auth } from "@/auth";
 import { getHomePath } from "@/lib/roles";
 import { getJobBySlug, getPublishedJobSlugs } from "@/lib/job-query";
-import { ArrowUpRight } from "lucide-react";
 import { formatInr } from "@/lib/utils/format";
 import ApplyForm from "@/components/ApplyForm";
 import CompanyLogo from "@/components/CompanyLogo";
@@ -54,9 +54,10 @@ export default async function JobDetail({
   params: Promise<{ slug: string }>;
 }) {
   const session = await auth();
-  if (session?.user?.role === "employer" || session?.user?.role === "admin") {
-    redirect(getHomePath(session.user.role));
-  }
+  const previewHome =
+    session?.user?.role === "employer" || session?.user?.role === "admin"
+      ? getHomePath(session.user.role)
+      : null;
 
   const { slug } = await params;
   const job = await getJobBySlug(slug);
@@ -78,6 +79,16 @@ export default async function JobDetail({
 
   return (
     <main className="min-h-screen bg-white">
+      {previewHome ? (
+        <div className="border-b border-indigo-100 bg-[#eef0ff] px-6 py-3 sm:px-10">
+          <p className="text-sm text-[#2e46ba]">
+            Public listing preview — this is what seekers see.{" "}
+            <Link href={previewHome} className="font-semibold hover:underline">
+              Back to dashboard
+            </Link>
+          </p>
+        </div>
+      ) : null}
       <div className="overflow-hidden bg-gray-50 shadow-sm">
         {/* Header */}
         <section className="relative overflow-hidden bg-linear-100 from-white via-white to-indigo-200">

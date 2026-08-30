@@ -105,15 +105,6 @@ export default async function AdminJobDetailPage({
               ))}
             </dl>
           </section>
-
-          {status === "published" && job.slug ? (
-            <Link
-              href={`/jobs/${job.slug}`}
-              className="block rounded-2xl bg-[#eef0ff] px-5 py-4 text-sm font-medium text-[#2e46ba] transition hover:bg-indigo-100"
-            >
-              View public page
-            </Link>
-          ) : null}
         </aside>
       </div>
     </div>

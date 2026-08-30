@@ -219,7 +219,7 @@ export default function UserMenu({ user }: UserMenuProps) {
                             <button
                                 type="button"
                                 onClick={confirmSignOut}
-                                className="rounded-xl bg-[#2E46BA] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2E46BA]"
+                                className="rounded-xl bg-[#2E46BA] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-600"
                             >
                                 Sign out
                             </button>

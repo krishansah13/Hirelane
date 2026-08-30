@@ -1,16 +1,17 @@
 import Link from "next/link";
-import {
-  ArrowUpRight,
-  Briefcase,
-  MapPin,
-  PlusCircle,
-  Sparkles,
-} from "lucide-react";
+import { ArrowUpRight, Briefcase, PlusCircle, Sparkles } from "lucide-react";
 import { requireEmployer } from "@/lib/session";
-import { getCompanyJobs } from "@/lib/employer-query";
+import {
+  buildEmployerJobsHref,
+  getCompanyJobs,
+  getCompanyJobStats,
+  toEmployerJobQuery,
+} from "@/lib/employer-query";
+import { employerJobQuerySchema } from "@/lib/validation";
 import JobStatusBadge from "@/components/jobs/JobStatusBadge";
+import EmployerJobSearch from "@/components/employer/EmployerJobSearch";
+import QueryPagination from "@/components/ui/QueryPagination";
 import { formatJobType, formatInr } from "@/lib/utils/format";
-import { effectiveJobStatus } from "@/lib/job-status";
 
 function formatDate(value?: string | Date | null) {
   if (!value) return "—";
@@ -26,39 +27,44 @@ function firstName(name?: string | null) {
   return part || null;
 }
 
-export default async function EmployerPage() {
+export default async function EmployerPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const user = await requireEmployer();
-  const jobs = await getCompanyJobs(user.companyId);
+  const params = await searchParams;
+  const parsed = employerJobQuerySchema.safeParse(params);
+  const query = parsed.success ? toEmployerJobQuery(parsed.data) : { page: 1 };
+
+  const [stats, result] = await Promise.all([
+    getCompanyJobStats(user.companyId),
+    getCompanyJobs(user.companyId, query),
+  ]);
+
   const greeting = firstName(user.name);
-
-  const statuses = jobs.map((job) => effectiveJobStatus(job));
-  const counts = {
-    live: statuses.filter((status) => status === "published").length,
-    draft: statuses.filter((status) => status === "draft").length,
-    expired: statuses.filter((status) => status === "expired").length,
-    total: jobs.length,
-  };
-
-  const stats = [
-    { label: "Live", value: counts.live, hint: "Open to applicants" },
-    { label: "Drafts", value: counts.draft, hint: "Still in progress" },
-    { label: "Expired", value: counts.expired, hint: "Need a refresh" },
-    { label: "Total roles", value: counts.total, hint: "All listings" },
+  const statCards = [
+    { label: "Live", value: stats.live, hint: "Open to applicants" },
+    { label: "Drafts", value: stats.draft, hint: "Still in progress" },
+    { label: "Expired", value: stats.expired, hint: "Need a refresh" },
+    { label: "Total roles", value: stats.total, hint: "All listings" },
   ];
 
-  return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <section className="relative overflow-hidden rounded-3xl bg-linear-100 from-white via-white to-indigo-200 shadow-sm">
-        <div className="pointer-events-none absolute -right-16 top-6 h-48 w-48 rounded-full bg-indigo-200/50 blur-3xl" />
-        <div className="pointer-events-none absolute -left-10 bottom-0 h-36 w-36 rounded-full bg-[#2E46BA]/10 blur-3xl" />
+  const filtersActive = Boolean(query.q || query.status);
+  const rangeStart =
+    result.total === 0 ? 0 : (result.page - 1) * result.pageSize + 1;
+  const rangeEnd = Math.min(result.page * result.pageSize, result.total);
 
-        <div className="relative flex flex-col gap-6 px-6 py-8 sm:flex-row sm:items-end sm:justify-between sm:px-8 sm:py-10">
-          <div className="max-w-xl">
+  return (
+    <div className="mx-auto max-w-full space-y-6">
+      <section className="relative overflow-hidden rounded-2xl bg-linear-100 from-white via-white to-indigo-200 p-6 shadow-sm sm:p-8">
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="max-w-full">
             <p className="inline-flex items-center gap-1.5 text-xs font-medium tracking-wide text-[#2E46BA]">
               <Sparkles size={13} />
               {greeting ? `Welcome back, ${greeting}` : "Welcome back"}
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
+            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-gray-950">
               Posted roles
             </h1>
             <p className="mt-3 text-sm leading-6 text-gray-500">
@@ -78,7 +84,7 @@ export default async function EmployerPage() {
       </section>
 
       <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {stats.map((stat) => (
+        {statCards.map((stat) => (
           <div
             key={stat.label}
             className="rounded-2xl bg-white px-4 py-4 shadow-sm sm:px-5"
@@ -94,103 +100,194 @@ export default async function EmployerPage() {
         ))}
       </dl>
 
-      {jobs.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-[#dcd8ea] bg-white px-6 py-14 text-center">
-          <span className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef0ff] text-[#2E46BA]">
-            <Briefcase size={22} />
-          </span>
+      <EmployerJobSearch params={query} />
+
+      {result.jobs.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
+            <Briefcase size={22} className="text-[#2e46ba]" />
+          </div>
           <h2 className="mt-5 text-lg font-semibold text-gray-900">
-            No roles yet
+            {filtersActive ? "No roles found" : "No roles yet"}
           </h2>
-          <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-gray-500">
-            Create your first draft and publish when you are ready. Live roles
-            will show up here.
+          <p className="mt-2 text-sm text-gray-500">
+            {filtersActive
+              ? "Try a different title, location, or status."
+              : "Create your first draft and publish when you are ready. Live roles will show up here."}
           </p>
-          <Link
-            href="/employer/jobs/new"
-            className="mt-6 inline-flex rounded-xl bg-[#2E46BA] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1739ad]"
-          >
-            Post a job
-          </Link>
+          {filtersActive ? (
+            <Link
+              href="/employer"
+              className="mt-5 inline-flex rounded-xl bg-[#2e46ba] px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              Clear search
+            </Link>
+          ) : (
+            <Link
+              href="/employer/jobs/new"
+              className="mt-5 inline-flex rounded-xl bg-[#2E46BA] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1739ad]"
+            >
+              Post a job
+            </Link>
+          )}
         </div>
       ) : (
-        <section className="space-y-3">
-          <div className="flex items-end justify-between gap-3 px-1">
-            <h2 className="text-sm font-semibold text-gray-950">Your listings</h2>
-            <p className="text-xs text-gray-400">
-              {jobs.length} {jobs.length === 1 ? "role" : "roles"}
-            </p>
-          </div>
-
-          <ul className="space-y-3">
-            {jobs.map((job) => {
-              const status = effectiveJobStatus(job);
-
-              return (
-                <li
-                  key={String(job._id)}
-                  className="rounded-2xl bg-white p-4 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(76,61,130,0.10)] sm:p-5"
+        <>
+          <div className="rounded-2xl bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 sm:px-6">
+              <p className="text-sm text-gray-500">
+                Showing {rangeStart}–{rangeEnd} of {result.total}
+              </p>
+              {filtersActive ? (
+                <Link
+                  href="/employer"
+                  className="text-sm font-medium text-[#2E46BA] hover:text-[#12329c]"
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
+                  Clear search
+                </Link>
+              ) : null}
+            </div>
+
+            <ul className="divide-y divide-gray-100 xl:hidden">
+              {result.jobs.map((job) => (
+                <li key={job._id} className="space-y-3 p-5">
+                  <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h2 className="truncate text-base font-semibold tracking-tight text-gray-950">
+                      <Link
+                        href={`/employer/jobs/${job._id}/edit`}
+                        className="font-semibold text-gray-950 hover:text-[#2E46BA]"
+                      >
                         {job.title}
-                      </h2>
-                      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500">
-                        {job.location ? (
-                          <span className="inline-flex items-center gap-1">
-                            <MapPin size={11} />
-                            {job.location}
-                          </span>
-                        ) : null}
-                        {job.type ? (
-                          <>
-                            <span className="text-gray-300">•</span>
-                            <span className="inline-flex items-center gap-1">
-                              <Briefcase size={11} />
-                              {formatJobType(job.type)}
-                            </span>
-                          </>
-                        ) : null}
-                        <span className="text-gray-300">•</span>
-                        <span>{job.isRemote ? "Remote" : "On-site"}</span>
-                      </div>
-                      <p className="mt-2 text-xs text-gray-400">
-                        {formatInr(job.salaryMin)} – {formatInr(job.salaryMax)} ·
-                        Updated {formatDate(job.updatedAt)}
+                      </Link>
+                      <p className="mt-0.5 text-xs text-gray-400">
+                        {job.location}
+                        {job.type ? ` · ${formatJobType(job.type)}` : ""}
+                        {job.isRemote ? " · Remote" : " · On-site"}
+                      </p>
+                      <p className="mt-1 text-xs text-gray-400">
+                        {formatInr(job.salaryMin)} – {formatInr(job.salaryMax)}
+                        {" · "}
+                        {job.applicationCount}{" "}
+                        {job.applicationCount === 1
+                          ? "applicant"
+                          : "applicants"}
+                        {" · Updated "}
+                        {formatDate(job.updatedAt)}
                       </p>
                     </div>
-                    <JobStatusBadge status={status} />
+                    <JobStatusBadge status={job.status} />
                   </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Link
                       href={`/employer/jobs/${job._id}/edit`}
-                      className="rounded-lg bg-[#eef0ff] px-3 py-2 text-sm font-medium text-[#2E46BA] transition hover:bg-indigo-100"
+                      className="rounded-lg bg-[#eef0ff] px-3 py-2 text-sm font-medium text-[#2E46BA] hover:bg-indigo-100"
                     >
                       Edit
                     </Link>
                     <Link
                       href={`/employer/jobs/${job._id}/applicants`}
-                      className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+                      className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
                     >
                       Applicants
                     </Link>
-                    {status === "published" && job.slug ? (
-                      <Link
+                    {job.status === "published" && job.slug ? (
+                      <a
                         href={`/jobs/${job.slug}`}
-                        className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+                        className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
                       >
                         View public page
                         <ArrowUpRight size={13} />
-                      </Link>
+                      </a>
                     ) : null}
                   </div>
                 </li>
-              );
-            })}
-          </ul>
-        </section>
+              ))}
+            </ul>
+
+            <div className="hidden overflow-x-auto xl:block">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-[#fbf9ff] text-xs font-medium tracking-wide text-gray-500">
+                  <tr>
+                    <th className="px-6 py-3 font-medium">Title</th>
+                    <th className="px-6 py-3 font-medium">Location</th>
+                    <th className="px-6 py-3 font-medium">Type</th>
+                    <th className="px-6 py-3 font-medium">Status</th>
+                    <th className="px-6 py-3 font-medium">Applicants</th>
+                    <th className="px-6 py-3 font-medium">Updated</th>
+                    <th className="px-6 py-3 font-medium">
+                      <span className="sr-only">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {result.jobs.map((job) => (
+                    <tr key={job._id} className="align-middle">
+                      <td className="px-6 py-4">
+                        <Link
+                          href={`/employer/jobs/${job._id}/edit`}
+                          className="font-semibold text-gray-950 hover:text-[#2E46BA]"
+                        >
+                          {job.title}
+                        </Link>
+                        <p className="mt-0.5 text-xs text-gray-400">
+                          {formatInr(job.salaryMin)} – {formatInr(job.salaryMax)}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {job.location}
+                        <span className="block text-xs text-gray-400">
+                          {job.isRemote ? "Remote" : "On-site"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {formatJobType(job.type)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <JobStatusBadge status={job.status} />
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {job.applicationCount}
+                      </td>
+                      <td className="px-6 py-4 text-gray-500">
+                        {formatDate(job.updatedAt)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            href={`/employer/jobs/${job._id}/edit`}
+                            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                          >
+                            Edit
+                          </Link>
+                          <Link
+                            href={`/employer/jobs/${job._id}/applicants`}
+                            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                          >
+                            Applicants
+                          </Link>
+                          {job.status === "published" && job.slug ? (
+                            <a
+                              href={`/jobs/${job.slug}`}
+                              className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                            >
+                              View
+                            </a>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <QueryPagination
+            page={result.page}
+            totalPages={result.totalPages}
+            hrefForPage={(page) => buildEmployerJobsHref(query, page)}
+          />
+        </>
       )}
     </div>
   );

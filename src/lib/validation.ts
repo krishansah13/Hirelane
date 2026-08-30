@@ -317,6 +317,21 @@ export const adminCompanyQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
 });
 
+export const seekerApplicationQuerySchema = z.object({
+  q: z.preprocess(emptyToUndefined, z.string().trim().max(80).optional()),
+  stage: z.preprocess(emptyToUndefined, stageSchema.optional()),
+  page: z.coerce.number().int().positive().default(1),
+});
+
+export const employerJobQuerySchema = z.object({
+  q: z.preprocess(emptyToUndefined, z.string().trim().max(80).optional()),
+  status: z.preprocess(
+    emptyToUndefined,
+    z.enum(["draft", "published", "expired"]).optional(),
+  ),
+  page: z.coerce.number().int().positive().default(1),
+});
+
 export const updateAdminCompanySchema = z.object({
   companyId: objectIdSchema,
   name: z
@@ -378,6 +393,10 @@ export type JobQueryInput = z.infer<typeof jobQuerySchema>;
 export type AdminUserQueryInput = z.infer<typeof adminUserQuerySchema>;
 export type AdminJobQueryInput = z.infer<typeof adminJobQuerySchema>;
 export type AdminCompanyQueryInput = z.infer<typeof adminCompanyQuerySchema>;
+export type SeekerApplicationQueryInput = z.infer<
+  typeof seekerApplicationQuerySchema
+>;
+export type EmployerJobQueryInput = z.infer<typeof employerJobQuerySchema>;
 
 export type ApplicationStage = z.infer<typeof stageSchema>;
 

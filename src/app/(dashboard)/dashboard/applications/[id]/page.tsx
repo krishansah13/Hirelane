@@ -5,6 +5,7 @@ import { requireSeeker } from "@/lib/session";
 import { getMyApplicationById } from "@/lib/application-query";
 import ApplicationStageHistory from "@/components/ApplicationStageHistory";
 import StageBadge from "@/components/StageBadge";
+import CompanyLogo from "@/components/CompanyLogo";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { formatJobType } from "@/lib/utils/format";
 
@@ -65,18 +66,28 @@ export default async function ApplicationDetailPage({
         </Link>
 
         <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-medium tracking-wide text-gray-400">
               APPLICATION
             </p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-gray-950">
-              {job?.title ?? "Role unavailable"}
-            </h1>
-            <p className="mt-2 text-sm text-gray-500">
-              {company?.name ?? "Company"}
-              {job?.location ? ` · ${job.location}` : ""}
-              {job?.type ? ` · ${formatJobType(job.type)}` : ""}
-            </p>
+            <div className="mt-3 flex items-center gap-3">
+              <CompanyLogo
+                name={company?.name || "Company"}
+                slug={company?.slug}
+                src={company?.logoURL}
+                size="lg"
+              />
+              <div className="min-w-0">
+                <h1 className="text-2xl font-semibold tracking-tight text-gray-950">
+                  {job?.title ?? "Role unavailable"}
+                </h1>
+                <p className="mt-1 text-sm text-gray-500">
+                  {company?.name ?? "Company"}
+                  {job?.location ? ` · ${job.location}` : ""}
+                  {job?.type ? ` · ${formatJobType(job.type)}` : ""}
+                </p>
+              </div>
+            </div>
           </div>
           <StageBadge stage={application.stage} />
         </div>
