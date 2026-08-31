@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { jobStepSchemas, jobWriteSchema, signupSchema } from "./validation";
+import {
+  jobStepSchemas,
+  jobWriteSchema,
+  signupSchema,
+  tomorrowLocalISO,
+} from "./validation";
 
 const roleStep = jobStepSchemas[0];
 
@@ -45,9 +50,10 @@ test("role step requires at least one skill", () => {
 });
 
 test("role step rejects more than 15 skills", () => {
-  const skills = Array.from({ length: 16 }, (_, i) => `Skill ${i + 1}`).join(
-    ", ",
-  );
+  const skills = Array.from(
+    { length: 16 },
+    (_, i) => `Skill ${String.fromCharCode(65 + i)}`,
+  ).join(", ");
   const result = roleStep.safeParse({
     ...validRole(),
     skills,
@@ -137,20 +143,87 @@ test("signup rejects invalid emails", () => {
   );
 });
 
-test("full job schema still enforces salary range", () => {
-  const result = jobWriteSchema.safeParse({
+function validJobWrite() {
+  return {
     ...validRole(),
     location: "Bengaluru",
-    type: "full-time",
-    isRemote: "false",
+    type: "full-time" as const,
+    isRemote: "false" as const,
     salaryMin: "800000",
-    salaryMax: "500000",
+    salaryMax: "1200000",
     joiningDate: "",
-    expiresAt: "2026-12-31",
-    publish: "false",
+    expiresAt: tomorrowLocalISO(),
+    publish: "false" as const,
+  };
+}
+
+test("full job schema still enforces salary range", () => {
+  const result = jobWriteSchema.safeParse({
+    ...validJobWrite(),
+    salaryMax: "500000",
   });
   assert.equal(result.success, false);
   if (!result.success) {
     assert.equal(result.error.issues[0]?.path[0], "salaryMax");
   }
+});
+
+test("title and location allow only letters, spaces, and hyphens", () => {
+  assert.equal(
+    roleStep.safeParse({ ...validRole(), title: "Engineer 2" }).success,
+    false,
+  );
+  assert.equal(
+    roleStep.safeParse({ ...validRole(), title: "Full-stack Engineer" })
+      .success,
+    true,
+  );
+
+  const locationStep = jobStepSchemas[1];
+  assert.equal(
+    locationStep.safeParse({
+      location: "Bengaluru 12",
+      type: "full-time",
+      isRemote: "false",
+    }).success,
+    false,
+  );
+  assert.equal(
+    locationStep.safeParse({
+      location: "New Delhi",
+      type: "full-time",
+      isRemote: "false",
+    }).success,
+    true,
+  );
+});
+
+test("joining and expiry dates must be tomorrow or later", () => {
+  const compensation = jobStepSchemas[2];
+  const today = new Date();
+  const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+  const pastExpiry = compensation.safeParse({
+    salaryMin: "800000",
+    salaryMax: "1200000",
+    joiningDate: "",
+    expiresAt: todayISO,
+  });
+  assert.equal(pastExpiry.success, false);
+
+  const pastJoin = compensation.safeParse({
+    salaryMin: "800000",
+    salaryMax: "1200000",
+    joiningDate: todayISO,
+    expiresAt: tomorrowLocalISO(),
+  });
+  assert.equal(pastJoin.success, false);
+
+  const valid = compensation.safeParse({
+    salaryMin: "800000",
+    salaryMax: "1200000",
+    joiningDate: tomorrowLocalISO(),
+    expiresAt: tomorrowLocalISO(),
+  });
+  assert.equal(valid.success, true);
 });

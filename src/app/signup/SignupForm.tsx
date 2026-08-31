@@ -147,7 +147,7 @@ export default function SignupForm() {
                     {pendingApproval ? (
                         <div className="rounded-xl bg-emerald-50 px-4 py-5 text-center">
                             <p className="text-sm font-semibold text-emerald-800">
-                                Account created — pending approval
+                                Account created - pending approval
                             </p>
                             <p className="mt-2 text-sm leading-6 text-emerald-800/80">
                                 An admin will review your employer account.

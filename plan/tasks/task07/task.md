@@ -1,4 +1,4 @@
-# Task 07 — Foundation gaps
+# Task 07 - Foundation gaps
 
 **Status:** done
 

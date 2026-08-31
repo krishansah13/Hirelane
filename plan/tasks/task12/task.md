@@ -1,4 +1,4 @@
-# Task 12 — Seeker application tracking
+# Task 12 - Seeker application tracking
 
 **Status:** done
 
@@ -16,8 +16,8 @@
 
 ## Completed
 
-- [`src/lib/application-query.ts`](../../src/lib/application-query.ts) — list/detail/history helpers scoped to `userId`
-- [`src/app/(dashboard)/dashboard/page.tsx`](../../src/app/(dashboard)/dashboard/page.tsx) — seeker application list
-- [`src/app/(dashboard)/dashboard/applications/[id]/page.tsx`](../../src/app/(dashboard)/dashboard/applications/[id]/page.tsx) — detail; stage history in `Suspense`
+- [`src/lib/application-query.ts`](../../src/lib/application-query.ts) - list/detail/history helpers scoped to `userId`
+- [`src/app/(dashboard)/dashboard/page.tsx`](../../src/app/(dashboard)/dashboard/page.tsx) - seeker application list
+- [`src/app/(dashboard)/dashboard/applications/[id]/page.tsx`](../../src/app/(dashboard)/dashboard/applications/[id]/page.tsx) - detail; stage history in `Suspense`
 - [`ApplicationStageHistory`](../../src/components/ApplicationStageHistory.tsx) + [`StageBadge`](../../src/components/StageBadge.tsx)
-- [`DashboardSidebar`](../../src/components/DashboardSidebar.tsx) — detail nav shows job title via [`application-nav`](../../src/lib/actions/application-nav.ts)
+- [`DashboardSidebar`](../../src/components/DashboardSidebar.tsx) - detail nav shows job title via [`application-nav`](../../src/lib/actions/application-nav.ts)

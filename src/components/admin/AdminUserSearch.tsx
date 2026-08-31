@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
 import type { AdminUserQuery } from "@/lib/admin-query";
+import QuerySearchForm from "@/components/ui/QuerySearchForm";
 
 const FIELD_CLASS =
   "h-11 w-full rounded-xl bg-[#fbf9ff] px-3 text-sm text-gray-950 outline-none ring-1 ring-[#dcd8ea] focus:ring-2 focus:ring-[#2E46BA]";
@@ -10,9 +11,8 @@ export default function AdminUserSearch({
   params: AdminUserQuery;
 }) {
   return (
-    <form
-      action="/admin/users"
-      method="GET"
+    <QuerySearchForm
+      key={`${params.q ?? ""}-${params.role ?? ""}-${params.status ?? ""}`}
       className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm sm:flex-row sm:items-end sm:p-5"
     >
       <label className="min-w-0 flex-1">
@@ -68,6 +68,6 @@ export default function AdminUserSearch({
       >
         Search
       </button>
-    </form>
+    </QuerySearchForm>
   );
 }

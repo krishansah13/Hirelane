@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
 import type { EmployerJobQuery } from "@/lib/employer-query";
+import QuerySearchForm from "@/components/ui/QuerySearchForm";
 
 const FIELD_CLASS =
   "h-11 w-full rounded-xl bg-[#fbf9ff] px-3 text-sm text-gray-950 outline-none ring-1 ring-[#dcd8ea] focus:ring-2 focus:ring-[#2E46BA]";
@@ -10,9 +11,8 @@ export default function EmployerJobSearch({
   params: EmployerJobQuery;
 }) {
   return (
-    <form
-      action="/employer"
-      method="GET"
+    <QuerySearchForm
+      key={`${params.q ?? ""}-${params.status ?? ""}`}
       className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm sm:p-5"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -58,6 +58,6 @@ export default function EmployerJobSearch({
           Search
         </button>
       </div>
-    </form>
+    </QuerySearchForm>
   );
 }

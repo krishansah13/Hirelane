@@ -194,6 +194,39 @@ export function JobFormSkeleton() {
     );
 }
 
+/** Results card shown while a dashboard list refetches after search. */
+export function QueryListFallback({
+    label,
+    rows = 5,
+}: {
+    label: string;
+    rows?: number;
+}) {
+    return (
+        <div className="rounded-2xl bg-white shadow-sm" aria-busy="true">
+            <span className="sr-only">{label}</span>
+            <div className="border-b border-gray-100 px-5 py-4 sm:px-6">
+                <Skeleton className="h-4 w-40" variant="subtle" />
+            </div>
+            <div className="divide-y divide-gray-100">
+                {Array.from({ length: rows }).map((_, i) => (
+                    <div
+                        key={i}
+                        className="flex items-center gap-3 px-5 py-4 sm:px-6"
+                    >
+                        <Skeleton className="h-10 w-10 shrink-0 rounded-lg" />
+                        <div className="min-w-0 flex-1 space-y-2">
+                            <Skeleton className="h-4 w-52 max-w-full" />
+                            <Skeleton className="h-3 w-36 max-w-full" variant="subtle" />
+                        </div>
+                        <Skeleton className="h-6 w-20 shrink-0 rounded-full" variant="brand" />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 /** Row used by the seeker application list and the employer job list. */
 export function ListRowSkeleton({ withActions = false }: { withActions?: boolean }) {
     return (

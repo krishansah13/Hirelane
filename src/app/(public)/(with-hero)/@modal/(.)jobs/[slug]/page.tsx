@@ -1,8 +1,9 @@
 import JobModal from "@/components/jobs/JobModal";
 import { auth } from "@/auth";
 import { getMyApplicationForJob } from "@/lib/application-query";
+import { canEmployerViewPublicJob } from "@/lib/job-access";
 import { getJobBySlug } from "@/lib/job-query";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,13 @@ export default async function JobModalPage({
   const { slug } = await params;
   const [job, session] = await Promise.all([getJobBySlug(slug), auth()]);
   if (!job) notFound();
+
+  if (
+    session?.user?.role === "employer" &&
+    !canEmployerViewPublicJob(session.user.companyId, job.companyId)
+  ) {
+    redirect("/employer");
+  }
 
   const company =
     job.companyId && typeof job.companyId === "object" ? job.companyId : null;

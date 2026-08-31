@@ -1,4 +1,4 @@
-# Task 01 — Schema, seed, MongoDB connection
+# Task 01 - Schema, seed, MongoDB connection
 
 **Status:** done (already in repo)
 

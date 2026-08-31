@@ -1,7 +1,11 @@
 "use client";
 
 import { createJob, JobActionState, updateJob } from "@/lib/actions/jobs";
-import { JOB_FIELD_STEP, jobStepSchemas } from "@/lib/validation";
+import {
+  JOB_FIELD_STEP,
+  jobStepSchemas,
+  tomorrowLocalISO,
+} from "@/lib/validation";
 import { parseSkillList } from "@/lib/utils/skills";
 import { useRouter } from "next/navigation";
 import { useActionState, useCallback, useEffect, useRef, useState } from "react";
@@ -98,6 +102,10 @@ function toDateInput(value?: string | null) {
   return d.toISOString().slice(0, 10);
 }
 
+function keepLettersSpacesHyphens(value: string) {
+  return value.replace(/[^\p{L} -]/gu, "");
+}
+
 function normalizeJobValue(value: string | boolean | number) {
   return String(value ?? "").trim();
 }
@@ -152,13 +160,14 @@ export default function JobWriteForm({
   function updateField(
     field: string,
     setter: (value: string) => void,
+    sanitize?: (value: string) => string,
   ) {
     return (
       event: React.ChangeEvent<
         HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
       >,
     ) => {
-      setter(event.target.value);
+      setter(sanitize ? sanitize(event.target.value) : event.target.value);
       clearFieldError(field);
     };
   }
@@ -411,12 +420,15 @@ export default function JobWriteForm({
                 <input
                   name="title"
                   value={title}
-                  onChange={updateField("title", setTitle)}
+                  onChange={updateField("title", setTitle, keepLettersSpacesHyphens)}
                   required
                   aria-invalid={Boolean(errors.title)}
                   className={inputClass(Boolean(errors.title))}
                   placeholder="e.g. Software Engineer"
                 />
+                <span className="mt-1 block text-xs font-normal text-gray-400">
+                  Letters, spaces, and hyphens only.
+                </span>
                 <FieldError message={errors.title} />
               </label>
               <label className="block text-sm font-medium text-gray-700">
@@ -449,7 +461,8 @@ export default function JobWriteForm({
                   className={inputClass(Boolean(errors.skills))}
                 />
                 <span className="mt-1 block text-xs font-normal text-gray-400">
-                  Separate with commas. At least 1 skill, up to 15.
+                  Separate with commas. Letters, spaces, and hyphens only. At
+                  least 1 skill, up to 15.
                 </span>
                 {skillPreview.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1.5">
@@ -497,11 +510,18 @@ export default function JobWriteForm({
                 <input
                   name="location"
                   value={location}
-                  onChange={updateField("location", setLocation)}
+                  onChange={updateField(
+                    "location",
+                    setLocation,
+                    keepLettersSpacesHyphens,
+                  )}
                   required
                   aria-invalid={Boolean(errors.location)}
                   className={inputClass(Boolean(errors.location))}
                 />
+                <span className="mt-1 block text-xs font-normal text-gray-400">
+                  Letters, spaces, and hyphens only.
+                </span>
                 <FieldError message={errors.location} />
               </label>
               <label className="block text-sm font-medium text-gray-700">
@@ -583,7 +603,11 @@ export default function JobWriteForm({
                   value={joiningDate}
                   onChange={updateField("joiningDate", setJoiningDate)}
                   className={inputClass(Boolean(errors.joiningDate))}
+                  min={tomorrowLocalISO()}
                 />
+                <span className="mt-1 block text-xs font-normal text-gray-400">
+                  Earliest date is tomorrow.
+                </span>
                 <FieldError message={errors.joiningDate} />
               </label>
 
@@ -593,11 +617,15 @@ export default function JobWriteForm({
                   name="expiresAt"
                   type="date"
                   value={expiresAt}
+                  min={tomorrowLocalISO()}
                   onChange={updateField("expiresAt", setExpiresAt)}
                   required
                   aria-invalid={Boolean(errors.expiresAt)}
                   className={inputClass(Boolean(errors.expiresAt))}
                 />
+                <span className="mt-1 block text-xs font-normal text-gray-400">
+                  Earliest date is tomorrow.
+                </span>
                 <FieldError message={errors.expiresAt} />
               </label>
             </div>
@@ -671,7 +699,7 @@ export default function JobWriteForm({
               <button
                 type="button"
                 onClick={() => goToStep(step - 1)}
-                className="rounded-xl px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900"
               >
                 Back
               </button>

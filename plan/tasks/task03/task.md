@@ -1,4 +1,4 @@
-# Task 03 — Route groups, proxy, loading/error/404
+# Task 03 - Route groups, proxy, loading/error/404
 
 **Status:** done (already in repo)
 
