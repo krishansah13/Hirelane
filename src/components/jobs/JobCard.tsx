@@ -54,8 +54,8 @@ export default function JobCard({ job }: { job: Job }) {
                 />
 
                 <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                        <div className="flex gap-2">
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                        <div className="flex gap-2 ">
                             <h2 className="truncate text-[15px] font-semibold tracking-[-0.01em] text-[#17151c] sm:text-base">
                                 {job.title}
 
