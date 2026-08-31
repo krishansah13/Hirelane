@@ -24,13 +24,20 @@ type ApplyFormProps = {
 
 const initialState: ApplyState = { ok: false };
 
-function SubmitButton({ label }: { label: string }) {
+function SubmitButton({
+  label,
+  disabled = false,
+}: {
+  label: string;
+  disabled?: boolean;
+}) {
   const { pending } = useFormStatus();
+  const isDisabled = pending || disabled;
 
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={isDisabled}
       className="rounded-xl bg-[#2e46ba] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-gray-900/10 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
     >
       {pending ? "Submitting..." : label}
@@ -96,7 +103,8 @@ export default function ApplyForm({
 
   useEffect(() => {
     if (state.ok) setSucceeded(true);
-  }, [state.ok]);
+    if (state.error) setUploading(false);
+  }, [state.ok, state.error]);
 
   useEffect(() => {
     if (existingApplication) {
@@ -215,6 +223,7 @@ export default function ApplyForm({
 
       if (!uploadRes.ok || !uploadJson.url) {
         setClientError(uploadJson.error ?? "Resume upload failed");
+        setUploading(false);
         return;
       }
 
@@ -230,7 +239,6 @@ export default function ApplyForm({
       });
     } catch {
       setClientError("Something went wrong. Please try again.");
-    } finally {
       setUploading(false);
     }
   }
@@ -261,11 +269,12 @@ export default function ApplyForm({
           id={`resume-${jobId}`}
           type="file"
           accept="application/pdf,.pdf"
+          disabled={uploading}
           onChange={(event) => {
             setFile(event.target.files?.[0] ?? null);
             setClientError("");
           }}
-          className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[#e9e9ff] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[#4338a8]"
+          className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[#e9e9ff] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[#4338a8] disabled:cursor-not-allowed disabled:opacity-70"
         />
       </div>
 
@@ -281,9 +290,10 @@ export default function ApplyForm({
           rows={compact ? 3 : 4}
           maxLength={2000}
           value={coverNote}
+          disabled={uploading}
           onChange={(event) => setCoverNote(event.target.value)}
           placeholder="A short note for the hiring team"
-          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#2e46ba] focus:bg-white"
+          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#2e46ba] focus:bg-white disabled:cursor-not-allowed disabled:opacity-70"
         />
       </div>
 
@@ -296,7 +306,10 @@ export default function ApplyForm({
         </p>
       )}
 
-      <SubmitButton label={uploading ? "Uploading..." : "Apply for this job"} />
+      <SubmitButton
+        label={uploading ? "Uploading..." : "Apply for this job"}
+        disabled={uploading}
+      />
     </form>
   );
 }
