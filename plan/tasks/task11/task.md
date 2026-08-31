@@ -1,4 +1,4 @@
-# Task 11 — Apply Server Action + form
+# Task 11 - Apply Server Action + form
 
 **Status:** done
 
@@ -16,7 +16,7 @@ Wire the form on the full job page and the intercepting modal.
 
 ## Completed
 
-- [`src/lib/actions/apply.ts`](../../src/lib/actions/apply.ts) — Zod `applySchema`; seeker-only; seeds `stageHistory`; duplicate pre-check + Mongo `11000` catch
-- [`src/components/ApplyForm.tsx`](../../src/components/ApplyForm.tsx) — `useActionState` / `useFormStatus`; upload then action; cover note in local state; visitor → `/login?callbackUrl=...`
-- Full page + modal wired — [`jobs/[slug]/page.tsx`](../../src/app/(public)/jobs/[slug]/page.tsx) (desktop + mobile) and [`JobModal`](../../src/components/JobModal.tsx)
+- [`src/lib/actions/apply.ts`](../../src/lib/actions/apply.ts) - Zod `applySchema`; seeker-only; seeds `stageHistory`; duplicate pre-check + Mongo `11000` catch
+- [`src/components/ApplyForm.tsx`](../../src/components/ApplyForm.tsx) - `useActionState` / `useFormStatus`; upload then action; cover note in local state; visitor → `/login?callbackUrl=...`
+- Full page + modal wired - [`jobs/[slug]/page.tsx`](../../src/app/(public)/jobs/[slug]/page.tsx) (desktop + mobile) and [`JobModal`](../../src/components/JobModal.tsx)
 - Unique `(jobId, userId)` index ensured via cleanup + [`Application.syncIndexes()`](../../src/lib/scripts/seed.ts) in seed

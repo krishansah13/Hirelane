@@ -83,7 +83,7 @@ export default async function AdminPage() {
         <div className="pointer-events-none absolute -right-16 top-6 h-48 w-48 rounded-full bg-indigo-200/50 blur-3xl" />
         <div className="pointer-events-none absolute -left-10 bottom-0 h-36 w-36 rounded-full bg-[#2E46BA]/10 blur-3xl" />
 
-        <div className="relative flex flex-col gap-6 px-6 py-8 sm:flex-row sm:items-end sm:justify-between sm:px-8 sm:py-10"> 
+        <div className="relative flex flex-col gap-6 px-6 py-8 sm:flex-row sm:items-end sm:justify-between sm:px-8 sm:py-10">
           <div className="max-w-xl">
             <p className="inline-flex items-center gap-1.5 text-xs font-medium tracking-wide text-[#2E46BA]">
               <Sparkles size={13} />
@@ -132,7 +132,7 @@ export default async function AdminPage() {
             const Icon = panel.icon;
 
             return (
-              <Link
+              <Link prefetch={false}
                 key={panel.href}
                 href={panel.href}
                 className="group rounded-2xl bg-white p-5 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(76,61,130,0.10)] sm:p-6"

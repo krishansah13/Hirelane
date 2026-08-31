@@ -1,4 +1,4 @@
-# Task 04 — Landing page with featured roles
+# Task 04 - Landing page with featured roles
 
 **Status:** done (already in repo)
 

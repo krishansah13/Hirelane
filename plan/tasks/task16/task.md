@@ -1,4 +1,4 @@
-# Task 16 — Nodemailer stage-change email
+# Task 16 - Nodemailer stage-change email
 
 **Status:** done
 
@@ -15,6 +15,6 @@ Not Resend. No `RESEND_*` keys. Do not import `email.ts` from Client Components.
 
 ## Completed
 
-- [`src/lib/email.ts`](../../src/lib/email.ts) — Nodemailer; skips/logs if SMTP env is missing; send errors are caught
-- [`src/lib/actions/pipeline.ts`](../../src/lib/actions/pipeline.ts) — after `save()`, loads seeker `name`/`email`, job `title`, calls `sendStageChangeEmail`
-- [`.env.example`](../../.env.example) — `SMTP_*` (no Resend)
+- [`src/lib/email.ts`](../../src/lib/email.ts) - Nodemailer; skips/logs if SMTP env is missing; send errors are caught
+- [`src/lib/actions/pipeline.ts`](../../src/lib/actions/pipeline.ts) - after `save()`, loads seeker `name`/`email`, job `title`, calls `sendStageChangeEmail`
+- [`.env.example`](../../.env.example) - `SMTP_*` (no Resend)

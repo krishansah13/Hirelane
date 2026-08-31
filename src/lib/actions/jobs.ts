@@ -111,25 +111,13 @@ export async function createJob(
 
   const now = new Date();
 
-  const expiresAt = new Date(data.expiresAt);
+  const expiresAt = new Date(`${data.expiresAt}T00:00:00`);
 
   // Convert optional joining date.
   // Empty input becomes null instead of Invalid Date.
-  const joiningDate = data.joiningDate ? new Date(data.joiningDate) : null;
-
-  if (shouldPublish && expiresAt.getTime() <= now.getTime()) {
-    return {
-      ok: false,
-      error: "Expiry date must be in the future to publish",
-    };
-  }
-
-  if (joiningDate && joiningDate.getTime() <= now.getTime()) {
-    return {
-      ok: false,
-      error: "joiningDate: Joining date must be in the future",
-    };
-  }
+  const joiningDate = data.joiningDate
+    ? new Date(`${data.joiningDate}T00:00:00`)
+    : null;
 
   try {
     await connectToDatabase();
@@ -263,9 +251,11 @@ export async function updateJob(
       };
     }
 
-    const expiresAt = new Date(data.expiresAt);
+    const expiresAt = new Date(`${data.expiresAt}T00:00:00`);
 
-    const joiningDate = data.joiningDate ? new Date(data.joiningDate) : null;
+    const joiningDate = data.joiningDate
+      ? new Date(`${data.joiningDate}T00:00:00`)
+      : null;
 
     const pastExpiry = expiresAt.getTime() <= now.getTime();
 

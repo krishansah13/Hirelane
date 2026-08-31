@@ -18,7 +18,7 @@ type StatusScreenProps = {
     tone?: "brand" | "danger";
     primaryAction?: StatusAction;
     secondaryAction?: StatusAction;
-    /** Rendered under the actions — used for the error boundary's retry button. */
+    /** Rendered under the actions - used for the error boundary's retry button. */
     children?: React.ReactNode;
     footNote?: string;
     /**

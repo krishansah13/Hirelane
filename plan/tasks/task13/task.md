@@ -1,4 +1,4 @@
-# Task 13 — Employer post, edit, publish
+# Task 13 - Employer post, edit, publish
 
 **Status:** done
 
@@ -20,12 +20,12 @@ Ownership is `companyId` in the query, not a UI-only check.
 
 ## Completed
 
-- [`src/lib/employer-query.ts`](../../src/lib/employer-query.ts) — `getCompanyJobs` / `getCompanyJobById` scoped to `companyId`
-- [`src/components/JobStatusBadge.tsx`](../../src/components/JobStatusBadge.tsx) — draft / published / expired badge
-- [`src/app/(dashboard)/employer/page.tsx`](../../src/app/(dashboard)/employer/page.tsx) — company job list + links to new/edit
-- [`src/lib/actions/jobs.ts`](../../src/lib/actions/jobs.ts) — `createJob` / `updateJob` / `publishJob`; ownership via `companyId`; `revalidateJobBoard` on publish and published edits
-- [`src/lib/cache.ts`](../../src/lib/cache.ts) — `revalidateTag("jobs")` and `revalidateTag("job:{slug}")`
-- [`src/lib/validation.ts`](../../src/lib/validation.ts) — `jobWriteSchema`, per-step `jobStepSchemas`, `JOB_FIELD_STEP`
-- [`src/components/JobWriteForm.tsx`](../../src/components/JobWriteForm.tsx) — four-step wizard, `useActionState`, single form (Save draft / Publish role)
+- [`src/lib/employer-query.ts`](../../src/lib/employer-query.ts) - `getCompanyJobs` / `getCompanyJobById` scoped to `companyId`
+- [`src/components/JobStatusBadge.tsx`](../../src/components/JobStatusBadge.tsx) - draft / published / expired badge
+- [`src/app/(dashboard)/employer/page.tsx`](../../src/app/(dashboard)/employer/page.tsx) - company job list + links to new/edit
+- [`src/lib/actions/jobs.ts`](../../src/lib/actions/jobs.ts) - `createJob` / `updateJob` / `publishJob`; ownership via `companyId`; `revalidateJobBoard` on publish and published edits
+- [`src/lib/cache.ts`](../../src/lib/cache.ts) - `revalidateTag("jobs")` and `revalidateTag("job:{slug}")`
+- [`src/lib/validation.ts`](../../src/lib/validation.ts) - `jobWriteSchema`, per-step `jobStepSchemas`, `JOB_FIELD_STEP`
+- [`src/components/JobWriteForm.tsx`](../../src/components/JobWriteForm.tsx) - four-step wizard, `useActionState`, single form (Save draft / Publish role)
 - [`src/app/(dashboard)/employer/jobs/new/page.tsx`](../../src/app/(dashboard)/employer/jobs/new/page.tsx)
-- [`src/app/(dashboard)/employer/jobs/[id]/edit/page.tsx`](../../src/app/(dashboard)/employer/jobs/[id]/edit/page.tsx) — `notFound()` when the job is missing or belongs to another company
+- [`src/app/(dashboard)/employer/jobs/[id]/edit/page.tsx`](../../src/app/(dashboard)/employer/jobs/[id]/edit/page.tsx) - `notFound()` when the job is missing or belongs to another company

@@ -1,4 +1,4 @@
-# Task 06 — `/jobs/[slug]` public detail UI
+# Task 06 - `/jobs/[slug]` public detail UI
 
 **Status:** done (already in repo)
 

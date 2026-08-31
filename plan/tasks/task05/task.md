@@ -1,4 +1,4 @@
-# Task 05 — `/jobs` URL-driven search, filters, pagination
+# Task 05 - `/jobs` URL-driven search, filters, pagination
 
 **Status:** done (already in repo)
 

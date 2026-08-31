@@ -1,4 +1,4 @@
-# Task 17 — Authorization + rendering audit
+# Task 17 - Authorization + rendering audit
 
 **Status:** done
 
@@ -48,9 +48,9 @@ Cache tags (chosen before the first cached read): `jobs` (landing, list, sitemap
 
 Layers (all required; layout alone is not enough):
 
-1. **`src/proxy.ts`** — matcher `/dashboard`, `/dashboard/:path*`, `/employer`, `/employer/:path*`. Unauthenticated → login. Employer on `/dashboard` → `/employer`. Seeker on `/employer` → `/dashboard`.
-2. **Layouts** — `(dashboard)/layout.tsx` requires a session. `dashboard/layout.tsx` requires `seeker`. `employer/layout.tsx` requires `employer`.
-3. **Query / action / handler** — `userId` or `companyId` in the Mongo filter.
+1. **`src/proxy.ts`** - matcher `/dashboard`, `/dashboard/:path*`, `/employer`, `/employer/:path*`. Unauthenticated → login. Employer on `/dashboard` → `/employer`. Seeker on `/employer` → `/dashboard`.
+2. **Layouts** - `(dashboard)/layout.tsx` requires a session. `dashboard/layout.tsx` requires `seeker`. `employer/layout.tsx` requires `employer`.
+3. **Query / action / handler** - `userId` or `companyId` in the Mongo filter.
 
 Visitors cannot apply; `ApplyForm` sends them to `/login?callbackUrl=...`. Upload and apply still reject non-seekers on the server.
 

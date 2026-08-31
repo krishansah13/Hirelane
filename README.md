@@ -48,7 +48,7 @@ Full product rules live in [`plan/spec/spec.md`](plan/spec/spec.md). Task progre
 | Seeker | Apply with a resume PDF; track application stages |
 | Employer | Post/edit company roles; move applicants through the pipeline |
 
-There is no admin role in the mandatory build. Signup is out of scope — use seeded accounts.
+There is no admin role in the mandatory build. Signup is out of scope - use seeded accounts.
 
 ## Getting started
 
@@ -200,16 +200,16 @@ Same filter contract as `/jobs`. The page and these handlers both call `getJobs`
 | `page` | Positive integer (default `1`) |
 | `limit` | 1–50 (default `10`) |
 
-**200** — `{ jobs, total, page, limit, totalPages }`  
-**400** — invalid query (bad `type`, `sort`, `page`, `limit`, …)
+**200** - `{ jobs, total, page, limit, totalPages }`  
+**400** - invalid query (bad `type`, `sort`, `page`, `limit`, …)
 
 Example: `/api/jobs?q=engineer&remote=true&sort=newest&page=1`
 
 ### `GET /api/jobs/[id]`
 
-**200** — one published job (company populated)  
-**400** — `id` is not a 24-char hex ObjectId  
-**404** — missing, draft, or expired
+**200** - one published job (company populated)  
+**400** - `id` is not a 24-char hex ObjectId  
+**404** - missing, draft, or expired
 
 Responses send `Cache-Control: no-store`. Published list/detail data still uses the tagged server cache inside `job-query.ts`.
 
@@ -219,7 +219,7 @@ Four flat models: **User**, **Company**, **Job**, **Application**.
 
 - Job status: `draft` \| `published` \| `expired`
 - Application stage: `applied` → `screening` → `interview` → `offer` (or `rejected` from most stages)
-- Unique compound index: `(jobId, userId)` — one application per seeker per job
+- Unique compound index: `(jobId, userId)` - one application per seeker per job
 - `stageHistory` is embedded on Application (not a separate collection)
 
 ## Docs
@@ -229,4 +229,4 @@ Four flat models: **User**, **Company**, **Job**, **Application**.
 
 ## License
 
-Private / coursework — not licensed for redistribution unless you add one.
+Private / coursework - not licensed for redistribution unless you add one.

@@ -1,4 +1,4 @@
-# Task 02 — Auth.js credentials, JWT role, login page
+# Task 02 - Auth.js credentials, JWT role, login page
 
 **Status:** done (already in repo)
 

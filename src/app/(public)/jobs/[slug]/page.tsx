@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { getHomePath } from "@/lib/roles";
+import { canEmployerViewPublicJob } from "@/lib/job-access";
 import { getJobBySlug, getPublishedJobSlugs } from "@/lib/job-query";
 import { formatInr } from "@/lib/utils/format";
 import ApplyForm from "@/components/ApplyForm";
 import CompanyLogo from "@/components/CompanyLogo";
 
 function formatDate(value?: string | Date | null) {
-  if (!value) return "—";
+  if (!value) return "-";
   return new Date(value).toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short",
@@ -54,17 +55,25 @@ export default async function JobDetail({
   params: Promise<{ slug: string }>;
 }) {
   const session = await auth();
-  const previewHome =
-    session?.user?.role === "employer" || session?.user?.role === "admin"
-      ? getHomePath(session.user.role)
-      : null;
-
   const { slug } = await params;
   const job = await getJobBySlug(slug);
 
   if (!job) {
     notFound();
   }
+
+  const role = session?.user?.role;
+  if (
+    role === "employer" &&
+    !canEmployerViewPublicJob(session.user.companyId, job.companyId)
+  ) {
+    redirect("/employer");
+  }
+
+  const previewHome =
+    role === "employer" || role === "admin"
+      ? getHomePath(role)
+      : null;
   const jobId = String(job._id);
 
   const company =
@@ -82,7 +91,7 @@ export default async function JobDetail({
       {previewHome ? (
         <div className="border-b border-indigo-100 bg-[#eef0ff] px-6 py-3 sm:px-10">
           <p className="text-sm text-[#2e46ba]">
-            Public listing preview — this is what seekers see.{" "}
+            Public listing preview - this is what seekers see.{" "}
             <Link href={previewHome} className="font-semibold hover:underline">
               Back to dashboard
             </Link>
@@ -250,7 +259,7 @@ export default async function JobDetail({
                     Company
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {company?.name || "—"}
+                    {company?.name || "-"}
                   </dd>
                 </div>
                 <div className="rounded-xl bg-gray-100 p-4">

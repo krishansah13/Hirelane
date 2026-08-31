@@ -4,9 +4,9 @@ Hirelane is a two-sided job board and applicant tracking platform. The public ha
 
 ## Roles
 
-- **Visitor** — browse, search, and read published jobs and the public API. Cannot apply.
-- **Seeker** — apply with a resume PDF, track their own applications.
-- **Employer** — belongs to one company; post and edit that company's roles; move applicants through stages.
+- **Visitor** - browse, search, and read published jobs and the public API. Cannot apply.
+- **Seeker** - apply with a resume PDF, track their own applications.
+- **Employer** - belongs to one company; post and edit that company's roles; move applicants through stages.
 
 No administrator role in the mandatory build.
 
@@ -49,17 +49,17 @@ No administrator role in the mandatory build.
 
 Four flat models. No relationship deeper than one level.
 
-**User** — `id`, `name`, `email`, `passwordHash`, `role` (`seeker` \| `employer`), `companyId`
+**User** - `id`, `name`, `email`, `passwordHash`, `role` (`seeker` \| `employer`), `companyId`
 
-**Company** — `id`, `name`, `slug`, `logoURL`, `website`, `about`
+**Company** - `id`, `name`, `slug`, `logoURL`, `website`, `about`
 
-**Job** — `id`, `companyId`, `postedById`, `title`, `slug`, `description`, `location`, `type`, `isRemote`, `salaryMin`, `salaryMax`, `status` (`draft` \| `published` \| `expired`), `publishedAt`, `expiresAt`
+**Job** - `id`, `companyId`, `postedById`, `title`, `slug`, `description`, `location`, `type`, `isRemote`, `salaryMin`, `salaryMax`, `status` (`draft` \| `published` \| `expired`), `publishedAt`, `expiresAt`
 
-**Application** — `id`, `jobId`, `userId`, `resumeURL`, `coverNote`, `stage` (`applied` \| `screening` \| `interview` \| `offer` \| `rejected`), `appliedAt`, `stageChangedAt`, `stageHistory[]` (`{ stage, changedAt }`)
+**Application** - `id`, `jobId`, `userId`, `resumeURL`, `coverNote`, `stage` (`applied` \| `screening` \| `interview` \| `offer` \| `rejected`), `appliedAt`, `stageChangedAt`, `stageHistory[]` (`{ stage, changedAt }`)
 
 `stageHistory` is an embedded array on Application (not a fifth model) so the seeker detail page can stream history.
 
-Unique compound index: `(jobId, userId)` — one application per seeker per job.
+Unique compound index: `(jobId, userId)` - one application per seeker per job.
 
 Expired jobs are a `status` field checked in queries, not a cron.
 
@@ -67,33 +67,33 @@ Expired jobs are a `status` field checked in queries, not a cron.
 
 ### Public
 
-- `/` — landing with featured roles (cached)
-- `/jobs` — search/filter/sort/page entirely in the URL; results streamed
-- `/jobs/[slug]` — public job detail; SSG/ISR + per-job metadata
+- `/` - landing with featured roles (cached)
+- `/jobs` - search/filter/sort/page entirely in the URL; results streamed
+- `/jobs/[slug]` - public job detail; SSG/ISR + per-job metadata
 - Intercepting modal: `@modal/(.)jobs/[slug]` over `/jobs`
 
 ### Auth
 
-- `/login` — credentials. No signup in the mandatory build; use seeded accounts.
+- `/login` - credentials. No signup in the mandatory build; use seeded accounts.
 
 ### Seeker (protected)
 
-- `/dashboard` — the seeker's applications
-- `/dashboard/applications/[id]` — detail and stage history
+- `/dashboard` - the seeker's applications
+- `/dashboard/applications/[id]` - detail and stage history
 
 ### Employer (protected)
 
-- `/employer` — posted roles for the employer's company
-- `/employer/jobs/new` — multi-step post form
-- `/employer/jobs/[id]/edit` — edit an existing role
-- `/employer/jobs/[id]/applicants` — hiring pipeline
+- `/employer` - posted roles for the employer's company
+- `/employer/jobs/new` - multi-step post form
+- `/employer/jobs/[id]/edit` - edit an existing role
+- `/employer/jobs/[id]/applicants` - hiring pipeline
 
 ### Route Handlers
 
 - `GET/POST /api/auth/[...nextauth]`
-- `GET /api/jobs` — filter, sort, paginate (same contract as `/jobs`)
-- `GET /api/jobs/[id]` — one published job
-- `POST /api/upload` — resume PDF proxy to Cloudinary
+- `GET /api/jobs` - filter, sort, paginate (same contract as `/jobs`)
+- `GET /api/jobs/[id]` - one published job
+- `POST /api/upload` - resume PDF proxy to Cloudinary
 
 ## URL search contract (`/jobs` and `GET /api/jobs`)
 
@@ -128,8 +128,8 @@ Deliberate choice per route, not the framework default left unexamined.
 
 Decided before the first cached read:
 
-- `jobs` — landing featured list, `/jobs` list, sitemap job index, public API list helper
-- `job:{slug}` — individual published job detail
+- `jobs` - landing featured list, `/jobs` list, sitemap job index, public API list helper
+- `job:{slug}` - individual published job detail
 
 On publish or edit of a job: `revalidateTag("jobs")` and `revalidateTag("job:{slug}")`.
 

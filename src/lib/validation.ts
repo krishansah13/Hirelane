@@ -41,12 +41,48 @@ const salaryRule = {
   path: ["salaryMax"],
 };
 
-const jobWriteFields = z.object({
-  title: z
+const DATE_INPUT = /^\d{4}-\d{2}-\d{2}$/;
+const LETTERS_SPACES_HYPHENS = /^[\p{L}]+(?:[ -][\p{L}]+)*$/u;
+const NAME_CHARS_MESSAGE = "Only letters, spaces, and hyphens are allowed";
+
+function localISODate(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export function tomorrowLocalISO(from = new Date()) {
+  return localISODate(
+    new Date(from.getFullYear(), from.getMonth(), from.getDate() + 1),
+  );
+}
+
+export function isValidDateInput(value: string) {
+  if (!DATE_INPUT.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  return (
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  );
+}
+
+export function isOnOrAfterTomorrow(value: string, from = new Date()) {
+  return isValidDateInput(value) && value >= tomorrowLocalISO(from);
+}
+
+const nameTextSchema = (min: number, max: number, minMessage: string) =>
+  z
     .string()
     .trim()
-    .min(3, "Title must be at least 3 characters")
-    .max(120, "Title must be 120 characters or fewer"),
+    .min(min, minMessage)
+    .max(max, `Must be ${max} characters or fewer`)
+    .regex(LETTERS_SPACES_HYPHENS, NAME_CHARS_MESSAGE);
+
+const jobWriteFields = z.object({
+  title: nameTextSchema(3, 120, "Title must be at least 3 characters"),
 
   description: z
     .string()
@@ -93,6 +129,14 @@ const jobWriteFields = z.object({
           });
           return;
         }
+
+        if (!LETTERS_SPACES_HYPHENS.test(skill)) {
+          ctx.addIssue({
+            code: "custom",
+            message: "Skills can only contain letters, spaces, and hyphens",
+          });
+          return;
+        }
       }
     }),
 
@@ -102,11 +146,7 @@ const jobWriteFields = z.object({
     .min(20, "Requirements must be at least 20 characters")
     .max(4000, "Requirements must be 4000 characters or fewer"),
 
-  location: z
-    .string()
-    .trim()
-    .min(2, "Location must be at least 2 characters")
-    .max(120, "Location must be 120 characters or fewer"),
+  location: nameTextSchema(2, 120, "Location must be at least 2 characters"),
 
   type: z.enum(
     ["part-time", "contract", "full-time", "internship"],
@@ -133,23 +173,25 @@ const jobWriteFields = z.object({
     .int("Maximum salary must be a whole number")
     .positive("Maximum salary must be greater than 0"),
 
-  // Optional joining date
   joiningDate: z
     .string()
     .refine(
       (value) => {
-        // Empty value is allowed because joining date is optional
         if (!value) return true;
-
-        return !Number.isNaN(Date.parse(value));
+        return isOnOrAfterTomorrow(value);
       },
       {
-        message: "Choose a valid joining date",
+        message: "Joining date must be tomorrow or later",
       },
     )
     .optional(),
 
-  expiresAt: z.string().min(1, "Choose an expiry date"),
+  expiresAt: z
+    .string()
+    .min(1, "Choose an expiry date")
+    .refine(isOnOrAfterTomorrow, {
+      message: "Expiry date must be tomorrow or later",
+    }),
 
   publish: z.enum(["true", "false"]).optional(),
 });
