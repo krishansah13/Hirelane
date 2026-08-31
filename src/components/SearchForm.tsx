@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { Search, MapPin, ArrowRight } from "lucide-react";
+import { startNavigation } from "@/lib/navigation-progress";
 
 const FIELD_CLASS =
     "flex h-14 items-center px-4 sm:h-full sm:flex-1 sm:px-0";
@@ -47,7 +48,9 @@ export default function SearchForm() {
         if (remote) params.set("remote", remote);
         if (sort) params.set("sort", sort);
 
-        router.push(`/jobs?${params.toString()}`);
+        const href = `/jobs?${params.toString()}`;
+        startNavigation(href);
+        router.push(href);
     }
 
     return (

@@ -1,1 +1,137 @@
 @import "tailwindcss";
+
+@keyframes navigation-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes navigation-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes navigation-progress {
+  0% {
+    transform: scaleX(0);
+  }
+  15% {
+    transform: scaleX(0.28);
+  }
+  40% {
+    transform: scaleX(0.58);
+  }
+  70% {
+    transform: scaleX(0.78);
+  }
+  100% {
+    transform: scaleX(0.92);
+  }
+}
+
+@keyframes navigation-progress-sheen {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(180%);
+  }
+}
+
+@keyframes navigation-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes navigation-halo {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.18;
+  }
+}
+
+@keyframes navigation-dot {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  40% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+.navigation-overlay {
+  animation: navigation-overlay-in 220ms ease-out both;
+}
+
+.navigation-card {
+  animation: navigation-card-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.navigation-progress-bar {
+  transform-origin: left center;
+  animation: navigation-progress 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.navigation-progress-sheen {
+  animation: navigation-progress-sheen 1.1s ease-in-out infinite;
+}
+
+.navigation-orbit {
+  animation: navigation-orbit 1.15s linear infinite;
+}
+
+.navigation-orbit-slow {
+  animation: navigation-orbit 2.4s linear infinite reverse;
+}
+
+.navigation-halo {
+  animation: navigation-halo 2.2s ease-in-out infinite;
+}
+
+.navigation-dot {
+  animation: navigation-dot 1.05s ease-in-out infinite;
+}
+
+.navigation-dot:nth-child(2) {
+  animation-delay: 140ms;
+}
+
+.navigation-dot:nth-child(3) {
+  animation-delay: 280ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navigation-overlay,
+  .navigation-card,
+  .navigation-progress-bar,
+  .navigation-progress-sheen,
+  .navigation-orbit,
+  .navigation-orbit-slow,
+  .navigation-halo,
+  .navigation-dot {
+    animation: none;
+  }
+
+  .navigation-progress-bar {
+    transform: scaleX(0.7);
+  }
+}

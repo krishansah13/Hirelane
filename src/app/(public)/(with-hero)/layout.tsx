@@ -1,6 +1,8 @@
 import PersistModalBackground from "@/components/jobs/PersistModalBackground";
 import LandingHero from "@/components/landing-pages/LandingHero";
+import RouteLoader from "@/components/RouteLoader";
 import { getLandingContent } from "@/lib/job-query";
+import { Suspense } from "react";
 
 export default async function PublicLayout({
   children,
@@ -14,7 +16,9 @@ export default async function PublicLayout({
     <>
       <LandingHero stats={landingStats} />
       <PersistModalBackground>{children}</PersistModalBackground>
-      {modal}
+      <Suspense fallback={<RouteLoader label="Loading job" />}>
+        {modal}
+      </Suspense>
     </>
   );
 }

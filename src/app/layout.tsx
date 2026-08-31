@@ -3,6 +3,7 @@ import { Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 import Provider from "@/Providers";
 import Navbar from "@/components/Navbar";
+import NavigationLoader from "@/components/NavigationLoader";
 import { auth } from "@/auth";
 import FooterSection from "@/components/FooterSection";
 
@@ -25,6 +26,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${hankenGrotesk.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <Provider session={session}>
+          <NavigationLoader />
           <Navbar />
           {children}
           <FooterSection/>

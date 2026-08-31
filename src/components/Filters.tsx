@@ -4,6 +4,7 @@ import { JobSearchProps } from "@/types/JobTypes";
 import { SlidersHorizontal, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useId, useState } from "react";
+import { startNavigation } from "@/lib/navigation-progress";
 
 const JOB_TYPES = [
     ["full-time", "Full-time"],
@@ -79,7 +80,9 @@ export default function Filters({
 
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        router.push(`${pathname}?${nextSearchParams().toString()}`);
+        const href = `${pathname}?${nextSearchParams().toString()}`;
+        startNavigation(href);
+        router.push(href);
         setOpen(false);
     }
 
@@ -96,7 +99,9 @@ export default function Filters({
         setRemote("any");
         setSort("newest");
 
-        router.push(`${pathname}?${next.toString()}`);
+        const href = `${pathname}?${next.toString()}`;
+        startNavigation(href);
+        router.push(href);
     }
 
     function fields(namePrefix: string) {

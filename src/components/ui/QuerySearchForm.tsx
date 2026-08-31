@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { FormEvent, useTransition, type ComponentPropsWithoutRef } from "react";
+import { startNavigation } from "@/lib/navigation-progress";
 
 export default function QuerySearchForm({
   children,
@@ -25,6 +26,7 @@ export default function QuerySearchForm({
     const query = params.toString();
     const href = query ? `${pathname}?${query}` : pathname;
 
+    startNavigation(href);
     startTransition(() => {
       router.push(href, { scroll: false });
     });
