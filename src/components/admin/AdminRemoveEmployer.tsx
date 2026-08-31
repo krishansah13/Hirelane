@@ -13,20 +13,24 @@ export default function AdminRemoveEmployer({
   userId,
   companyId,
   name,
+  stretch = false,
 }: {
   userId: string;
   companyId: string;
   name: string;
+  stretch?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [state, formAction] = useActionState(deleteAdminEmployer, initialState);
 
   return (
-    <div className="flex flex-col items-end gap-1">
+    <div className={stretch ? "min-w-0 flex-1" : ""}>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-xs font-medium text-rose-700 transition hover:text-rose-800"
+        className={`rounded-lg px-3 py-2.5 text-sm font-medium text-rose-700 transition hover:bg-rose-50 ${
+          stretch ? "w-full" : ""
+        }`}
       >
         Remove
       </button>
@@ -45,7 +49,9 @@ export default function AdminRemoveEmployer({
       </ConfirmModal>
 
       {state.error ? (
-        <p className="text-xs text-rose-600">{state.error}</p>
+        <p className="mt-1 text-center text-xs text-rose-600 sm:text-left">
+          {state.error}
+        </p>
       ) : null}
     </div>
   );

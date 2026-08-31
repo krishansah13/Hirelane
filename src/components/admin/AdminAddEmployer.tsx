@@ -22,7 +22,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-xl bg-[#2e46ba] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1739ad] disabled:cursor-not-allowed disabled:opacity-70"
+      className="w-full rounded-xl bg-[#2e46ba] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1739ad] disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
     >
       {pending ? "Adding…" : "Add employer"}
     </button>
@@ -80,7 +80,7 @@ export default function AdminAddEmployer({ companyId }: { companyId: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-lg bg-[#eef0ff] px-3 mt-1 py-1.5 text-sm font-medium text-[#2E46BA] transition hover:bg-indigo-100 cursor-pointer"
+        className="w-full rounded-xl bg-[#eef0ff] px-3 py-2.5 text-sm font-medium text-[#2E46BA] transition hover:bg-indigo-100 cursor-pointer sm:w-auto sm:rounded-lg sm:py-1.5"
       >
         Add employer
       </button>
@@ -89,7 +89,7 @@ export default function AdminAddEmployer({ companyId }: { companyId: string }) {
         open &&
         createPortal(
           <div
-            className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 p-4"
+            className="fixed inset-0 z-100 flex items-end justify-center bg-black/40 sm:items-center sm:p-4"
             onClick={() => setOpen(false)}
             role="presentation"
           >
@@ -97,7 +97,7 @@ export default function AdminAddEmployer({ companyId }: { companyId: string }) {
               role="dialog"
               aria-modal="true"
               aria-labelledby="add-employer-title"
-              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+              className="max-h-[min(90vh,40rem)] w-full overflow-y-auto rounded-t-3xl bg-white p-5 pb-8 shadow-xl sm:max-w-md sm:rounded-2xl sm:p-6 sm:pb-6"
               onClick={(event) => event.stopPropagation()}
             >
               <h2
@@ -182,11 +182,11 @@ export default function AdminAddEmployer({ companyId }: { companyId: string }) {
                   <p className="text-sm text-rose-600">{state.error}</p>
                 ) : null}
 
-                <div className="flex flex-wrap justify-end gap-3">
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:flex-wrap sm:justify-end">
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 sm:w-auto"
                   >
                     Cancel
                   </button>

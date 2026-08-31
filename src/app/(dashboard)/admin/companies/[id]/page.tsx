@@ -210,7 +210,7 @@ export default async function AdminCompanyDetailPage({
         </div>
 
         <aside className="space-y-4">
-          <section className="rounded-2xl bg-white p-6 shadow-sm">
+          <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
             <h2 className="text-lg font-semibold text-gray-950">
               Pending employers
             </h2>
@@ -230,6 +230,7 @@ export default async function AdminCompanyDetailPage({
                       key={employer._id}
                       employer={employer}
                       showApprove
+                      showCompanyLink={false}
                     />
                   ))}
                 </ul>
@@ -249,18 +250,18 @@ export default async function AdminCompanyDetailPage({
             )}
           </section>
 
-          <section className="rounded-2xl bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="min-w-0 text-lg font-semibold text-gray-950">
-                Active employers
-              </h2>
-              <div className="shrink-0">
-                <AdminAddEmployer companyId={companyId} />
+          <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <h2 className="text-lg font-semibold text-gray-950">
+                  Active employers
+                </h2>
+                <p className="mt-1 text-xs text-gray-400">
+                  {activeEmployers.total} approved
+                </p>
               </div>
+              <AdminAddEmployer companyId={companyId} />
             </div>
-            <p className="mt-1 text-xs text-gray-400">
-              {activeEmployers.total} approved
-            </p>
 
             {activeEmployers.employers.length === 0 &&
             pendingEmployers.total === 0 ? (
@@ -283,6 +284,7 @@ export default async function AdminCompanyDetailPage({
                     <AdminEmployerReviewCard
                       key={employer._id}
                       employer={employer}
+                      showCompanyLink={false}
                     />
                   ))}
                 </ul>

@@ -17,7 +17,7 @@ function ConfirmButton({
     <button
       type="submit"
       disabled={pending}
-      className="rounded-xl bg-[#2E46BA] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
+      className="w-full rounded-xl bg-[#2E46BA] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer sm:w-auto"
     >
       {pending ? pendingLabel : label}
     </button>
@@ -69,7 +69,7 @@ export default function ConfirmModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-100 flex items-end justify-center bg-black/40 sm:items-center sm:p-4"
       onClick={onClose}
       role="presentation"
     >
@@ -78,7 +78,7 @@ export default function ConfirmModal({
         aria-modal="true"
         aria-labelledby="confirm-modal-title"
         aria-describedby="confirm-modal-description"
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+        className="w-full rounded-t-3xl bg-white p-5 pb-8 shadow-xl sm:max-w-md sm:rounded-2xl sm:p-6 sm:pb-6"
         onClick={(event) => event.stopPropagation()}
       >
         <h2
@@ -94,12 +94,15 @@ export default function ConfirmModal({
           {description}
         </p>
 
-        <form action={formAction} className="mt-6 flex flex-wrap justify-end gap-3">
+        <form
+          action={formAction}
+          className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:flex-wrap sm:justify-end"
+        >
           {children}
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 cursor-pointer"
+            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 sm:w-auto cursor-pointer"
           >
             Cancel
           </button>
