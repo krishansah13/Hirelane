@@ -101,7 +101,7 @@ export default async function JobDetail({
       <div className="overflow-hidden bg-gray-50 shadow-sm">
         {/* Header */}
         <section className="relative overflow-hidden bg-linear-100 from-white via-white to-indigo-200">
-          <div className="relative px-6 py-12 sm:px-10 lg:py-16">
+          <div className="relative px-6 py-6 sm:px-10">
             {session?.user?.role === "seeker" ? (
               <Link prefetch={false}
                 href="/jobs"
