@@ -65,7 +65,7 @@ export default async function JobDetail({
   const role = session?.user?.role;
   if (
     role === "employer" &&
-    !canEmployerViewPublicJob(session.user.companyId, job.companyId)
+    !canEmployerViewPublicJob(session?.user?.companyId, job.companyId)
   ) {
     redirect("/employer");
   }
