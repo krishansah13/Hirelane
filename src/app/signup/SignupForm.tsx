@@ -131,8 +131,9 @@ export default function SignupForm() {
                         <p className="text-xs font-medium tracking-wide text-gray-400">
                             JOIN HIRELANE
                         </p>
+                       
                         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-950">
-                            Create your account
+                            {pendingApproval?"Request Sent":"Create your account"}
                         </h1>
                         <p className="mt-2 text-sm leading-6 text-gray-500">
                             Seekers apply in minutes. Employers join a listed
