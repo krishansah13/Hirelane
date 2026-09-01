@@ -5,16 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
-import {
-    BriefcaseBusiness,
-    Building2,
-    Eye,
-    EyeOff,
-    Globe,
-    Lock,
-    Mail,
-    UserRound,
-} from "lucide-react";
+import { BriefcaseBusiness, Building2, Eye, EyeOff, Globe, Lock, Mail, UserRound, } from "lucide-react";
 import { signup } from "@/lib/actions/signup";
 import { getHomePath } from "@/lib/roles";
 import PasswordChecks from "@/components/ui/PasswordChecks";
@@ -34,6 +25,18 @@ function getSafeCallbackUrl(value: string | null) {
     return value;
 }
 
+interface SignupFormData {
+    name: string,
+    email: string,
+    password: string,
+    confirmPassword: string,
+    companyName?: string,
+    companyWebsite?: string,
+}
+const initalFormState: SignupFormData = {
+    name: "", email: "", password: "", confirmPassword: "", companyName: "", companyWebsite: ""
+};
+
 export default function SignupForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -41,38 +44,32 @@ export default function SignupForm() {
     const [role, setRole] = useState<Role>(
         searchParams.get("role") === "employer" ? "employer" : "seeker",
     );
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [companyName, setCompanyName] = useState("");
-    const [companyWebsite, setCompanyWebsite] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
+
+    const [signupFormData, setSignupFormData] = useState<SignupFormData>(initalFormState)
     const [error, setError] = useState("");
+    const [showPassword, setShowPassword] = useState<Boolean>(false);
+    const [showConfPass, setShowConfPass] = useState<Boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showConfPass, setShowConfPass] = useState(false);
     const [pendingApproval, setPendingApproval] = useState(false);
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         setError("");
 
-        if (password !== confirmPassword) {
+        if (signupFormData.password !== signupFormData.confirmPassword) {
             setError("Passwords do not match");
             return;
         }
-
         setIsSubmitting(true);
-
         try {
             const formData = new FormData();
-            formData.set("name", name);
-            formData.set("email", email.trim().toLowerCase());
-            formData.set("password", password);
+            formData.set("name", signupFormData.name);
+            formData.set("email", signupFormData.email.trim().toLowerCase());
+            formData.set("password", signupFormData.password);
             formData.set("role", role);
             if (role === "employer") {
-                formData.set("companyName", companyName);
-                formData.set("companyWebsite", companyWebsite);
+                formData.set("companyName", signupFormData.companyName!);
+                formData.set("companyWebsite", signupFormData.companyWebsite!);
             }
 
             const created = await signup(formData);
@@ -87,8 +84,8 @@ export default function SignupForm() {
             }
 
             const result = await signIn("credentials", {
-                email: email.trim().toLowerCase(),
-                password,
+                email: signupFormData.email.trim().toLowerCase(),
+                password: signupFormData.password,
                 redirect: false,
             });
 
@@ -154,318 +151,280 @@ export default function SignupForm() {
                                 You&apos;ll get an email when it&apos;s ready to
                                 use.
                             </p>
-                            <Link
-                                prefetch={false}
-                                href="/login"
-                                className="mt-4 inline-flex text-sm font-medium text-[#2E46BA] hover:text-[#12329c]"
-                            >
-                                Back to sign in
-                            </Link>
                         </div>
                     ) : (
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div>
-                            <p className="mb-2 text-sm font-medium text-gray-900">
-                                I am here to
-                            </p>
-                            <div className="grid grid-cols-2 gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setRole("seeker")}
-                                    className={`rounded-xl px-3 py-3 text-left transition ${role === "seeker"
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setRole("seeker")}
+                                        className={`rounded-xl px-3 py-3 text-left transition ${role === "seeker"
                                             ? "bg-[#eef0ff] ring-2 ring-[#2E46BA]"
                                             : "bg-[#f7f5ff] hover:bg-indigo-50"
-                                        }`}
-                                >
-                                    <UserRound
-                                        size={16}
-                                        className="mb-1.5 text-[#2E46BA]"
-                                    />
-                                    <span className="block text-xs font-semibold text-[#2E46BA]">
-                                        Find work
-                                    </span>
-                                    <span className="mt-0.5 block text-[11px] text-gray-500">
-                                        Apply and track roles
-                                    </span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setRole("employer")}
-                                    className={`rounded-xl px-3 py-3 text-left transition ${role === "employer"
+                                            }`}
+                                    >
+                                        <UserRound
+                                            size={16}
+                                            className="mb-1.5 text-[#2E46BA]"
+                                        />
+                                        <span className="block text-xs font-semibold text-[#2E46BA]">
+                                            Find work
+                                        </span>
+                                        <span className="mt-0.5 block text-[11px] text-gray-500">
+                                            Apply and track roles
+                                        </span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setRole("employer")}
+                                        className={`rounded-xl px-3 py-3 text-left transition ${role === "employer"
                                             ? "bg-[#eef0ff] ring-2 ring-[#2E46BA]"
                                             : "bg-[#f7f5ff] hover:bg-indigo-50"
-                                        }`}
-                                >
-                                    <BriefcaseBusiness
-                                        size={16}
-                                        className="mb-1.5 text-[#2E46BA]"
-                                    />
-                                    <span className="block text-xs font-semibold text-[#2E46BA]">
-                                        Hire people
-                                    </span>
+                                            }`}
+                                    >
+                                        <BriefcaseBusiness
+                                            size={16}
+                                            className="mb-1.5 text-[#2E46BA]"
+                                        />
+                                        <span className="block text-xs font-semibold text-[#2E46BA]">
+                                            Hire people
+                                        </span>
                                         <span className="mt-0.5 block text-[11px] text-gray-500">
                                             Request access to hire
                                         </span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label
-                                htmlFor="name"
-                                className="mb-2 block text-sm font-medium text-gray-900"
-                            >
-                                Full name
-                            </label>
-                            <div className="flex h-12 items-center rounded-xl bg-[#fbf9ff] px-4 ring-1 ring-[#dcd8ea] focus-within:ring-2 focus-within:ring-[#2E46BA]">
-                                <UserRound
-                                    size={16}
-                                    strokeWidth={2.2}
-                                    className="mr-3 shrink-0 text-[#484855]"
-                                />
-                                <input
-                                    id="name"
-                                    type="text"
-                                    autoComplete="name"
-                                    placeholder="Your name"
-                                    value={name}
-                                    onChange={(event) => setName(event.target.value)}
-                                    required
-                                    minLength={2}
-                                    maxLength={80}
-                                    autoCapitalize="words"
-                                    className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]"
-                                />
-                            </div>
-                            <p className="mt-1.5 text-xs text-gray-400">
-                                Letters and spaces only
-                            </p>
-                        </div>
-
-                        <div>
-                            <label
-                                htmlFor="email"
-                                className="mb-2 block text-sm font-medium text-gray-900"
-                            >
-                                Email
-                            </label>
-                            <div className="flex h-12 items-center rounded-xl bg-[#fbf9ff] px-4 ring-1 ring-[#dcd8ea] focus-within:ring-2 focus-within:ring-[#2E46BA]">
-                                <Mail
-                                    size={16}
-                                    strokeWidth={2.2}
-                                    className="mr-3 shrink-0 text-[#484855]"
-                                />
-                                <input
-                                    id="email"
-                                    type="email"
-                                    autoComplete="email"
-                                    placeholder="you@example.com"
-                                    value={email}
-                                    onChange={(event) => setEmail(event.target.value)}
-                                    required
-                                    className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]"
-                                />
-                            </div>
-                        </div>
-
-                        {role === "employer" ? (
-                            <>
-                                <div>
-                                    <label
-                                        htmlFor="companyName"
-                                        className="mb-2 block text-sm font-medium text-gray-900"
-                                    >
-                                        Company name
-                                    </label>
-                                    <div className="flex h-12 items-center rounded-xl bg-[#fbf9ff] px-4 ring-1 ring-[#dcd8ea] focus-within:ring-2 focus-within:ring-[#2E46BA]">
-                                        <Building2
-                                            size={16}
-                                            strokeWidth={2.2}
-                                            className="mr-3 shrink-0 text-[#484855]"
-                                        />
-                                        <input
-                                            id="companyName"
-                                            type="text"
-                                            placeholder="Acme Studio"
-                                            value={companyName}
-                                            onChange={(event) =>
-                                                setCompanyName(event.target.value)
-                                            }
-                                            required
-                                            className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]"
-                                        />
-                                    </div>
+                                    </button>
                                 </div>
-                                <div>
-                                    <label
-                                        htmlFor="companyWebsite"
-                                        className="mb-2 block text-sm font-medium text-gray-900"
-                                    >
-                                        Company website
-                                    </label>
-                                    <div className="flex h-12 items-center rounded-xl bg-[#fbf9ff] px-4 ring-1 ring-[#dcd8ea] focus-within:ring-2 focus-within:ring-[#2E46BA]">
-                                        <Globe
-                                            size={16}
-                                            strokeWidth={2.2}
-                                            className="mr-3 shrink-0 text-[#484855]"
-                                        />
-                                        <input
-                                            id="companyWebsite"
-                                            type="text"
-                                            inputMode="url"
-                                            placeholder="yourcompany.com"
-                                            value={companyWebsite}
-                                            onChange={(event) =>
-                                                setCompanyWebsite(event.target.value)
-                                            }
-                                            required
-                                            className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]"
-                                        />
-                                    </div>
-                                    <p className="mt-1.5 text-xs text-gray-400">
-                                        Must match a company already listed by
-                                        an admin, including the website.
-                                    </p>
+                            </div>
+
+                            <div>
+                                <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-900">
+                                    Full name
+                                </label>
+
+                                <div className="flex h-12 items-center rounded-xl bg-[#fbf9ff] px-4 ring-1 ring-[#dcd8ea] focus-within:ring-2 focus-within:ring-[#2E46BA]">
+                                    <UserRound size={16} strokeWidth={2.2} className="mr-3 shrink-0 text-[#484855]" />
+                                    <input id="name" type="text" autoComplete="name" placeholder="Your name" value={signupFormData.name} onChange={(event) => setSignupFormData({ ...signupFormData, name: event.target.value })} required minLength={2} maxLength={80} autoCapitalize="words" className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]" />
                                 </div>
-                            </>
-                        ) : null}
 
-                        <div>
-                            <label
-                                htmlFor="password"
-                                className="mb-2 block text-sm font-medium text-gray-900"
-                            >
-                                Password
-                            </label>
-                            <div className="flex h-12 items-center rounded-xl bg-[#fbf9ff] px-4 ring-1 ring-[#dcd8ea] focus-within:ring-2 focus-within:ring-[#2E46BA]">
-                                <Lock
-                                    size={16}
-                                    strokeWidth={2.2}
-                                    className="mr-3 shrink-0 text-[#484855]"
-                                />
-                                <input
-                                    id="password"
-                                    type={showPassword ? "text" : "password"}
-                                    autoComplete="new-password"
-                                    placeholder="Min 8 chars, upper, lower, symbol"
-                                    value={password}
-                                    onChange={(event) =>
-                                        setPassword(event.target.value)
-                                    }
-                                    minLength={8}
-                                    required
-                                    className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        setShowPassword((visible) => !visible)
-                                    }
-                                    className="ml-2 shrink-0 text-[#484855] transition hover:text-gray-950"
-                                    aria-label={
-                                        showPassword
-                                            ? "Hide password"
-                                            : "Show password"
-                                    }
-                                >
-                                    {showPassword ? (
-                                        <EyeOff size={16} />
-                                    ) : (
-                                        <Eye size={16} />
-                                    )}
-                                </button>
+                                <p className="mt-1.5 text-xs text-gray-400">
+                                    Letters and spaces only
+                                </p>
                             </div>
-                            <PasswordChecks password={password} />
-                        </div>
 
-                        <div>
-                            <label
-                                htmlFor="confirmPassword"
-                                className="mb-2 block text-sm font-medium text-gray-900"
-                            >
-                                Confirm password
-                            </label>
-                            <div className="flex h-12 items-center rounded-xl bg-[#fbf9ff] px-4 ring-1 ring-[#dcd8ea] focus-within:ring-2 focus-within:ring-[#2E46BA]">
-                                <Lock
-                                    size={16}
-                                    strokeWidth={2.2}
-                                    className="mr-3 shrink-0 text-[#484855]"
-                                />
-                                <input
-                                    id="confirmPassword"
-                                    type={showConfPass ? "text" : "password"}
-                                    autoComplete="new-password"
-                                    placeholder="Repeat your password"
-                                    value={confirmPassword}
-                                    onChange={(event) =>
-                                        setConfirmPassword(event.target.value)
-                                    }
-                                    minLength={8}
-                                    required
-                                    className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        setShowConfPass((visible) => !visible)
-                                    }
-                                    className="ml-2 shrink-0 text-[#484855] transition hover:text-gray-950"
-                                    aria-label={
-                                        showConfPass
-                                            ? "Hide password"
-                                            : "Show password"
-                                    }
+                            <div>
+                                <label
+                                    htmlFor="email"
+                                    className="mb-2 block text-sm font-medium text-gray-900"
                                 >
-                                    {showConfPass ? (
-                                        <EyeOff size={16} />
-                                    ) : (
-                                        <Eye size={16} />
-                                    )}
-                                </button>
+                                    Email
+                                </label>
+                                <div className="flex h-12 items-center rounded-xl bg-[#fbf9ff] px-4 ring-1 ring-[#dcd8ea] focus-within:ring-2 focus-within:ring-[#2E46BA]">
+                                    <Mail
+                                        size={16}
+                                        strokeWidth={2.2}
+                                        className="mr-3 shrink-0 text-[#484855]"
+                                    />
+                                    <input
+                                        id="email"
+                                        type="email"
+                                        autoComplete="email"
+                                        placeholder="you@geekyants.com"
+                                        value={signupFormData.email}
+                                        onChange={(event) => setSignupFormData({ ...signupFormData, email: event.target.value })}
+                                        required
+                                        className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]"
+                                    />
+                                </div>
                             </div>
-                        </div>
 
-                        {error ? (
-                            <p
-                                role="alert"
-                                className="rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"
+                            {role === "employer" ? (
+                                <>
+                                    <div>
+                                        <label
+                                            htmlFor="companyName"
+                                            className="mb-2 block text-sm font-medium text-gray-900"
+                                        >
+                                            Company name
+                                        </label>
+                                        <div className="flex h-12 items-center rounded-xl bg-[#fbf9ff] px-4 ring-1 ring-[#dcd8ea] focus-within:ring-2 focus-within:ring-[#2E46BA]">
+                                            <Building2
+                                                size={16}
+                                                strokeWidth={2.2}
+                                                className="mr-3 shrink-0 text-[#484855]"
+                                            />
+                                            <input
+                                                id="companyName"
+                                                type="text"
+                                                placeholder="GeekyAnts"
+                                                value={signupFormData.companyName}
+                                                onChange={(event) =>
+                                                    setSignupFormData({ ...signupFormData, companyName: event.target.value })
+                                                }
+                                                required
+                                                className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label
+                                            htmlFor="companyWebsite"
+                                            className="mb-2 block text-sm font-medium text-gray-900"
+                                        >
+                                            Company website
+                                        </label>
+                                        <div className="flex h-12 items-center rounded-xl bg-[#fbf9ff] px-4 ring-1 ring-[#dcd8ea] focus-within:ring-2 focus-within:ring-[#2E46BA]">
+                                            <Globe
+                                                size={16}
+                                                strokeWidth={2.2}
+                                                className="mr-3 shrink-0 text-[#484855]"
+                                            />
+                                            <input
+                                                id="companyWebsite"
+                                                type="text"
+                                                inputMode="url"
+                                                placeholder="geekyants.com"
+                                                value={signupFormData.companyWebsite}
+                                                onChange={(event) =>
+                                                    setSignupFormData({ ...signupFormData, companyWebsite: event.target.value })
+                                                }
+                                                required
+                                                className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]"
+                                            />
+                                        </div>
+                                        <p className="mt-1.5 text-xs text-gray-400">
+                                            Must match a company already listed by
+                                            an admin, including the website.
+                                        </p>
+                                    </div>
+                                </>
+                            ) : null}
+
+                            <div>
+                                <label
+                                    htmlFor="password"
+                                    className="mb-2 block text-sm font-medium text-gray-900"
+                                >
+                                    Password
+                                </label>
+                                <div className="flex h-12 items-center rounded-xl bg-[#fbf9ff] px-4 ring-1 ring-[#dcd8ea] focus-within:ring-2 focus-within:ring-[#2E46BA]">
+                                    <Lock
+                                        size={16}
+                                        strokeWidth={2.2}
+                                        className="mr-3 shrink-0 text-[#484855]"
+                                    />
+                                    <input
+                                        id="password"
+                                        type={showPassword ? "text" : "password"}
+                                        autoComplete="new-password"
+                                        placeholder="Min 8 chars, upper, lower, symbol"
+                                        value={signupFormData.password}
+                                        onChange={(event) =>
+                                            setSignupFormData({ ...signupFormData, password: event.target.value })
+                                        }
+                                        minLength={8}
+                                        required
+                                        className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setShowPassword((visible) => !visible)
+                                        }
+                                        className="ml-2 shrink-0 text-[#484855] transition hover:text-gray-950"
+                                        aria-label={
+                                            showPassword
+                                                ? "Hide password"
+                                                : "Show password"
+                                        }
+                                    >
+                                        {showPassword ? (
+                                            <EyeOff size={16} />
+                                        ) : (
+                                            <Eye size={16} />
+                                        )}
+                                    </button>
+                                </div>
+                                <PasswordChecks password={signupFormData.password} />
+                            </div>
+
+                            <div>
+                                <label
+                                    htmlFor="confirmPassword"
+                                    className="mb-2 block text-sm font-medium text-gray-900"
+                                >
+                                    Confirm password
+                                </label>
+                                <div className="flex h-12 items-center rounded-xl bg-[#fbf9ff] px-4 ring-1 ring-[#dcd8ea] focus-within:ring-2 focus-within:ring-[#2E46BA]">
+                                    <Lock
+                                        size={16}
+                                        strokeWidth={2.2}
+                                        className="mr-3 shrink-0 text-[#484855]"
+                                    />
+                                    <input
+                                        id="confirmPassword"
+                                        type={showConfPass ? "text" : "password"}
+                                        autoComplete="new-password"
+                                        placeholder="Repeat your password"
+                                        value={signupFormData.confirmPassword}
+                                        onChange={(event) =>
+                                            setSignupFormData({ ...signupFormData, confirmPassword: event.target.value })
+                                        }
+                                        minLength={8}
+                                        required
+                                        className="h-full w-full bg-transparent text-sm text-gray-950 outline-none placeholder:text-[#a5a4ae]"
+                                    />
+                                    <button type="button" onClick={() => setShowConfPass((visible) => !visible)} className="ml-2 shrink-0 text-[#484855] transition hover:text-gray-950" aria-label={showConfPass ? "Hide password" : "Show password"}>
+                                        {
+                                            showConfPass ? (<EyeOff size={16} />) : (<Eye size={16} />)
+                                        }
+                                    </button>
+                                </div>
+                            </div>
+
+                            {error ? (
+                                <p
+                                    role="alert"
+                                    className="rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"
+                                >
+                                    {error}
+                                </p>
+                            ) : null}
+
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="h-12 w-full rounded-xl bg-[#1739ad] text-sm font-semibold text-white transition hover:bg-[#12329c] disabled:cursor-not-allowed disabled:opacity-70"
                             >
-                                {error}
-                            </p>
-                        ) : null}
-
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="h-12 w-full rounded-xl bg-[#1739ad] text-sm font-semibold text-white transition hover:bg-[#12329c] disabled:cursor-not-allowed disabled:opacity-70"
-                        >
-                            {isSubmitting
-                                ? "Creating your account..."
-                                : role === "employer"
-                                    ? "Create employer account"
-                                    : "Create seeker account"}
-                        </button>
-                    </form>
+                                {isSubmitting
+                                    ? "Creating your account..."
+                                    : role === "employer"
+                                        ? "Create employer account"
+                                        : "Create seeker account"}
+                            </button>
+                        </form>
                     )}
-
-                    <p className="mt-8 text-center text-sm text-gray-500">
-                        Already on Hirelane?{" "}
-                        <Link prefetch={false}
-                            href="/login"
-                            className="font-medium text-[#2E46BA] transition hover:text-[#12329c]"
-                        >
-                            Sign in
-                        </Link>
-                    </p>
-                    <p className="mt-3 text-center text-sm text-gray-500">
-                        Just browsing?{" "}
-                        <Link prefetch={false}
-                            href="/jobs"
-                            className="font-medium text-[#2E46BA] transition hover:text-[#12329c]"
-                        >
-                            Find jobs
-                        </Link>
-                    </p>
+                    {role === "employer" ? null :
+                        (<>
+                            <p className="mt-8 text-center text-sm text-gray-500">
+                                Already on Hirelane?{" "}
+                                <Link prefetch={false}
+                                    href="/login"
+                                    className="font-medium text-[#2E46BA] transition hover:text-[#12329c]"
+                                >
+                                    Sign in
+                                </Link>
+                            </p>
+                            <p className="mt-3 text-center text-sm text-gray-500">
+                                Just browsing?{" "}
+                                <Link prefetch={false}
+                                    href="/jobs"
+                                    className="font-medium text-[#2E46BA] transition hover:text-[#12329c]"
+                                >
+                                    Find jobs
+                                </Link>
+                            </p>
+                        </>)}
                 </div>
             </div>
         </main>
