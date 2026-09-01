@@ -6,7 +6,7 @@ export default async function NewJobPage() {
 
     return (
         <div className="space-y-6">
-            <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+            <div className="relative overflow-hidden rounded-2xl bg-linear-100 from-white via-white to-indigo-200 p-6 shadow-sm sm:p-8">
                 <p className="text-xs font-medium tracking-wide text-gray-400">EMPLOYER</p>
                 <h1 className="mt-2 text-2xl font-semibold tracking-tight text-gray-950">
                     Post a job
