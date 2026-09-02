@@ -4,13 +4,14 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, FileText, User } from "lucide-react";
 
 type UserMenuProps = {
     user: {
         name?: string | null;
         email?: string | null;
         image?: string | null;
+        role?: string | null;
     };
 };
 
@@ -160,6 +161,18 @@ export default function UserMenu({ user }: UserMenuProps) {
                             <User className="h-4 w-4" />
                             Account
                         </Link>
+
+                        {user.role === "seeker" ? (
+                            <Link prefetch={false}
+                                href="/account#resumes"
+                                role="menuitem"
+                                onClick={() => setOpen(false)}
+                                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-[#f5f6ff] hover:text-[#2E46BA]"
+                            >
+                                <FileText className="h-4 w-4" />
+                                Resumes
+                            </Link>
+                        ) : null}
 
                         <div className="my-1 border-t border-gray-100" />
 

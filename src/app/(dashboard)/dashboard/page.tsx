@@ -53,13 +53,21 @@ export default async function DashboardPage({
             </p>
           </div>
 
-          <Link
-            href="/jobs"
-            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#2E46BA] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#2E46BA]/15 transition hover:bg-[#1739ad]"
-          >
-            Find jobs
-            <ArrowUpRight size={15} />
-          </Link>
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+            <Link
+              href="/account#resumes"
+              className="inline-flex items-center justify-center rounded-xl border border-[#2E46BA]/20 bg-white px-5 py-2.5 text-sm font-semibold text-[#2E46BA] transition hover:bg-[#eef0ff]"
+            >
+              Resumes
+            </Link>
+            <Link
+              href="/jobs"
+              className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#2E46BA] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#2E46BA]/15 transition hover:bg-[#1739ad]"
+            >
+              Find jobs
+              <ArrowUpRight size={15} />
+            </Link>
+          </div>
         </div>
       </section>
 

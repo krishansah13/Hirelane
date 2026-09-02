@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { applySchema } from "../validation";
 import { connectToDatabase } from "../utils/db";
@@ -8,11 +9,22 @@ import Application from "../models/Application";
 import { publicJobFilter } from "../job-status";
 import { isUserActive } from "../session";
 import { getMyApplicationForJob } from "../application-query";
+import {
+  createSeekerResume,
+  getSeekerResume,
+} from "../resume-query";
+import { labelFromFilename } from "../utils/resume";
 
 export type ApplyState = {
   ok: boolean;
   error?: string;
 };
+
+function emptyToUndefined(value: FormDataEntryValue | null) {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
+}
 
 export async function getMyJobApplicationStatus(jobId: string) {
   const session = await auth();
@@ -46,8 +58,12 @@ export async function applyToJob(
 
   const parsed = applySchema.safeParse({
     jobId: formData.get("jobId"),
-    resumeURL: formData.get("resumeURL"),
-    coverNote: formData.get("coverNote") || undefined,
+    resumeURL: emptyToUndefined(formData.get("resumeURL")),
+    resumeId: emptyToUndefined(formData.get("resumeId")),
+    coverNote: emptyToUndefined(formData.get("coverNote")),
+    saveResume: emptyToUndefined(formData.get("saveResume")),
+    resumeLabel: emptyToUndefined(formData.get("resumeLabel")),
+    originalFilename: emptyToUndefined(formData.get("originalFilename")),
   });
 
   if (!parsed.success) {
@@ -56,7 +72,15 @@ export async function applyToJob(
       error: parsed.error.issues[0]?.message ?? "Invalid application data",
     };
   }
-  const { jobId, resumeURL, coverNote } = parsed.data;
+  const {
+    jobId,
+    resumeURL,
+    resumeId,
+    coverNote,
+    saveResume,
+    resumeLabel,
+    originalFilename,
+  } = parsed.data;
   try {
     await connectToDatabase();
     const job = await Job.findOne({
@@ -70,22 +94,43 @@ export async function applyToJob(
         error: "This job is not available",
       };
     }
-    const now = new Date();
-    const existing = await Application.findOne({
-        jobId,
-        userId: session.user.id,
-      }).select("_id");
-      
-      if (existing) {
+
+    let resolvedUrl = resumeURL;
+    if (resumeId) {
+      const saved = await getSeekerResume(session.user.id, resumeId);
+      if (!saved) {
         return {
           ok: false,
-          error: "You have already applied to this job",
+          error: "That saved resume is no longer available",
         };
       }
+      resolvedUrl = saved.url;
+    }
+
+    if (!resolvedUrl) {
+      return {
+        ok: false,
+        error: "Please choose or upload a resume",
+      };
+    }
+
+    const now = new Date();
+    const existing = await Application.findOne({
+      jobId,
+      userId: session.user.id,
+    }).select("_id");
+
+    if (existing) {
+      return {
+        ok: false,
+        error: "You have already applied to this job",
+      };
+    }
+
     await Application.create({
       jobId,
       userId: session.user.id,
-      resumeURL,
+      resumeURL: resolvedUrl,
       coverNote: coverNote?.trim() || undefined,
       stage: "applied",
       appliedAt: now,
@@ -97,6 +142,21 @@ export async function applyToJob(
         },
       ],
     });
+
+    if (!resumeId && saveResume === "true") {
+      const label =
+        resumeLabel?.trim() ||
+        labelFromFilename(originalFilename || "Resume.pdf");
+      const saved = await createSeekerResume(session.user.id, {
+        url: resolvedUrl,
+        label,
+        originalFilename: originalFilename || "",
+        isDefault: false,
+      });
+      if (saved.resume) {
+        revalidatePath("/account");
+      }
+    }
 
     return { ok: true };
   } catch (error: unknown) {

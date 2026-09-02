@@ -3,12 +3,15 @@
 import { useActionState, useEffect, useState, startTransition } from "react";
 import { useFormStatus } from "react-dom";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   applyToJob,
   getMyJobApplicationStatus,
   type ApplyState,
 } from "@/lib/actions/apply";
+import { getMyResumes } from "@/lib/actions/resumes";
+import { MAX_SAVED_RESUMES, isDuplicateResumeLabel, labelFromFilename, type SavedResume } from "@/lib/utils/resume";
 
 type ExistingApplication = {
   id: string;
@@ -23,6 +26,7 @@ type ApplyFormProps = {
 };
 
 const initialState: ApplyState = { ok: false };
+const UPLOAD_VALUE = "upload";
 
 function SubmitButton({
   label,
@@ -88,6 +92,7 @@ export default function ApplyForm({
   compact = false,
   existingApplication = null,
 }: ApplyFormProps) {
+  const router = useRouter();
   const { data: session, status } = useSession();
   const [state, formAction] = useActionState(applyToJob, initialState);
 
@@ -95,43 +100,66 @@ export default function ApplyForm({
   const [file, setFile] = useState<File | null>(null);
   const [clientError, setClientError] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [succeeded, setSucceeded] = useState(false);
-  const [application, setApplication] = useState(existingApplication);
-  const [loadingApplication, setLoadingApplication] = useState(
-    !existingApplication,
-  );
+  const [fetchedApplication, setFetchedApplication] = useState<
+    ExistingApplication | null | undefined
+  >(undefined);
+  const [resumes, setResumes] = useState<SavedResume[]>([]);
+  const [resumesLoaded, setResumesLoaded] = useState(false);
+  const [selectedResumeId, setSelectedResumeId] = useState(UPLOAD_VALUE);
+  const [saveToAccount, setSaveToAccount] = useState(true);
+  const [resumeLabel, setResumeLabel] = useState("");
+
+  const isSeeker = status === "authenticated" && session?.user?.role === "seeker";
+  const usingUpload = selectedResumeId === UPLOAD_VALUE;
+  const canSaveNew = resumes.length < MAX_SAVED_RESUMES;
+  const succeeded = state.ok;
+  const application = existingApplication ?? fetchedApplication ?? null;
+  const loadingApplication =
+    !existingApplication && isSeeker && fetchedApplication === undefined;
+  const loadingResumes = isSeeker && !resumesLoaded;
+
+  if (state.error && uploading) {
+    setUploading(false);
+  }
 
   useEffect(() => {
-    if (state.ok) setSucceeded(true);
-    if (state.error) setUploading(false);
-  }, [state.ok, state.error]);
-
-  useEffect(() => {
-    if (existingApplication) {
-      setApplication(existingApplication);
-      setLoadingApplication(false);
-      return;
-    }
-
-    if (status !== "authenticated" || session?.user?.role !== "seeker") {
-      setLoadingApplication(false);
-      return;
-    }
+    if (existingApplication || !isSeeker) return;
 
     let cancelled = false;
-    setLoadingApplication(true);
-
-    getMyJobApplicationStatus(jobId).then((result) => {
-      if (!cancelled) {
-        setApplication(result);
-        setLoadingApplication(false);
-      }
-    });
+    getMyJobApplicationStatus(jobId)
+      .then((result) => {
+        if (!cancelled) setFetchedApplication(result);
+      })
+      .catch(() => {
+        if (!cancelled) setFetchedApplication(null);
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [jobId, existingApplication, status, session?.user?.role]);
+  }, [jobId, existingApplication, isSeeker]);
+
+  useEffect(() => {
+    if (!isSeeker) return;
+
+    let cancelled = false;
+    getMyResumes()
+      .then((saved) => {
+        if (cancelled) return;
+        setResumes(saved);
+        const preferred =
+          saved.find((resume) => resume.isDefault) ?? saved[0] ?? null;
+        setSelectedResumeId(preferred?.id ?? UPLOAD_VALUE);
+        setResumesLoaded(true);
+      })
+      .catch(() => {
+        if (!cancelled) setResumesLoaded(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isSeeker]);
 
   const callbackUrl = `/jobs/${slug}`;
   const loginHref = `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`;
@@ -195,6 +223,21 @@ export default function ApplyForm({
     event.preventDefault();
     setClientError("");
 
+    const actionData = new FormData();
+    actionData.set("jobId", jobId);
+    if (coverNote.trim()) {
+      actionData.set("coverNote", coverNote.trim());
+    }
+
+    if (!usingUpload) {
+      setUploading(true);
+      actionData.set("resumeId", selectedResumeId);
+      startTransition(() => {
+        formAction(actionData);
+      });
+      return;
+    }
+
     if (!file) {
       setClientError("Please choose a PDF resume");
       return;
@@ -217,7 +260,7 @@ export default function ApplyForm({
       };
 
       if (uploadRes.status === 401) {
-        window.location.href = loginHref;
+        router.push(loginHref);
         return;
       }
 
@@ -227,11 +270,16 @@ export default function ApplyForm({
         return;
       }
 
-      const actionData = new FormData();
-      actionData.set("jobId", jobId);
       actionData.set("resumeURL", uploadJson.url);
-      if (coverNote.trim()) {
-        actionData.set("coverNote", coverNote.trim());
+      actionData.set("originalFilename", file.name);
+      const name = resumeLabel.trim() || labelFromFilename(file.name);
+      if (
+        saveToAccount &&
+        canSaveNew &&
+        !isDuplicateResumeLabel(resumes, name)
+      ) {
+        actionData.set("saveResume", "true");
+        actionData.set("resumeLabel", name);
       }
 
       startTransition(() => {
@@ -259,23 +307,102 @@ export default function ApplyForm({
       )}
 
       <div>
-        <label
-          htmlFor={`resume-${jobId}`}
-          className="mb-2 block text-sm font-medium text-gray-900"
-        >
-          Resume (PDF)
-        </label>
-        <input
-          id={`resume-${jobId}`}
-          type="file"
-          accept="application/pdf,.pdf"
-          disabled={uploading}
-          onChange={(event) => {
-            setFile(event.target.files?.[0] ?? null);
-            setClientError("");
-          }}
-          className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[#e9e9ff] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[#4338a8] disabled:cursor-not-allowed disabled:opacity-70"
-        />
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <label
+            htmlFor={`resume-source-${jobId}`}
+            className="block text-sm font-medium text-gray-900"
+          >
+            Resume (PDF)
+          </label>
+          <Link
+            prefetch={false}
+            href="/account#resumes"
+            className="text-xs font-medium text-[#2e46ba] hover:underline"
+          >
+            Manage resumes
+          </Link>
+        </div>
+
+        {loadingResumes ? (
+          <p className="text-sm text-gray-500">Loading saved resumes...</p>
+        ) : (
+          <>
+            {resumes.length > 0 ? (
+              <select
+                id={`resume-source-${jobId}`}
+                value={selectedResumeId}
+                disabled={uploading}
+                onChange={(event) => {
+                  setSelectedResumeId(event.target.value);
+                  setClientError("");
+                }}
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#2e46ba] focus:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {resumes.map((resume) => (
+                  <option key={resume.id} value={resume.id}>
+                    {resume.label}
+                    {resume.isDefault ? " (Default)" : ""}
+                  </option>
+                ))}
+                <option value={UPLOAD_VALUE}>Upload a new PDF</option>
+              </select>
+            ) : null}
+
+            {usingUpload ? (
+              <div className={resumes.length > 0 ? "mt-3 space-y-3" : "space-y-3"}>
+                <input
+                  id={`resume-${jobId}`}
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  disabled={uploading}
+                  onChange={(event) => {
+                    const next = event.target.files?.[0] ?? null;
+                    setFile(next);
+                    setClientError("");
+                    if (next && !resumeLabel.trim()) {
+                      setResumeLabel(labelFromFilename(next.name));
+                    }
+                  }}
+                  className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[#e9e9ff] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[#4338a8] disabled:cursor-not-allowed disabled:opacity-70"
+                />
+
+                {canSaveNew ? (
+                  <>
+                    <label className="flex items-center gap-2 text-sm text-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={saveToAccount}
+                        disabled={uploading}
+                        onChange={(event) => setSaveToAccount(event.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-[#2e46ba]"
+                      />
+                      Save this resume to my account
+                    </label>
+                    {saveToAccount ? (
+                      <input
+                        value={resumeLabel}
+                        onChange={(event) => setResumeLabel(event.target.value)}
+                        maxLength={80}
+                        disabled={uploading}
+                        placeholder="Name this resume"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#2e46ba] focus:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+                      />
+                    ) : null}
+                  </>
+                ) : (
+                  <p className="text-xs text-gray-400">
+                    You already have {MAX_SAVED_RESUMES} saved resumes. Remove
+                    one from Account to save this file.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="mt-2 text-xs text-gray-400">
+                This saved PDF will be attached to your application.
+              </p>
+            )}
+          </>
+        )}
       </div>
 
       <div>
@@ -307,8 +434,14 @@ export default function ApplyForm({
       )}
 
       <SubmitButton
-        label={uploading ? "Uploading..." : "Apply for this job"}
-        disabled={uploading}
+        label={
+          uploading
+            ? usingUpload
+              ? "Uploading..."
+              : "Submitting..."
+            : "Apply for this job"
+        }
+        disabled={uploading || loadingResumes}
       />
     </form>
   );

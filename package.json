@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test src/lib/utils/skills.test.ts src/lib/validation.test.ts src/lib/job-access.test.ts",
+    "test": "tsx --test src/lib/utils/skills.test.ts src/lib/utils/resume.test.ts src/lib/validation.test.ts src/lib/job-access.test.ts",
     "seed": "tsx src/lib/scripts/seed.ts"
   },
   "dependencies": {

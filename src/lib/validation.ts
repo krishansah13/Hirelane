@@ -5,6 +5,9 @@ import {
   MIN_SKILL_LENGTH,
   parseSkillList,
 } from "./utils/skills";
+import { normalizeResumeLabel } from "./utils/resume";
+
+export { MAX_SAVED_RESUMES } from "./utils/resume";
 
 export const jobQuerySchema = z.object({
   q: z.string().optional(),
@@ -28,13 +31,70 @@ export const objectIdSchema = z
   .string()
   .regex(/^[a-fA-F0-9]{24}$/, "Invalid id");
 
-export const applySchema = z.object({
-  jobId: objectIdSchema,
+export const resumeLabelSchema = z
+  .string()
+  .transform(normalizeResumeLabel)
+  .pipe(
+    z
+      .string()
+      .min(1, "Give this resume a name")
+      .max(80, "Name must be 80 characters or fewer"),
+  );
 
-  resumeURL: z.string().url(),
+export const cloudinaryResumeUrlSchema = z
+  .string()
+  .url("Invalid resume file")
+  .refine(
+    (value) =>
+      /^https:\/\/res\.cloudinary\.com\/[^/]+\/raw\/upload\/.+/i.test(value),
+    { message: "Resume must be a PDF uploaded to Cloudinary" },
+  );
 
-  coverNote: z.string().max(2000).optional(),
+export const saveResumeSchema = z.object({
+  url: cloudinaryResumeUrlSchema,
+  label: resumeLabelSchema,
+  originalFilename: z
+    .string()
+    .trim()
+    .max(200, "Filename is too long")
+    .optional(),
+  isDefault: z.enum(["true", "false"]).optional(),
 });
+
+export const updateResumeSchema = z.object({
+  resumeId: objectIdSchema,
+  label: resumeLabelSchema,
+});
+
+export const resumeIdSchema = z.object({
+  resumeId: objectIdSchema,
+});
+
+export const applySchema = z
+  .object({
+    jobId: objectIdSchema,
+
+    resumeURL: cloudinaryResumeUrlSchema.optional(),
+
+    resumeId: objectIdSchema.optional(),
+
+    coverNote: z.string().max(2000).optional(),
+
+    saveResume: z.enum(["true", "false"]).optional(),
+
+    resumeLabel: z.string().trim().max(80).optional(),
+
+    originalFilename: z.string().trim().max(200).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.resumeURL && !data.resumeId) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["resumeURL"],
+        message: "Please choose or upload a resume",
+      });
+    }
+  });
 
 const salaryRule = {
   message: "Maximum salary must be at least the minimum salary",
@@ -491,6 +551,8 @@ export const accountSchema = z.object({
     .optional(),
 });
 
+export type SaveResumeInput = z.infer<typeof saveResumeSchema>;
+export type ApplyInput = z.infer<typeof applySchema>;
 export type JobQueryInput = z.infer<typeof jobQuerySchema>;
 export type AdminUserQueryInput = z.infer<typeof adminUserQuerySchema>;
 export type AdminJobQueryInput = z.infer<typeof adminJobQuerySchema>;

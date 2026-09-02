@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
+import { cloudinaryPublicIdFromUrl } from "./utils/cloudinary-url";
 
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const apiKey = process.env.CLOUDINARY_API_KEY;
@@ -46,6 +47,13 @@ export async function uploadResumePdf(
   );
 
   return result.secure_url;
+}
+
+export async function destroyResumePdf(url: string): Promise<void> {
+  const publicId = cloudinaryPublicIdFromUrl(url);
+  if (!publicId) return;
+
+  await cloudinary.uploader.destroy(publicId, { resource_type: "raw" });
 }
 
 export async function uploadProfileImage(

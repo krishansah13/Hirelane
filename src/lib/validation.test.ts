@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  applySchema,
   jobStepSchemas,
   jobWriteSchema,
+  saveResumeSchema,
   signupSchema,
   tomorrowLocalISO,
 } from "./validation";
@@ -227,3 +229,63 @@ test("joining and expiry dates must be tomorrow or later", () => {
   });
   assert.equal(valid.success, true);
 });
+
+const cloudinaryResume =
+  "https://res.cloudinary.com/demo/raw/upload/v1710000000/hirelane/resumes/resume-1.pdf";
+
+test("apply schema accepts a Cloudinary resume URL", () => {
+  const result = applySchema.safeParse({
+    jobId: "64b0f2c2a1b2c3d4e5f60789",
+    resumeURL: cloudinaryResume,
+  });
+  assert.equal(result.success, true);
+});
+
+test("apply schema accepts a saved resume id without an upload URL", () => {
+  const result = applySchema.safeParse({
+    jobId: "64b0f2c2a1b2c3d4e5f60789",
+    resumeId: "64b0f2c2a1b2c3d4e5f60780",
+  });
+  assert.equal(result.success, true);
+});
+
+test("apply schema requires a resume", () => {
+  const result = applySchema.safeParse({
+    jobId: "64b0f2c2a1b2c3d4e5f60789",
+  });
+  assert.equal(result.success, false);
+});
+
+test("apply schema rejects a non-Cloudinary resume URL", () => {
+  const result = applySchema.safeParse({
+    jobId: "64b0f2c2a1b2c3d4e5f60789",
+    resumeURL: "https://example.com/resume.pdf",
+  });
+  assert.equal(result.success, false);
+});
+
+test("save resume schema requires a name and Cloudinary URL", () => {
+  const valid = saveResumeSchema.safeParse({
+    url: cloudinaryResume,
+    label: "Software engineer resume",
+    originalFilename: "resume.pdf",
+    isDefault: "true",
+  });
+  assert.equal(valid.success, true);
+
+  const missingName = saveResumeSchema.safeParse({
+    url: cloudinaryResume,
+    label: "  ",
+  });
+  assert.equal(missingName.success, false);
+
+  const collapsed = saveResumeSchema.safeParse({
+    url: cloudinaryResume,
+    label: "  Software   Engineer  ",
+  });
+  assert.equal(collapsed.success, true);
+  if (collapsed.success) {
+    assert.equal(collapsed.data.label, "Software Engineer");
+  }
+});
+
