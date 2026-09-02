@@ -14,6 +14,16 @@ export function resumeLabelsMatch(a: string, b: string) {
   );
 }
 
+export function getResumeLabelError(label: string): string | undefined {
+  const name = normalizeResumeLabel(label);
+  if (!name) return "Give this resume a name";
+  if (name.length > 80) return "Name must be 80 characters or fewer";
+  if (!/[\p{L}\p{N}]/u.test(name)) {
+    return "Name must include a letter or number";
+  }
+  return undefined;
+}
+
 export function duplicateResumeNameMessage(label: string) {
   const name = normalizeResumeLabel(label);
   return `You already have a resume named “${name}”. Choose a different name.`;

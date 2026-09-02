@@ -59,8 +59,9 @@ export default async function JobSearch({
     <main>
       <section className="min-h-125 bg-white px-4 py-6 sm:p-7">
         <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
-          <Filters params={currentParams} />
-
+          <div className="sticky top-16 z-30 self-start bg-white pb-4 lg:pb-0">
+            <Filters params={currentParams} />
+          </div>
           <div className="min-w-0">
             <Suspense key={suspenseKey} fallback={<JobsFallback />}>
               <JobResults currentParams={currentParams} />

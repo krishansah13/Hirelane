@@ -4,23 +4,49 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useFormStatus } from "react-dom";
 
-function ConfirmButton({
+function PendingBridge({
+  onPending,
+}: {
+  onPending: (pending: boolean) => void;
+}) {
+  const { pending } = useFormStatus();
+
+  useEffect(() => {
+    onPending(pending);
+  }, [onPending, pending]);
+
+  return null;
+}
+
+function ConfirmActions({
   label,
   pendingLabel,
+  onClose,
 }: {
   label: string;
   pendingLabel: string;
+  onClose: () => void;
 }) {
   const { pending } = useFormStatus();
 
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="w-full rounded-xl bg-[#2E46BA] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer sm:w-auto"
-    >
-      {pending ? pendingLabel : label}
-    </button>
+    <>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={onClose}
+        className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-70 sm:w-auto"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        disabled={pending}
+        className="w-full rounded-xl bg-[#2E46BA] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-70 sm:w-auto"
+      >
+        {pending ? pendingLabel : label}
+      </button>
+    </>
   );
 }
 
@@ -44,16 +70,20 @@ export default function ConfirmModal({
   children?: React.ReactNode;
 }) {
   const [mounted, setMounted] = useState(false);
+  const [pending, setPending] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setPending(false);
+      return;
+    }
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape" && !pending) onClose();
     }
 
     document.body.style.overflow = "hidden";
@@ -63,14 +93,16 @@ export default function ConfirmModal({
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, onClose]);
+  }, [open, onClose, pending]);
 
   if (!mounted || !open) return null;
 
   return createPortal(
     <div
       className="fixed inset-0 z-100 flex items-end justify-center bg-black/40 sm:items-center sm:p-4"
-      onClick={onClose}
+      onClick={() => {
+        if (!pending) onClose();
+      }}
       role="presentation"
     >
       <div
@@ -78,6 +110,7 @@ export default function ConfirmModal({
         aria-modal="true"
         aria-labelledby="confirm-modal-title"
         aria-describedby="confirm-modal-description"
+        aria-busy={pending}
         className="w-full rounded-t-3xl bg-white p-5 pb-8 shadow-xl sm:max-w-md sm:rounded-2xl sm:p-6 sm:pb-6"
         onClick={(event) => event.stopPropagation()}
       >
@@ -98,15 +131,13 @@ export default function ConfirmModal({
           action={formAction}
           className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:flex-wrap sm:justify-end"
         >
+          <PendingBridge onPending={setPending} />
           {children}
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 sm:w-auto cursor-pointer"
-          >
-            Cancel
-          </button>
-          <ConfirmButton label={confirmLabel} pendingLabel={pendingLabel} />
+          <ConfirmActions
+            label={confirmLabel}
+            pendingLabel={pendingLabel}
+            onClose={onClose}
+          />
         </form>
       </div>
     </div>,

@@ -38,7 +38,10 @@ export const resumeLabelSchema = z
     z
       .string()
       .min(1, "Give this resume a name")
-      .max(80, "Name must be 80 characters or fewer"),
+      .max(80, "Name must be 80 characters or fewer")
+      .refine((value) => /[\p{L}\p{N}]/u.test(value), {
+        message: "Name must include a letter or number",
+      }),
   );
 
 export const cloudinaryResumeUrlSchema = z

@@ -287,5 +287,11 @@ test("save resume schema requires a name and Cloudinary URL", () => {
   if (collapsed.success) {
     assert.equal(collapsed.data.label, "Software Engineer");
   }
+
+  const punctuationOnly = saveResumeSchema.safeParse({
+    url: cloudinaryResume,
+    label: "---",
+  });
+  assert.equal(punctuationOnly.success, false);
 });
 

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { cloudinaryPublicIdFromUrl } from "./cloudinary-url";
-import { labelFromFilename, MAX_SAVED_RESUMES, isDuplicateResumeLabel } from "./resume";
+import { labelFromFilename, MAX_SAVED_RESUMES, getResumeLabelError, isDuplicateResumeLabel } from "./resume";
 
 test("labelFromFilename strips the extension and separators", () => {
   assert.equal(labelFromFilename("Software_Engineer-Resume.pdf"), "Software Engineer Resume");
@@ -17,6 +17,12 @@ test("duplicate resume names are compared without case or extra spaces", () => {
   assert.equal(isDuplicateResumeLabel(resumes, "  Software   Engineer  "), true);
   assert.equal(isDuplicateResumeLabel(resumes, "software engineer", "1"), false);
   assert.equal(isDuplicateResumeLabel(resumes, "Frontend"), false);
+});
+
+test("resume names require a real name", () => {
+  assert.equal(getResumeLabelError("  "), "Give this resume a name");
+  assert.equal(getResumeLabelError("---"), "Name must include a letter or number");
+  assert.equal(getResumeLabelError("Software engineer resume"), undefined);
 });
 
 test("seekers can save a small set of resumes", () => {
