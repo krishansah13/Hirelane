@@ -302,7 +302,7 @@ export default function ResumeManager({
             ) : null}
 
             {defaultUpdated && defaultState.resume ? (
-              <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+              <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 mb-5">
                 “{defaultState.resume.label}” will be used when applying.
               </p>
             ) : null}
