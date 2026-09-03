@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useEffect, useId, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import {
   duplicateResumeNameMessage,
@@ -27,12 +27,19 @@ function RenameFields({
 }) {
   const { pending } = useFormStatus();
   const errorId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
 
   return (
     <>
       <input type="hidden" name="resumeId" value={resume.id} />
       <div className="min-w-0 w-full sm:max-w-xs">
         <input
+          ref={inputRef}
           name="label"
           value={editLabel}
           onChange={(event) => {
