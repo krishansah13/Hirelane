@@ -47,8 +47,8 @@ function getNavLinks(role?: UserRole): NavLink[] {
     }
 
     return [
-        { href: "/login", label: "Dashboard" },
-        { href: "/login", label: "Post a Job" },
+        { href: "/dashboard", label: "Dashboard" },
+        { href: "/employer/job/new", label: "Post a Job" },
         ...BROWSE_LINKS,
     ];
 }
