@@ -61,8 +61,8 @@ export default function LoginForm() {
         redirect: false,
       });
 
-      if (result?.error) {
-        const code = `${result.code ?? ""} ${result.error}`.toLowerCase();
+      if (result?.error || !result?.ok) {
+        const code = `${result?.code ?? ""} ${result?.error ?? ""}`.toLowerCase();
         setError(
           code.includes("account_suspended")
             ? "This account has been suspended. Contact support if you need access."
@@ -70,11 +70,6 @@ export default function LoginForm() {
               ? "Your employer account is waiting for admin approval. You'll get an email when it's ready."
               : "Invalid email or password.",
         );
-        return;
-      }
-
-      if (!result?.ok) {
-        setError("Invalid email or password");
         return;
       }
 

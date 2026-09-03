@@ -1,10 +1,24 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 
 import User from "./lib/models/User";
 import { connectToDatabase } from "./lib/utils/db";
 import { authConfig } from "./auth.config";
+
+class AccountPendingError extends CredentialsSignin {
+  constructor() {
+    super();
+    this.code = "account_pending";
+  }
+}
+
+class AccountSuspendedError extends CredentialsSignin {
+  constructor() {
+    super();
+    this.code = "account_suspended";
+  }
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
@@ -47,11 +61,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         if (user.status === "pending") {
-          throw new Error("ACCOUNT_PENDING");
+          throw new AccountPendingError();
         }
 
         if (user.status === "suspended") {
-          throw new Error("ACCOUNT_SUSPENDED");
+          throw new AccountSuspendedError();
         }
 
         return {
