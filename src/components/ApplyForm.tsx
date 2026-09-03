@@ -12,6 +12,7 @@ import {
 } from "@/lib/actions/apply";
 import { getMyResumes } from "@/lib/actions/resumes";
 import { MAX_SAVED_RESUMES, isDuplicateResumeLabel, labelFromFilename, type SavedResume } from "@/lib/utils/resume";
+import { ArrowUpRight } from "lucide-react";
 
 type ExistingApplication = {
   id: string;
@@ -432,17 +433,25 @@ export default function ApplyForm({
           {error}
         </p>
       )}
-
-      <SubmitButton
-        label={
-          uploading
-            ? usingUpload
-              ? "Uploading..."
-              : "Submitting..."
-            : "Apply for this job"
-        }
-        disabled={uploading || loadingResumes}
-      />
+      <div className="flex items-center justify-between">
+        <SubmitButton
+          label={
+            uploading
+              ? usingUpload
+                ? "Uploading..."
+                : "Submitting..."
+              : "Apply for this job"
+          }
+          disabled={uploading || loadingResumes}
+        />
+        <a
+          href={`/jobs/${slug}`}
+          className="border border-gray-200 inline-flex items-center flex-row gap-1.5 rounded-xl px-4 py-3 text-sm font-medium text-[#4338a8] transition hover:bg-[#faf9ff]"
+        >
+          View full details
+          <ArrowUpRight size={14} />
+        </a>
+      </div>
     </form>
   );
 }

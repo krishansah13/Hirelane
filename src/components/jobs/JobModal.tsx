@@ -66,7 +66,7 @@ export default function JobModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="job-modal-title"
-        className="relative max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl sm:p-8"
+        className="relative max-h-[85vh] w-full max-w-xl overflow-y-auto scrollbar-none rounded-2xl bg-white p-6 shadow-xl sm:p-8"
         onClick={(event) => event.stopPropagation()}
       >
         <button
@@ -168,14 +168,6 @@ export default function JobModal({
             compact
             existingApplication={existingApplication}
           />
-
-          <a
-            href={`/jobs/${slug}`}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-xl px-4 py-3 text-sm font-medium text-[#4338a8] transition hover:bg-[#faf9ff]"
-          >
-            View full details
-            <ArrowUpRight size={14} />
-          </a>
         </div>
       </div>
     </div>
