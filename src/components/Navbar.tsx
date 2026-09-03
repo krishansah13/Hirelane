@@ -27,8 +27,8 @@ function getNavLinks(role?: UserRole): NavLink[] {
 
     if (role === "seeker") {
         return [
-            { href: dashboardHref, label: "Dashboard" },
             ...BROWSE_LINKS,
+            { href: dashboardHref, label: "Dashboard" },
         ];
     }
 

@@ -63,6 +63,7 @@ export default function LoginForm() {
 
       if (result?.error || !result?.ok) {
         const code = `${result?.code ?? ""} ${result?.error ?? ""}`.toLowerCase();
+
         setError(
           code.includes("account_suspended")
             ? "This account has been suspended. Contact support if you need access."
@@ -70,13 +71,30 @@ export default function LoginForm() {
               ? "Your employer account is waiting for admin approval. You'll get an email when it's ready."
               : "Invalid email or password.",
         );
+
         return;
       }
 
       const session = await getSession();
-      const destination =
-        getSafeCallbackUrl(searchParams.get("callbackUrl")) ??
-        getHomePath(session?.user.role);
+
+      if (!session?.user) {
+        setError("Unable to load your account session. Please try again.");
+        return;
+      }
+
+      const callbackUrl = getSafeCallbackUrl(
+        searchParams.get("callbackUrl"),
+      );
+
+      let destination: string;
+
+      if (callbackUrl) {
+        destination = callbackUrl;
+      } else if (session.user.role === "seeker") {
+        destination = "/jobs";
+      } else {
+        destination = getHomePath(session.user.role);
+      }
 
       router.push(destination);
       router.refresh();
@@ -86,6 +104,7 @@ export default function LoginForm() {
       setIsSubmitting(false);
     }
   }
+
 
   return (
     <main className="relative flex flex-1 overflow-hidden bg-linear-100 from-white via-white to-indigo-300">
